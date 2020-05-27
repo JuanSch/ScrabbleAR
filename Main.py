@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 
 def main():
-    print('Funcion main')
+    print('Funcion main1')
 
 
 
