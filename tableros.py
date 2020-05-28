@@ -1,85 +1,94 @@
 import PySimpleGUI as sg
+import string
+import random
+
 
 class Tablero:
-    def __init__(self, x, y, margen, boton):
-        self.columnas = x
-        self.filas = y
-        self.margen = margen
-        self.boton = boton
-        self.imagen = None
-        self.max_xy = (ancho_tablero - margen, alto_tablero - margen)
-        self.min_xy = (-margen, -margen)
+    def __init__(self, columnas, filas):
+        self.matriz = [[sg.Button(key=f'({x}, {y})', pad=(0,0),
+                                  image_filename=tablero[f'({x}, {y})']['img'],
+                                  image_size=(60,60), border_width=0,
+                                  button_color=('#DDDDDD', '#DDDDDD'))
+                        for x in range(columnas)] for y in range(filas)]
 
-    def dimensiones(self):
-        b = columnas * (margen + boton) + margen
-        h = filas * (margen + boton) + margen
-        return (b, h)
+    def getmatriz(self):
+        return self.matriz
 
-def calcular_click(coord, boton, margen):
-    linea = divmod(coord, (boton+margen))[0]
-    pos = linea*(boton+margen)
-    ok = coord < pos+boton
-    return (ok, pos)
 
-#configuración de medidas
-margen = 10
-boton = 50
-columnas = 10
-filas = 10
-ancho_tablero = columnas*(margen+boton)+margen
-alto_tablero = filas*(margen+boton)+margen
-alto_fichas = boton+2*margen
-margen_fichas = (ancho_tablero-(boton+margen)*7-margen)/2
-max_x_fichas = (boton+margen)*7-margen+margen
+def armar_tablero(columnas, filas):
+    botones = {}
+    for x in range(columnas):
+        for y in range(filas):
+            botones[f'({x}, {y})'] = {'img': 'imagenes/casilla.png',
+                                      'click': False, 'val': 1}
+    return botones
 
-tablero = Tablero(columnas, filas, margen, boton)
 
-#diseño del tablero
-layout = [[sg.Graph(key='-TABLERO-', canvas_size=(tablero.dimensiones()),
-                    graph_bottom_left=(tablero.min_xy),
-                    graph_top_right=(tablero.max_xy),
-                    background_color='white', enable_events=True)],
-          [sg.Graph(key='-FICHAS-', canvas_size=(ancho_tablero,alto_fichas),
-                    graph_bottom_left=(-margen_fichas,-margen),
-                    graph_top_right=(boton+margen,max_x_fichas),
-                    background_color='white', enable_events=True)]]
+def armar_fichas(letras):
+    fichas = []
+    for y in range(7):
+        letra = letras[random.randrange(len(letras))]
+        imagen = f'imagenes/{letra}.png'
+        ficha = {'letra': letra, 'img': imagen, 'click': False}
+        fichas.append(ficha)
+    return fichas
 
-#inicialización de la ventana
-window = sg.Window('Tablero').Layout(layout).Finalize()
 
-tablero = window.FindElement('-TABLERO-')
-fichas = window.FindElement('-FICHAS-')
+letras = [char for char in string.ascii_uppercase]
 
-casillas = {}
 
-for x in range(0, ancho_tablero-margen, margen+boton):
-    for y in range(0, alto_tablero-margen, margen+boton):
-        casilla = (x, y)
-        casillas[casilla] = [tablero.DrawRectangle((x, y), (x+boton, y+boton),
-                              line_color='#CFCFCF', fill_color='#CFCFCF'),
-                             False]
+filas = columnas = 15
+
+tablero = armar_tablero(columnas, filas)
+
+mesa = Tablero(columnas, filas)
+
+fichas = armar_fichas(letras)
+
+#interfaz
+layout = mesa.getmatriz()
+
+layout.append([sg.T('')])
+
+layout.append([sg.Button(key=f'F{y}', pad=(0, 0),
+                         image_filename=fichas[y]['img'],
+                         image_size=(60,60), border_width=0,
+                         button_color=('#DDDDDD', '#DDDDDD'))
+           for y in range(len(fichas))])
+
+#inicializacion
+window = sg.Window('Ventana de juego').Layout(layout)
+
+#bucle
+
+pasar = []
 
 while True:
     event, values = window.Read()
+
     if event is None:
         break
-    elif event == '-TABLERO-':
-        x = values[event][0]
-        y = values[event][1]
-        if None not in (x, y):
-            x_ref = calcular_click(x, boton, margen)
-            y_ref = calcular_click(y, boton, margen)
-            if x_ref[0] and y_ref[0]:
-                casilla = (x_ref[1], y_ref[1])
-                if casillas[casilla][1] == False:
-                    tablero.TKCanvas.itemconfig(casillas[casilla][0],
-                                                fill='Blue')
-                    casillas[casilla][1] = True
-                else:
-                    tablero.TKCanvas.itemconfig(casillas[casilla][0],
-                                                fill='#CFCFCF')
-                    casillas[casilla][1] = False
+
+    elif 'F' in event:
+        pos = int(event[1])
+        ficha = fichas[pos]
+        if ficha['click'] == True:
+            window.FindElement(event).Update(button_color=('#DDDDDD', '#DDDDDD'))
+            pasar.pop(-1)
+        else:
+            pasar.append((ficha, pos))
+            window.FindElement(event).Update(button_color=('#0000FF', '#0000FF'))
+        ficha['click']=not ficha['click']
+
+    elif '(' in event:
+        if pasar is None:
+            pass
+        elif tablero[event]['click'] == False:
+            window.FindElement(event).Update(image_filename = pasar[-1][0]['img'])
+            tablero[event]['click'] = not tablero[event]['click']
+            window.FindElement(f'F{pasar[-1][1]}').Update(visible=False)
 
 
-#cerrar ventana
+
+#cierre
 window.Close()
