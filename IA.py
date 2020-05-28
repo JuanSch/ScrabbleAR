@@ -107,7 +107,7 @@ def validar_palabra(palabra):
         if palabra[0] not in lexicon.keys():
             if palabra[0] not in spelling.keys():
                 w = Wiktionary(language="es")
-                article = w.search(palabra[1])
+                article = w.search(palabra[0])
                 if article != None :
                     return True
                 else:
@@ -118,7 +118,7 @@ def validar_palabra(palabra):
             return True
     elif palabra[1] in ['NN', 'NNS']: #NN:sustantivo  , NNS:sustantivo plural
         w = Wiktionary(language="es")
-        article = w.search(palabra[1])
+        article = w.search(palabra[0])
         if article != None :
             return True
         else:
@@ -129,5 +129,5 @@ if __name__ == '__main__':
     ejemplo = ['a', 'g', 't', 'd', 'b', 'o', 'm']
     #pas= elegir_palabra(ejemplo,'facil')   
     #print(pas)
-    #print(validar_palabra('asad'))
+    print(validar_palabra('asad'))
 
