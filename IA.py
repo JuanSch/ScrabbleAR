@@ -68,7 +68,6 @@ def elegir_palabra(letras, dificultad):
             
         return(palabra_elegida)
 
-    print('La computadora está pensando')
     letras.sort()
     palabras_posibles = []
     for palabra in lexicon.keys():
@@ -84,7 +83,7 @@ def elegir_palabra(letras, dificultad):
     for palabra in palabras_posibles:
         if len(palabra) > 2:
             palabras_posibles_dos.append(palabra)
-    print('casi termina')
+    
     palabras_utilies = []
     w = Wiktionary(language="es")
     for palabra in palabras_posibles_dos:
@@ -101,8 +100,34 @@ def elegir_palabra(letras, dificultad):
     
     return(mayor_puntaje(palabras_utilies, dificultad))
 
+
+def validar_palabra(palabra):
+    palabra = parse(palabra).split('/')
+    if palabra[1] in ['JJ', 'VB']: #VB:verbo  ,  JJ:adjetivo
+        if palabra[0] not in lexicon.keys():
+            if palabra[0] not in spelling.keys():
+                w = Wiktionary(language="es")
+                article = w.search(palabra[1])
+                if article != None :
+                    return True
+                else:
+                    return  False
+            else:
+                return True
+        else:
+            return True
+    elif palabra[1] in ['NN', 'NNS']: #NN:sustantivo  , NNS:sustantivo plural
+        w = Wiktionary(language="es")
+        article = w.search(palabra[1])
+        if article != None :
+            return True
+        else:
+            return False
+
+
 if __name__ == '__main__':
     ejemplo = ['a', 'g', 't', 'd', 'b', 'o', 'm']
-    pas= elegir_palabra(ejemplo,'facil')   
-    print(pas)
+    #pas= elegir_palabra(ejemplo,'facil')   
+    #print(pas)
+    #print(validar_palabra('asad'))
 
