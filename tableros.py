@@ -157,68 +157,70 @@ def armar_fichas(letras):
         ficha = Ficha(letra, valor)
         fichas.append(ficha)
     return fichas
+def jugar():
+    letras = [char for char in string.ascii_uppercase]
+    #Temporalmente se generó una lista de letras a-z(salvo ñ) para operar
+    #sobre ellas
 
 
-letras = [char for char in string.ascii_uppercase]
-#Temporalmente se generó una lista de letras a-z(salvo ñ) para operar
-#sobre ellas
+    filas = columnas = 15
+
+    dim_boton = (50,50)
+
+    tablero = Tablero(columnas, filas)
+
+    fichas = armar_fichas(letras)
 
 
-filas = columnas = 15
+    #interfaz
+    layout = armar_botones(tablero, dim_boton)
 
-dim_boton = (50,50)
+    layout.append([sg.T('')])
 
-tablero = Tablero(columnas, filas)
+    layout.append([sg.Button(key=f'F{y}', pad=(0, 0),
+                            image_filename=fichas[y].getimagen(),
+                            image_size=dim_boton, border_width=0,
+                            button_color=('#DDDDDD', '#DDDDDD'))
+            for y in range(len(fichas))])
 
-fichas = armar_fichas(letras)
+    #inicializacion
+    window = sg.Window('Ventana de juego').Layout(layout)
 
+    #bucle
 
-#interfaz
-layout = armar_botones(tablero, dim_boton)
+    en_proceso = []
+    pasar = False
+    #variables de uso temporal para probar la lógica del programa
 
-layout.append([sg.T('')])
+    while True:
+        event, values = window.Read()
 
-layout.append([sg.Button(key=f'F{y}', pad=(0, 0),
-                         image_filename=fichas[y].getimagen(),
-                         image_size=dim_boton, border_width=0,
-                         button_color=('#DDDDDD', '#DDDDDD'))
-           for y in range(len(fichas))])
+        if event is None:
+            break
 
-#inicializacion
-window = sg.Window('Ventana de juego').Layout(layout)
+        elif 'F' in event:  #sé que se está seleccionando una ficha
+            pos = int(event[1])
+            ficha = fichas[pos]
+            if ficha.select == False:
+                en_proceso.append(ficha)
+                pasar = True
+                ficha.cambiarselect()
+                window.FindElement(event).Update(image_filename=ficha.getimagen())
 
-#bucle
-
-en_proceso = []
-pasar = False
-#variables de uso temporal para probar la lógica del programa
-
-while True:
-    event, values = window.Read()
-
-    if event is None:
-        break
-
-    elif 'F' in event:  #sé que se está seleccionando una ficha
-        pos = int(event[1])
-        ficha = fichas[pos]
-        if ficha.select == False:
-            en_proceso.append(ficha)
-            pasar = True
-            ficha.cambiarselect()
-            window.FindElement(event).Update(image_filename=ficha.getimagen())
-
-    else:
-        if pasar == True:
-            casilla = tablero.getcasilla(event)
-            if casilla.ocupado:
-                sg.Popup('No puede cambiar fichas de lugar')
-            else:
-                tablero.setcasilla(event, en_proceso[-1])
-                imagen = tablero.getcasilla(event).getimagen()
-                window.FindElement(event).Update(image_filename=imagen)
-                pasar = False
+        else:
+            if pasar == True:
+                casilla = tablero.getcasilla(event)
+                if casilla.ocupado:
+                    sg.Popup('No puede cambiar fichas de lugar')
+                else:
+                    tablero.setcasilla(event, en_proceso[-1])
+                    imagen = tablero.getcasilla(event).getimagen()
+                    window.FindElement(event).Update(image_filename=imagen)
+                    pasar = False
 
 
-#cierre
-window.Close()
+    #cierre
+    window.Close()
+
+if __name__ == '__main__':
+    jugar()

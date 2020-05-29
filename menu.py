@@ -1,5 +1,6 @@
 import PySimpleGUI as sg
 import json
+import tableros
 
 def confign_nuevo_juego(configuracion):
     s = []
@@ -19,11 +20,12 @@ def confign_nuevo_juego(configuracion):
         if event == "-jugar-":
             configuracion['dificultad'] = value[0]
             configuracion['tiempo'] = value[1]
-            print('estamos jugando')
             break
         else:
             break
+    tableros.jugar()
     window.close()
+
     return(configuracion)
 
 def pantalla_inicial():
@@ -48,6 +50,7 @@ def pantalla_inicial():
                 configs = confign_nuevo_juego(configs)
             with open('configuraciones.json','w') as f:
                 json.dump(configs, f, indent= 4)
+            break
         elif event in "-continuar-":
             None
         elif event in "-configuracion-":
