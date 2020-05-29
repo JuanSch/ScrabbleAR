@@ -3,17 +3,19 @@ import string
 import random
 import platform
 
+def ruta():
+    if platform.system() != "Windows":
+        char = '/'
+    else:
+        char = '\\'
+    return char
 
 class Ficha:
     def __init__(self, letra, valor):
         self.letra = letra
         self.valor = valor
-        if platform.system() != "Windows":
-            self.img = f'imagenes/{letra.upper()}.png'
-            self.img_click = f'imagenes/{letra.upper()}click.png'
-        else:
-            self.img = f'imagenes\\{letra.upper()}.png'
-            self.img_click = f'imagenes\\{letra.upper()}click.png'
+        self.img = f'imagenes{ruta()}{letra.upper()}.png'
+        self.img_click = f'imagenes{ruta()}{letra.upper()}click.png'
         self.select = False
 
     def getimagen(self):
@@ -39,10 +41,7 @@ class Casilla:
     def __init__(self, pos, tipo=''):
         self.pos = pos
         self.tipo = tipo
-        if platform.system() != "Windows":
-            self.img = f'imagenes/casilla{tipo}'
-        else: 
-            self.img = f'imagenes\\casilla{tipo}'
+        self.img = f'imagenes{ruta()}casilla{tipo}'
         self.estado = False
         self.ficha = None
 
@@ -81,11 +80,7 @@ def armar_tablero(columnas, filas):
     botones = {}
     for x in range(columnas):
         for y in range(filas):
-            if platform.system() != "Windows":
-                botones[f'({x}, {y})'] = {'img': 'imagenes/casilla.png',
-                                          'click': False, 'val': 1}
-            else:
-                botones[f'({x}, {y})'] = {'img': 'imagenes\\casilla.png',
+            botones[f'({x}, {y})'] = {'img': f'imagenes{ruta()}casilla.png',
                                           'click': False, 'val': 1}
     return botones
 
