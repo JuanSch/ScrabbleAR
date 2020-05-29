@@ -1,14 +1,19 @@
 import PySimpleGUI as sg
 import string
 import random
+import platform
 
 
 class Ficha:
     def __init__(self, letra, valor):
         self.letra = letra
         self.valor = valor
-        self.img = f'imagenes/{letra.upper()}.png'
-        self.img_click = f'imagenes/{letra.upper()}click.png'
+        if platform.system() != "Windows":
+            self.img = f'imagenes/{letra.upper()}.png'
+            self.img_click = f'imagenes/{letra.upper()}click.png'
+        else:
+            self.img = f'imagenes\\{letra.upper()}.png'
+            self.img_click = f'imagenes\\{letra.upper()}click.png'
         self.select = False
 
     def getimagen(self):
@@ -34,7 +39,10 @@ class Casilla:
     def __init__(self, pos, tipo=''):
         self.pos = pos
         self.tipo = tipo
-        self.img = f'imagenes/casilla{tipo}'
+        if platform.system() != "Windows":
+            self.img = f'imagenes/casilla{tipo}'
+        else: 
+            self.img = f'imagenes\\casilla{tipo}'
         self.estado = False
         self.ficha = None
 
@@ -73,8 +81,12 @@ def armar_tablero(columnas, filas):
     botones = {}
     for x in range(columnas):
         for y in range(filas):
-            botones[f'({x}, {y})'] = {'img': 'imagenes/casilla.png',
-                                      'click': False, 'val': 1}
+            if platform.system() != "Windows":
+                botones[f'({x}, {y})'] = {'img': 'imagenes/casilla.png',
+                                          'click': False, 'val': 1}
+            else:
+                botones[f'({x}, {y})'] = {'img': 'imagenes\\casilla.png',
+                                          'click': False, 'val': 1}
     return botones
 
 
