@@ -1,25 +1,27 @@
 import PySimpleGUI as sg
 import json
 
-def config(configuracion):
+def confign_nuevo_juego(configuracion):
     s = []
     for i in range(1,61):
         s.append(str(i))
     layout = [
 
         [sg.T("Configuraciones", size=(17,1), justification = "center", font=("Georgia", 17))],
-        [sg.Text("Dificultad: "),sg.DropDown(('Facil','Medio','Dificil'),default_value=(configuracion['dificultad']),size=(10,1))],
-        [sg.Text("Tiempo de juego (en minutos): ", size=(22, 1)),sg.InputCombo((s),size=(5,1),default_value=(configuracion['tiempo']))],
-        [sg.B("Guardar", size=(17, 1), key="-guardar-"),sg.Exit("Volver", size=(10, 1), key="-volver-")]
+        [sg.T("Dificultad: "),sg.DropDown(('Facil','Medio','Dificil'),default_value=(configuracion['dificultad']),size=(10,1))],
+        [sg.T("Tiempo de juego (en minutos): ", size=(22, 1)),sg.InputCombo((s),size=(5,1),default_value=(configuracion['tiempo']))],
+        [sg.B("Jugar", size=(17, 1), key="-jugar-")]
     ]
     window = sg.Window("ScrabbleAR - Configuracion", layout)
     while True:
         event, value = window.read()
-        if event in "-guardar-":
+        print(event,value)
+        if event == "-jugar-":
             configuracion['dificultad'] = value[0]
             configuracion['tiempo'] = value[1]
-            sg.popup('cambios guardados')
-        elif event in ('-volver-', None):
+            print('estamos jugando')
+            break
+        else:
             break
     window.close()
     return(configuracion)
@@ -41,19 +43,20 @@ def pantalla_inicial():
         if event in ("-salir-", None):
             break
         elif event in "-nueva-":
-            None
+            with open('configuraciones.json','r') as f:
+                configs =json.load(f)
+                configs = confign_nuevo_juego(configs)
+            with open('configuraciones.json','w') as f:
+                json.dump(configs, f, indent= 4)
         elif event in "-continuar-":
             None
         elif event in "-configuracion-":
-            with open('configuraciones.json','r') as f:
-                configs =json.load(f)
-                configs = config(configs)
-            with open('configuraciones.json','w') as f:
-                json.dump(configs, f, indent= 4)
+            None
         elif event in "-puntajes-":
             None
         
     window.close()
+
 
 
 if __name__ == "__main__":
