@@ -48,25 +48,7 @@ def elegir_palabra(letras, dificultad):
                     condicion = False
                     break
         return(condicion)
-
-    def mayor_puntaje(palabras, dificultad):
-        """
-        cargo los puntajes y me fijo cual es la palabra que mayor puntaje da 
-        """
-        max = 0
-        palabra_elegida = str
-        with open('valores_puntajes') as f:
-            puntajes = json.load(f)
-        
-        for palabra in palabras:
-            puntaje_palabra_actual = 0
-            for char in palabra:
-                puntaje_palabra_actual += puntajes[dificultad][char]
-            if puntaje_palabra_actual > max:
-                max = puntaje_palabra_actual
-                palabra_elegida = palabra
-            
-        return(palabra_elegida)
+           
 
     letras.sort()
     palabras_posibles = []
@@ -79,7 +61,7 @@ def elegir_palabra(letras, dificultad):
             if (sirve(letras, palabra_deletrada) ): #si la lista de letras ordenadas es igual a la lista de letras de la IA
                 palabras_posibles.append(palabra)  #agregamos la palabra a nuestra lista de palabras utiles
 
-    palabras_posibles_dos = []
+    palabras_posibles_dos = [] #esto no está al pedo, es para hacer la busqueda de wiktionary mas rapida
     for palabra in palabras_posibles:
         if len(palabra) > 2:
             palabras_posibles_dos.append(palabra)
@@ -98,8 +80,64 @@ def elegir_palabra(letras, dificultad):
         if cumple:
             palabras_utilies.append(palabra)
     
-    return(mayor_puntaje(palabras_utilies, dificultad))
+    return(por_dificulad(palabras_utilies, dificultad))
 
+def por_dificulad(palabras_utilies, dificultad):
+
+    def dificil(palabras):
+        """
+        cargo los puntajes y me fijo cual es la palabra que mayor puntaje da 
+        """
+        max = 0
+        palabra_elegida = str
+        with open('valores_puntajes') as f:
+            puntajes = json.load(f)
+            
+        for palabra in palabras:
+            puntaje_palabra_actual = 0
+            for char in palabra:
+                puntaje_palabra_actual += puntajes['dificil'][char]
+            if puntaje_palabra_actual > max:
+                max = puntaje_palabra_actual
+                palabra_elegida = palabra
+                
+        return(palabra_elegida)
+
+    def medio(palabras):
+        with open('valores_puntajes') as f:
+            puntajes = json.load(f)
+
+        palabra_elegida = ''
+        palabras_posibles = []
+        for palabra in palabras:
+            puntaje_palabra_actual = 0
+            for char in palabra:
+                puntaje_palabra_actual += puntajes['medio'][char]
+            palabras_posibles.append(palabra, puntaje_palabra_actual)
+        
+        palabra_elegida =  palabras_posibles[len(palabras_posibles)//2]
+        return(palabra_elegida)
+
+    def facil(palabras):
+        palabra_elegida = str
+        with open('valores_puntajes') as f:
+            puntajes = json.load(f)
+        min = 999
+        for palabra in palabras:
+            puntaje_palabra_actual = 0
+            for char in palabra:
+                puntaje_palabra_actual += puntajes['facil'][char]
+            if puntaje_palabra_actual < min:
+                min = puntaje_palabra_actual
+                palabra_elegida = palabra
+        return(palabra_elegida)
+
+    if dificultad == 'facil':
+        facil(palabras_utilies)
+    elif dificultad == "dificil":
+        dificil(palabras_utilies)
+    else:
+        medio(palabras_utilies)
 
 def validar_palabra(palabra):
     palabra = parse(palabra).split('/')
@@ -126,8 +164,9 @@ def validar_palabra(palabra):
 
 
 if __name__ == '__main__':
+    dificultad = 'facil'
     ejemplo = ['a', 'g', 't', 'd', 'b', 'o', 'm']
-    #pas= elegir_palabra(ejemplo,'facil')   
+    pas= elegir_palabra(ejemplo, dificultad)   
     #print(pas)
     print(validar_palabra('asad'))
 
