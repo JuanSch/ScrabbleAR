@@ -48,7 +48,63 @@ def elegir_palabra(letras, dificultad):
                     condicion = False
                     break
         return(condicion)
-           
+    def por_dificulad(palabras_utilies, dificultad):
+    
+        def dificil(palabras):
+            """
+            cargo los puntajes y me fijo cual es la palabra que mayor puntaje da 
+            """
+            max = 0
+            palabra_elegida = str
+            with open('valores_puntajes') as f:
+                puntajes = json.load(f)
+                
+            for palabra in palabras:
+                puntaje_palabra_actual = 0
+                for char in palabra:
+                    puntaje_palabra_actual += puntajes['dificil'][char]
+                if puntaje_palabra_actual > max:
+                    max = puntaje_palabra_actual
+                    palabra_elegida = palabra
+                    
+            return(palabra_elegida)
+
+        def medio(palabras):
+            with open('valores_puntajes') as f:
+                puntajes = json.load(f)
+
+            palabra_elegida = ''
+            palabras_posibles = []
+            for palabra in palabras:
+                puntaje_palabra_actual = 0
+                for char in palabra:
+                    puntaje_palabra_actual += puntajes['medio'][char]
+                palabras_posibles.append(palabra, puntaje_palabra_actual)
+            
+            palabra_elegida =  palabras_posibles[len(palabras_posibles)//2]
+            return(palabra_elegida)
+
+        def facil(palabras):
+            palabra_elegida = str
+            with open('valores_puntajes') as f:
+                puntajes = json.load(f)
+            min = 999
+            for palabra in palabras:
+                puntaje_palabra_actual = 0
+                for char in palabra:
+                    puntaje_palabra_actual += puntajes['facil'][char]
+                if puntaje_palabra_actual < min:
+                    min = puntaje_palabra_actual
+                    palabra_elegida = palabra
+            return(palabra_elegida)
+
+        if dificultad == 'facil':
+            return(facil(palabras_utilies))
+        elif dificultad == "dificil":
+            return(dificil(palabras_utilies))
+        else:
+            return(medio(palabras_utilies))
+    
 
     letras.sort()
     palabras_posibles = []
@@ -71,7 +127,7 @@ def elegir_palabra(letras, dificultad):
     for palabra in palabras_posibles_dos:
         cumple = False
         analisis = parse(palabra).split('/')
-        if (analisis[1] == "NN" or analisis[1] == "JJ" or analisis[1] == "VB"):
+        if (analisis[1] in ('AO','JJ','AQ','DI','DT','NC','NN','NCS','NCP','NNS','NP','NNP','W','VAG','VBG','VAI','VAN','MD','VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS','VSG','VSI','VSN','VSP','VSS')):
             article=w.search(palabra)
             if article!=None:
                 cumple= True
@@ -82,66 +138,10 @@ def elegir_palabra(letras, dificultad):
     
     return(por_dificulad(palabras_utilies, dificultad))
 
-def por_dificulad(palabras_utilies, dificultad):
-
-    def dificil(palabras):
-        """
-        cargo los puntajes y me fijo cual es la palabra que mayor puntaje da 
-        """
-        max = 0
-        palabra_elegida = str
-        with open('valores_puntajes') as f:
-            puntajes = json.load(f)
-            
-        for palabra in palabras:
-            puntaje_palabra_actual = 0
-            for char in palabra:
-                puntaje_palabra_actual += puntajes['dificil'][char]
-            if puntaje_palabra_actual > max:
-                max = puntaje_palabra_actual
-                palabra_elegida = palabra
-                
-        return(palabra_elegida)
-
-    def medio(palabras):
-        with open('valores_puntajes') as f:
-            puntajes = json.load(f)
-
-        palabra_elegida = ''
-        palabras_posibles = []
-        for palabra in palabras:
-            puntaje_palabra_actual = 0
-            for char in palabra:
-                puntaje_palabra_actual += puntajes['medio'][char]
-            palabras_posibles.append(palabra, puntaje_palabra_actual)
-        
-        palabra_elegida =  palabras_posibles[len(palabras_posibles)//2]
-        return(palabra_elegida)
-
-    def facil(palabras):
-        palabra_elegida = str
-        with open('valores_puntajes') as f:
-            puntajes = json.load(f)
-        min = 999
-        for palabra in palabras:
-            puntaje_palabra_actual = 0
-            for char in palabra:
-                puntaje_palabra_actual += puntajes['facil'][char]
-            if puntaje_palabra_actual < min:
-                min = puntaje_palabra_actual
-                palabra_elegida = palabra
-        return(palabra_elegida)
-
-    if dificultad == 'facil':
-        facil(palabras_utilies)
-    elif dificultad == "dificil":
-        dificil(palabras_utilies)
-    else:
-        medio(palabras_utilies)
 
 def validar_palabra(palabra):
     palabra = parse(palabra).split('/')
-    if palabra[1] in ['JJ', 'VB']: #VB:verbo  ,  JJ:adjetivo
+    if palabra[1] in ('AO','JJ','AQ','DI','DT','VAG','VBG','VAI','VAN','MD','VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS','VSG','VSI','VSN','VSP','VSS'): #VB:verbo  ,  JJ:adjetivo
         if palabra[0] not in lexicon.keys():
             if palabra[0] not in spelling.keys():
                 w = Wiktionary(language="es")
@@ -154,7 +154,7 @@ def validar_palabra(palabra):
                 return True
         else:
             return True
-    elif palabra[1] in ['NN', 'NNS']: #NN:sustantivo  , NNS:sustantivo plural
+    elif palabra[1] in ('NC','NN','NCS','NCP','NNS','NP','NNP','W'): #sustantivo 
         w = Wiktionary(language="es")
         article = w.search(palabra[0])
         if article != None :
