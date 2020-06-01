@@ -414,7 +414,8 @@ def jugar():
 
         else:
             if pasando == True:
-                posibles = tablero.jugada(palabra, event, *pasar)
+                posibles = tablero.jugada(palabra, event, pasar[0], 
+                pasar[0])
                 if anteriores == []:
                     for casilla in posibles:
                         window.FindElement(casilla).Update(
