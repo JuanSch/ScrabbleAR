@@ -56,7 +56,7 @@ def elegir_palabra(letras, dificultad):
             """
             max = 0
             palabra_elegida = str
-            with open('valores_puntajes') as f:
+            with open('valores_puntajes.json') as f:
                 puntajes = json.load(f)
                 
             for palabra in palabras:
@@ -70,7 +70,7 @@ def elegir_palabra(letras, dificultad):
             return(palabra_elegida)
 
         def medio(palabras):
-            with open('valores_puntajes') as f:
+            with open('valores_puntajes.json') as f:
                 puntajes = json.load(f)
 
             palabra_elegida = ''
@@ -86,7 +86,7 @@ def elegir_palabra(letras, dificultad):
 
         def facil(palabras):
             palabra_elegida = str
-            with open('valores_puntajes') as f:
+            with open('valores_puntajes.json') as f:
                 puntajes = json.load(f)
             min = 999
             for palabra in palabras:
@@ -116,12 +116,15 @@ def elegir_palabra(letras, dificultad):
             palabra_deletrada.sort()
             if (sirve(letras, palabra_deletrada) ): #si la lista de letras ordenadas es igual a la lista de letras de la IA
                 palabras_posibles.append(palabra)  #agregamos la palabra a nuestra lista de palabras utiles
+    
 
     palabras_posibles_dos = [] #esto no está al pedo, es para hacer la busqueda de wiktionary mas rapida
     for palabra in palabras_posibles:
         if len(palabra) > 2:
             palabras_posibles_dos.append(palabra)
     
+    if len(palabras_posibles_dos) == 0:
+        return(None)
     palabras_utilies = []
     w = Wiktionary(language="es")
     for palabra in palabras_posibles_dos:
@@ -135,8 +138,12 @@ def elegir_palabra(letras, dificultad):
                 cumple = False
         if cumple:
             palabras_utilies.append(palabra)
-    
-    return(por_dificulad(palabras_utilies, dificultad))
+    if len(palabras_utilies) == 1:
+        return(palabras_utilies)
+    elif(len(palabras_utilies) > 1):
+        return(por_dificulad(palabras_utilies, dificultad))
+    else:
+        return(None)
 
 
 def validar_palabra(palabra):
@@ -165,8 +172,8 @@ def validar_palabra(palabra):
 
 if __name__ == '__main__':
     dificultad = 'facil'
-    ejemplo = ['a', 'g', 't', 'd', 'b', 'o', 'm']
+    ejemplo = ['p','q,','r','t','y','f','m']
     pas= elegir_palabra(ejemplo, dificultad)   
-    #print(pas)
-    print(validar_palabra('asad'))
+    print(pas)
+    #print(validar_palabra('asad'))
 
