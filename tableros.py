@@ -288,7 +288,7 @@ class Tablero:
             devolver = palabra.modificar(pos, origen, ficha)
             if devolver != None:
                 borrar=None
-                marcar=None
+                marcar=list(self.posibles)
                 if palabra.min == None:
                     borrar=list(self.posibles)
                     self.posibles=[]
@@ -324,8 +324,9 @@ class Tablero:
                         casilla = tuple(casilla)
                         if casilla not in palabra.getposiciones():
                             self.posibles.append(casilla)
-
-                borrar = list(set(anteriores) - set(self.posibles))
+                
+                marcar=list(self.posibles)
+                borrar=list(set(anteriores) - set(self.posibles))
                 return list(self.posibles), borrar, None
 
 #####################################################################
