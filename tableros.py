@@ -48,12 +48,12 @@ class Casilla:
     """Clase correspondiente a una casilla de tablero, puede contener
     o no a una ficha de juego, devolver el valor que contiene
     (en función de la existencia o no de una ficha y el modificador
-     de la casilla. Tiene una imagen asociada independiente de la existencia
-     o no de una ficha"""
+    de la casilla). Tiene una imagen asociada independiente de la existencia
+    o no de una ficha"""
 
     valores = {'2L': lambda x: x*2,
                '3L': lambda x: x*3,
-               '-3': -3,
+               '-3': lambda x: x-3,
                '3P': 3,
                '2P': 2}
 
@@ -71,18 +71,28 @@ class Casilla:
         return self.ocupado
 
     def getimagen(self):
-        if self.ocupado:
+        try:
             return self.ficha.getimagen()
-        else:
+        except:
             return self.img
 
-    def ocupar(self, ficha):
-        self.ocupado = True
+    def marcar (self, ficha):
+        """Una casilla sólo Sólo debería recibir fichas 'en proceso'
+        mientras el jugador o la IA definen la palabra"""
         self.ficha = ficha
 
+    def ocupar(self):
+        """Una casilla no se da por ocupada hasta que no se concreta
+        la jugada"""
+        self.ocupado = True
+        self.ficha.cambiarselect()
+
     def valor(self):
+        """Esta función devuelve el valor que contiene la casilla
+        y el modificador de palabra (si no multiplica por 2 o 3,
+        siempre multiplica por 1"""
         try:
-            valor = self.ficha.getvalor() * Casilla.valores[self.tipo]
+            valor = Casilla.valores[self.tipo](self.ficha.getvalor())
             puntos = (valor, 1)
         except:
             valor = self.ficha.getvalor()
@@ -115,7 +125,7 @@ class Palabra:
         return list(self.fichas.keys())
 
     def agregarletra(self, pos, origen, ficha):
-        """Sólo permite agregar letras en posiciones no ocupadas"""
+        """Sólo permite agregar letras en posiciones nuevas"""
 
         self.fichas[pos] = (ficha, origen)
         longitud=len(self.fichas)
@@ -165,9 +175,10 @@ class Palabra:
             else:
                 claves = list(self.fichas.keys())
                 if pos == self.max:
-                    self.max = self.fichas[claves[-1]]
+                    self.max = claves[-1]
+                    print(self.max)
                 if pos == self.min:
-                    self.max = self.fichas[claves[0]]
+                    self.max = claves[0]
         else:
             self.fichas[pos] = (ficha, origen)
         return devolver
@@ -218,6 +229,7 @@ class Tablero:
                 linea.append(casilla)
             matriz.append(linea)
         self.matriz = matriz
+        self.posibles = []
 
     def getmatriz(self):
         return self.matriz
@@ -245,25 +257,24 @@ class Tablero:
                     validos.append(casilla)
         return validos
 
-    def jugada(self, palabra, pos, origen, ficha, *args):
+    def jugada(self, palabra, pos, origen=None, ficha=None):
         """Método principal de lógica interna del tablero, debe recibir
         un objeto tipo palabra, y manejará las actualizaciones
         correspondientes a los estados de las casillas"""
 
         def limite(pos, eje, dir):
-            ops = {'+': operator.add, '-': operator.sub}
+            mov = {'+': operator.add, '-': operator.sub}
             max = self.getxy()[eje]
             lim = 0
             ok = True
             i = 0
-            while ok and i < 7:
-                inicio=list(pos)
-                nueva_coord = ops[dir](pos[eje], i)
-                inicio[eje] = nueva_coord
-                nueva_pos = tuple(inicio)
-                if nueva_pos[eje] < 0 or nueva_pos[eje] == max:
+            while ok and i < 6:
+                nueva_coord = mov[dir](pos[eje], 1)
+                pos[eje] = nueva_coord
+                if pos[eje] < 0 or pos[eje] == max:
                     ok = False
                 if ok:
+                    nueva_pos = tuple(pos)
                     if self.getcasilla(nueva_pos).ocupado == False:
                         lim = nueva_pos
                         i += 1
@@ -274,36 +285,48 @@ class Tablero:
         if self.getcasilla(pos).ocupado:
             return None
         else:
-            palabra.modificar(pos, origen, ficha)
-
-            aceptados=[]
-            if palabra.eje == None:
-                x = palabra.min[0]
-                y = palabra.min[1]
-                min_x = limite((x, y), 0, '-')
-                max_x = limite((x, y), 0, '+')
-                min_y = limite((x, y), 1, '-')
-                max_y = limite((x, y), 1, '+')
-                for i in range(min_x[0], max_x[0]+1):
-                    if i != x:
-                        casilla = (i, y)
-                        aceptados.append(casilla)
-                for i in range(min_y[1], max_y[1]+1):
-                    if i != y:
-                        casilla = (x, i)
-                        aceptados.append(casilla)
+            devolver = palabra.modificar(pos, origen, ficha)
+            if devolver != None:
+                borrar=None
+                marcar=None
+                if palabra.min == None:
+                    borrar=list(self.posibles)
+                    self.posibles=[]
+                else:
+                    marcar=pos
+                return marcar, borrar, devolver
             else:
-                min=palabra.min
-                max=palabra.max
-                max_eje = limite(min, palabra.eje, '+')
-                min_eje = limite(max, palabra.eje, '-')
-                for i in range(min_eje[palabra.eje],max_eje[palabra.eje]+1):
-                    casilla = list(min_eje)
-                    casilla[palabra.eje] = i
-                    casilla = tuple(casilla)
-                    if casilla not in palabra.getposiciones():
-                        aceptados.append(casilla)
-            return aceptados
+                anteriores = list(self.posibles)
+                self.posibles = []
+                if palabra.eje == None:
+                    x = palabra.min[0]
+                    y = palabra.min[1]
+                    min_x = limite([x, y], 0, '-')
+                    max_x = limite([x, y], 0, '+')
+                    min_y = limite([x, y], 1, '-')
+                    max_y = limite([x, y], 1, '+')
+                    for i in range(min_x[0], max_x[0]+1):
+                        if i != x:
+                            casilla = (i, y)
+                            self.posibles.append(casilla)
+                    for i in range(min_y[1], max_y[1]+1):
+                        if i != y:
+                            casilla = (x, i)
+                            self.posibles.append(casilla)
+                else:
+                    min=palabra.min
+                    max=palabra.max
+                    max_eje = limite(list(min), palabra.eje, '+')
+                    min_eje = limite(list(max), palabra.eje, '-')
+                    for i in range(min_eje[palabra.eje],max_eje[palabra.eje]+1):
+                        casilla = list(min_eje)
+                        casilla[palabra.eje] = i
+                        casilla = tuple(casilla)
+                        if casilla not in palabra.getposiciones():
+                            self.posibles.append(casilla)
+
+                borrar = list(set(anteriores) - set(self.posibles))
+                return list(self.posibles), borrar, None
 
 #####################################################################
 #                         FIN CLASE TABLERO                         #
@@ -375,7 +398,6 @@ def jugar():
     #variables de uso temporal para probar la lógica del programa
 
     palabra=Palabra()
-    anteriores=[]
 
     #bucle
     while True:
@@ -386,14 +408,42 @@ def jugar():
 
         elif 'F' in event:  #sé que se está seleccionando una ficha
             if not pasando:
-                pos = int(event[1])
-                ficha = fichas[pos]
+                #si no estoy en proceso de pasar sé que estoy intentando
+                #seleccionar o deseleccionar una ficha
+                pos=int(event[1])
+                ficha=fichas[pos]
                 if ficha.select == False:
-                    pasar = (event, ficha)
-                    pasando = True
+                    pasar=(event, ficha)
+                    pasando=True
                     ficha.cambiarselect()
                     window.FindElement(event).Update(image_filename=
                                                      ficha.getimagen())
+                else:
+                    pos=None
+                    for k,v in palabra.fichas.items():
+                        if v[1] == event:
+                            pos=k
+                            break
+                    marcar, borrar, devolver=tablero.jugada(palabra, pos)
+                    imagen=tablero.getcasilla(pos).getimagen()
+                    window.FindElement(pos).Update(image_filename=imagen)
+                    pos=int(devolver[1])
+                    ficha=fichas[pos]
+                    ficha.cambiarselect()
+                    window.FindElement(devolver).Update(image_filename=
+                                                        ficha.getimagen())
+                    try:
+                        for casilla in borrar:
+                            window.FindElement(casilla).Update(
+                                button_color=('#DDDDDD', '#DDDDDD'))
+                    except:
+                        pass
+                    try:
+                        window.FindElement(marcar).Update(
+                            button_color=('#0000FF', '#0000FF'))
+                    except:
+                        pass
+
             else:
                 b_previo, f_previa = pasar[0], pasar[1]
                 f_previa.cambiarselect()
@@ -414,34 +464,54 @@ def jugar():
 
         else:
             if pasando == True:
-                posibles = tablero.jugada(palabra, event, pasar[0], 
-                pasar[0])
-                if anteriores == []:
+                posibles, borrar, devolver = tablero.jugada(
+                    palabra, event, pasar[0], pasar[1])
+                if devolver != None:
+                    pos=int(devolver[1])
+                    ficha=fichas[pos]
+                    ficha.cambiarselect()
+                    window.FindElement(devolver).Update(image_filename=
+                                                        ficha.getimagen())
+                else:
                     for casilla in posibles:
                         window.FindElement(casilla).Update(
                             button_color=('#0000FF','#0000FF'))
-                else:
-                    for casilla in anteriores:
+                    for casilla in borrar:
                         window.FindElement(casilla).Update(
                             button_color=('#DDDDDD', '#DDDDDD'))
-                    for casilla in posibles:
-                        window.FindElement(casilla).Update(
-                            button_color=('#0000FF', '#0000FF'))
-                anteriores = posibles
 
-                #
-                # casilla = tablero.getcasilla(event)
-                # if casilla.ocupado:
-                #     sg.Popup('No puede cambiar fichas de lugar')
-                # else:
-                #     tablero.setcasilla(event, en_proceso[-1])
-                #     imagen = tablero.getcasilla(event).getimagen()
-                #     window.FindElement(event).Update(image_filename=imagen)
-                #     pasar = False
+                for k, v in palabra.fichas.items():
+                    posicion = k
+                    imagen = v[0].getimagen()
+                    window.FindElement(posicion).Update(
+                        image_filename=imagen)
+                    pasando=False
+
+            elif event in palabra.getposiciones():
+                marcar, borrar, devolver=tablero.jugada(palabra, event)
+                imagen=tablero.getcasilla(event).getimagen()
+                window.FindElement(event).Update(image_filename=imagen)
+                pos=int(devolver[1])
+                ficha=fichas[pos]
+                ficha.cambiarselect()
+                window.FindElement(devolver).Update(image_filename=
+                                                    ficha.getimagen())
+                try:
+                    for casilla in borrar:
+                        window.FindElement(casilla).Update(
+                            button_color=('#DDDDDD', '#DDDDDD'))
+                except:
+                    pass
+                try:
+                    window.FindElement(marcar).Update(
+                        button_color=('#0000FF', '#0000FF'))
+                except:
+                    pass
 
 
     #cierre
     window.Close()
+
 
 if __name__ == '__main__':
     jugar()
