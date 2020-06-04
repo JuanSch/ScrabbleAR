@@ -44,12 +44,15 @@ class Ficha:
         return self.valor
 
 
+#####################################################################
+#                       INICIO CLASE CASILLA                        #
+#####################################################################
+
 class Casilla:
     """Clase correspondiente a una casilla de tablero, puede contener
-    o no a una ficha de juego, devolver el valor que contiene
+    o no a una ficha de juego, devolver el valor y la imagen que contiene
     (en función de la existencia o no de una ficha y el modificador
-    de la casilla). Tiene una imagen asociada independiente de la existencia
-    o no de una ficha"""
+    de la casilla)."""
 
     valores = {'2L': lambda x: x*2,
                '3L': lambda x: x*3,
@@ -198,7 +201,6 @@ class Palabra:
         palabra.lower()
         return palabra
 
-
 #####################################################################
 #                          FIN CLASE PALABRA                        #
 #####################################################################
@@ -207,7 +209,6 @@ class Palabra:
 #####################################################################
 #                         INICIO CLASE TABLERO                      #
 #####################################################################
-
 
 class Tablero:
     """Es una matriz de casillas, y la interfaz entre la GUI y la lógica
@@ -366,8 +367,59 @@ def armar_fichas(letras):
         fichas.append(ficha)
     return fichas
 
+def deseleccionar_ficha(window, tablero, fichas, marcar, borrar, devolver, pos):
+    """se encarga de las actualizaciones a la GUI en el caso
+    de suceder una deselección de ficha"""
+
+    imagen=tablero.getcasilla(pos).getimagen()
+    window.FindElement(pos).Update(image_filename=imagen)
+    pos=int(devolver[1])
+    ficha=fichas[pos]
+    ficha.cambiarselect()
+    window.FindElement(devolver).Update(image_filename=
+                                        ficha.getimagen())
+    try:
+        for casilla in borrar:
+            window.FindElement(casilla).Update(
+                button_color=('#DDDDDD', '#DDDDDD'))
+    except:
+        pass
+    try:
+        window.FindElement(marcar).Update(
+            button_color=('#0000FF', '#0000FF'))
+    except:
+        pass
+
 
 def jugar():
+
+    def deseleccionar_ficha(marcar, borrar, devolver, pos):
+        """se encarga de las actualizaciones a la GUI en el caso
+        de suceder una deselección de ficha"""
+
+        nonlocal window
+        nonlocal tablero
+        nonlocal fichas
+        imagen=tablero.getcasilla(pos).getimagen()
+        window.FindElement(pos).Update(image_filename=imagen)
+        pos=int(devolver[1])
+        ficha=fichas[pos]
+        ficha.cambiarselect()
+        window.FindElement(devolver).Update(image_filename=
+                                            ficha.getimagen())
+        try:
+            for casilla in borrar:
+                window.FindElement(casilla).Update(
+                    button_color=('#DDDDDD', '#DDDDDD'))
+        except:
+            pass
+        try:
+            window.FindElement(marcar).Update(
+                button_color=('#0000FF', '#0000FF'))
+        except:
+            pass
+
+
     letras = [char for char in string.ascii_uppercase]
     #Temporalmente se generó una lista de letras a-z(salvo ñ) para operar
     #sobre ellas
@@ -414,36 +466,27 @@ def jugar():
                 pos=int(event[1])
                 ficha=fichas[pos]
                 if ficha.select == False:
+                    #si no hay fichas selecionadas
+                    #el evento es una selección
                     pasar=(event, ficha)
                     pasando=True
                     ficha.cambiarselect()
                     window.FindElement(event).Update(image_filename=
                                                      ficha.getimagen())
                 else:
+                    #si la ficha ya está seleccionada,
+                    #se toma como una deselección
                     pos=None
                     for k,v in palabra.fichas.items():
                         if v[1] == event:
                             pos=k
                             break
+                    #se simula un click en el tablero en donde está
+                    #colocada la ficha
                     marcar, borrar, devolver=tablero.jugada(palabra, pos)
-                    imagen=tablero.getcasilla(pos).getimagen()
-                    window.FindElement(pos).Update(image_filename=imagen)
-                    pos=int(devolver[1])
-                    ficha=fichas[pos]
-                    ficha.cambiarselect()
-                    window.FindElement(devolver).Update(image_filename=
-                                                        ficha.getimagen())
-                    try:
-                        for casilla in borrar:
-                            window.FindElement(casilla).Update(
-                                button_color=('#DDDDDD', '#DDDDDD'))
-                    except:
-                        pass
-                    try:
-                        window.FindElement(marcar).Update(
-                            button_color=('#0000FF', '#0000FF'))
-                    except:
-                        pass
+                    #se actualiza la GUI
+                    deseleccionar_ficha(marcar, borrar, devolver, pos)
+                    
 
             else:
                 b_previo, f_previa = pasar[0], pasar[1]
@@ -463,7 +506,7 @@ def jugar():
                     window.FindElement(event).Update(image_filename=
                                                      ficha.getimagen())
 
-        else:
+        elif type(event) == tuple:
             if pasando == True:
                 posibles, borrar, devolver = tablero.jugada(
                     palabra, event, pasar[0], pasar[1])
@@ -490,24 +533,7 @@ def jugar():
 
             elif event in palabra.getposiciones():
                 marcar, borrar, devolver=tablero.jugada(palabra, event)
-                imagen=tablero.getcasilla(event).getimagen()
-                window.FindElement(event).Update(image_filename=imagen)
-                pos=int(devolver[1])
-                ficha=fichas[pos]
-                ficha.cambiarselect()
-                window.FindElement(devolver).Update(image_filename=
-                                                    ficha.getimagen())
-                try:
-                    for casilla in borrar:
-                        window.FindElement(casilla).Update(
-                            button_color=('#DDDDDD', '#DDDDDD'))
-                except:
-                    pass
-                try:
-                    window.FindElement(marcar).Update(
-                        button_color=('#0000FF', '#0000FF'))
-                except:
-                    pass
+                deseleccionar_ficha(marcar, borrar, devolver, event)
 
 
     #cierre
