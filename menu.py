@@ -1,8 +1,14 @@
 import PySimpleGUI as sg
 import json
-import tableros
+from tableros import jugar
 
-def confign_nuevo_juego(configuracion):
+def config_nuevo_juego(configuracion,timeout):
+    
+    def temporizador(time,timeout):
+        from threading import Timer as timer
+        t = timer(time*60, timeout)
+        t.start()
+    
     s = []
     for i in range(1,61):
         s.append(str(i))
@@ -30,7 +36,8 @@ def confign_nuevo_juego(configuracion):
         else:
             break
 
-    tableros.jugar()
+    temporizador(float(configuracion['tiempo']), timeout)
+    jugar()
 
     window.close()
 
@@ -58,7 +65,7 @@ def pantalla_inicial():
         elif event in "-nueva-":
             with open('configuraciones.json','r') as f:
                 configs =json.load(f)
-                configs = confign_nuevo_juego(configs)
+                configs = config_nuevo_juego(configs,pantalla_inicial)
             with open('configuraciones.json','w') as f:
                 json.dump(configs, f, indent= 4)
             break
@@ -72,9 +79,11 @@ def pantalla_inicial():
     window.close()
 
 
+    
 
 if __name__ == "__main__":
     configuracion= {'dificultad': 'Facil', 'tiempo': 30}
     #config(configuracion)
     pantalla_inicial()
+    #temporizador(2)
     
