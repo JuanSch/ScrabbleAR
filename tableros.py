@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import string
+from logica import Ficha, Casilla, Palabra, Tablero, Atril
 import random
 
 
@@ -94,7 +94,7 @@ def jugar():
 
     filas = columnas = 15
 
-    dim_boton = (50,50)
+    dim_boton = (40,40)
 
     tablero = Tablero(columnas, filas)
 
