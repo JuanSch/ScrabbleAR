@@ -139,7 +139,7 @@ class Palabra:
         else:
             posiciones=self.getposiciones()
             # con sólo 2 posiciones ya se puede definir el eje, y no es
-            # necesario reevaluarlo por cad nuevo elemento
+            # necesario reevaluarlo por cada nuevo elemento
             if longitud==2:
                 x=pos[0]
                 # Si el valor de x en el elemento preexistente es igual
