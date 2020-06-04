@@ -331,8 +331,50 @@ class Tablero:
 
                 marcar=list(self.posibles)
                 borrar=list(set(anteriores)-set(self.posibles))
-                return list(self.posibles), borrar, None
+                return marcar, borrar, None
 
 #####################################################################
 #                         FIN CLASE TABLERO                         #
 #####################################################################
+
+
+#####################################################################
+#                         INICIO CLASE ATRIL                        #
+#####################################################################
+
+class Atril:
+    def __init__(self):
+        fichas={}
+        vacias=[]
+        for i in range(7):
+            nombre=f'F{i}'
+            fichas[nombre]=None
+            vacias.append(nombre)
+        self.vacias=vacias
+        self.fichas=fichas
+
+    def pedirfichas(self):
+        return len(self.vacias)
+
+    def recbirfichas(self, lista):
+        """Lista debe ser una lista de tuplas (letra,valor) -el formato
+        de salida de la clase 'bolsa'-, las convierte en fichas
+        y las almacena en los casilleros libres. La función asume
+        que siempre se recibirá la cantidad requerida de fichas para
+        llenar el atril. Esto implica que la condición de fin 'no hay
+        fichas suficientes' debe resolverse antes de esta instancia"""
+
+        for i in len(lista):
+            letra=lista[i][0]
+            valor=lista[i][1]
+            ficha = Ficha(letra, valor)
+            self.fichas[self.vacias[i]]=ficha
+        self.vacias=[]
+
+    def entregarfichas(self):
+        entregar=[]
+        for k,v in self.fichas.items():
+            if v.select==True:
+                entregar.append(v)
+                self.vacias.append(k)
+        return entregar
