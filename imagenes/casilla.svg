@@ -5,41 +5,81 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="50"
-   height="50"
-   viewBox="0 0 13.229167 13.229167"
-   version="1.1"
-   id="svg8"
-   inkscape:export-filename="E:\Users\Martin\Documents\GitHub\ScrabbleAR\imagenes\casilla.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96"
+   sodipodi:docname="casilla.svg"
    inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   sodipodi:docname="casilla.svg">
+   inkscape:export-ydpi="76.800003"
+   inkscape:export-xdpi="76.800003"
+   inkscape:export-filename="E:\Users\Martin\Documents\GitHub\ScrabbleAR\imagenes\casillaP.png"
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 13.229167 13.229167"
+   height="50"
+   width="50">
   <defs
-     id="defs2" />
+     id="defs2">
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient883"
+       id="linearGradient885"
+       x1="1.7717634"
+       y1="13.512649"
+       x2="13.465402"
+       y2="2.7167039"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient883">
+      <stop
+         style="stop-color:#fff4ca;stop-opacity:1"
+         offset="0"
+         id="stop879" />
+      <stop
+         id="stop887"
+         offset="0.44340941"
+         style="stop-color:#fff9e0;stop-opacity:1" />
+      <stop
+         style="stop-color:#fff4ca;stop-opacity:1"
+         offset="1"
+         id="stop881" />
+    </linearGradient>
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter1129"
+       x="-0.016183143"
+       width="1.0323663"
+       y="-0.016183143"
+       height="1.0323663">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.10067303"
+         id="feGaussianBlur1131" />
+    </filter>
+  </defs>
   <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="7.9195959"
-     inkscape:cx="23.53127"
-     inkscape:cy="44.996232"
-     inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
-     inkscape:document-rotation="0"
-     showgrid="false"
-     units="px"
-     inkscape:snap-page="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1017"
-     inkscape:window-x="-8"
+     inkscape:window-maximized="1"
      inkscape:window-y="-8"
-     inkscape:window-maximized="1" />
+     inkscape:window-x="-8"
+     inkscape:window-height="1017"
+     inkscape:window-width="1920"
+     inkscape:snap-page="true"
+     units="px"
+     showgrid="false"
+     inkscape:document-rotation="0"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="mm"
+     inkscape:cy="16.136152"
+     inkscape:cx="21.566797"
+     inkscape:zoom="7.9195959"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -48,20 +88,30 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     inkscape:label="Layer 1"
+     id="layer1"
      inkscape:groupmode="layer"
-     id="layer1">
+     inkscape:label="Layer 1">
     <rect
-       style="opacity:1;vector-effect:none;fill:#ececec;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.352777;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect835"
-       width="13.229167"
-       height="13.229167"
+       y="0"
        x="0"
-       y="0" />
+       height="13.229167"
+       width="13.229167"
+       id="rect835"
+       style="opacity:1;vector-effect:none;fill:#ececec;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.352777;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <path
+       transform="scale(0.26458333)"
+       d="M 7.8867188 0 C 3.5173734 0 0 3.5173736 0 7.8867188 L 0 42.113281 C 5.9211895e-16 46.482627 3.5173734 50 7.8867188 50 L 42.113281 50 C 46.482627 50 50 46.482627 50 42.113281 L 50 7.8867188 C 50 3.5173736 46.482627 0 42.113281 0 L 7.8867188 0 z M 8.2734375 1.4882812 L 41.726562 1.4882812 C 45.486062 1.4882812 48.511719 4.5139377 48.511719 8.2734375 L 48.511719 41.726562 C 48.511719 45.486062 45.486062 48.511719 41.726562 48.511719 L 8.2734375 48.511719 C 4.5139377 48.511719 1.4882812 45.486062 1.4882812 41.726562 L 1.4882812 8.2734375 C 1.4882812 4.5139377 4.5139377 1.4882813 8.2734375 1.4882812 z "
+       style="opacity:1;vector-effect:none;fill:#000080;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect835-2" />
   </g>
+  <g
+     style="display:inline"
+     inkscape:label="Efectos"
+     id="layer3"
+     inkscape:groupmode="layer" />
 </svg>

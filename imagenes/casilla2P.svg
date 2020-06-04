@@ -7,11 +7,11 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   sodipodi:docname="casilla3P.svg"
+   sodipodi:docname="casilla2P.svg"
    inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
    inkscape:export-ydpi="76.800003"
    inkscape:export-xdpi="76.800003"
-   inkscape:export-filename="E:\Users\Martin\Documents\GitHub\ScrabbleAR\imagenes\casilla3PP.png"
+   inkscape:export-filename="E:\Users\Martin\Documents\GitHub\ScrabbleAR\imagenes\casilla2PP.png"
    id="svg8"
    version="1.1"
    viewBox="0 0 13.229167 13.229167"
@@ -29,7 +29,7 @@
      units="px"
      showgrid="false"
      inkscape:document-rotation="0"
-     inkscape:current-layer="layer4"
+     inkscape:current-layer="layer1"
      inkscape:document-units="mm"
      inkscape:cy="37.853375"
      inkscape:cx="20.316984"
@@ -48,7 +48,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -62,7 +62,7 @@
        height="13.229166"
        width="13.229167"
        id="rect835"
-       style="opacity:1;vector-effect:none;fill:#ccff00;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.352777;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       style="opacity:1;vector-effect:none;fill:#ddf642;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.352777;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <text
        id="text839"
        y="10.105042"
@@ -73,9 +73,10 @@
          y="10.105042"
          x="6.530951"
          id="tspan837"
-         sodipodi:role="line">3P</tspan></text>
+         sodipodi:role="line">2P</tspan></text>
   </g>
   <g
+     style="display:inline"
      inkscape:label="Efectos"
      id="layer4"
      inkscape:groupmode="layer">
