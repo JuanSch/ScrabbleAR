@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+import logica as lg
 import string
 import random
 
@@ -27,11 +28,11 @@ def armar_fichas(letras):
     por el momento, debería estar vinculada a la 'bolsa de fichas'
     y directamente recibir una lista de fichas"""
 
-    fichas = []
+    fichas=[]
     for y in range(7):
-        letra = letras[random.randrange(len(letras))]
-        valor = 1
-        ficha = Ficha(letra, valor)
+        letra=letras[random.randrange(len(letras))]
+        valor=1
+        ficha=lg.Ficha(letra, valor)
         fichas.append(ficha)
     return fichas
 
@@ -68,10 +69,10 @@ def jugar():
         nonlocal window
         nonlocal tablero
         nonlocal fichas
-        imagen=tablero.getcasilla(pos).getimagen()
+        imagen = tablero.getcasilla(pos).getimagen()
         window.FindElement(pos).Update(image_filename=imagen)
-        pos=int(devolver[1])
-        ficha=fichas[pos]
+        pos_ficha = int(devolver[1])
+        ficha = fichas[pos_ficha]
         ficha.cambiarselect()
         window.FindElement(devolver).Update(image_filename=
                                             ficha.getimagen())
@@ -82,8 +83,9 @@ def jugar():
         except:
             pass
         try:
-            window.FindElement(marcar).Update(
-                button_color=('#0000FF', '#0000FF'))
+            for casilla in marcar:
+                window.FindElement(casilla).Update(
+                    button_color=('#0000FF', '#0000FF'))
         except:
             pass
 
@@ -96,7 +98,7 @@ def jugar():
 
     dim_boton = (50,50)
 
-    tablero = Tablero(columnas, filas)
+    tablero = lg.Tablero(columnas, filas)
 
     fichas = armar_fichas(letras)
 
@@ -112,13 +114,13 @@ def jugar():
             for y in range(len(fichas))])
 
     #inicializacion
-    window = sg.Window('Ventana de juego').Layout(layout)
+    window=sg.Window('Ventana de juego').Layout(layout)
 
     pasar=()
-    pasando = False
+    pasando=False
     #variables de uso temporal para probar la lógica del programa
 
-    palabra=Palabra()
+    palabra=lg.Palabra()
 
     #bucle
     while True:

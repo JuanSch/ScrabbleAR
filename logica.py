@@ -170,7 +170,8 @@ class Palabra:
         devolver=self.fichas[pos][1]
         if ficha==None:  # en este caso se elimina el elemento
             del self.fichas[pos]
-            # debe evaluarse si la palabra quedó vacía
+            # debe evaluarse si la palabra quedó vacía, si es así vuelve
+            # los valores posicionales a None
             if len(self.fichas)==0:
                 self.min=None
                 self.max=None
@@ -181,9 +182,12 @@ class Palabra:
                 claves=list(self.fichas.keys())
                 if pos==self.max:
                     self.max=claves[-1]
-                    print(self.max)
-                if pos==self.min:
-                    self.max=claves[0]
+                elif pos==self.min:
+                    self.min=claves[0]
+                # si la palabra pasó a tener un sólo elemento,
+                # el valor de eje vuelve a None
+                if len(self.fichas) == 1:
+                    self.eje=None
         else:
             self.fichas[pos]=(ficha, origen)
         return devolver
@@ -266,72 +270,48 @@ class Tablero:
         un objeto tipo palabra, y manejará las actualizaciones
         correspondientes a los estados de las casillas"""
 
-        def limite(pos, eje, dir):
-            mov={'+': operator.add, '-': operator.sub}
-            max=self.getxy()[eje]
-            lim=0
-            ok=True
-            i=0
-            while ok and i<6:
-                nueva_coord=mov[dir](pos[eje], 1)
-                pos[eje]=nueva_coord
-                if pos[eje]<0 or pos[eje]==max:
-                    ok=False
-                if ok:
-                    nueva_pos=tuple(pos)
-                    if self.getcasilla(nueva_pos).ocupado==False:
-                        lim=nueva_pos
-                        i+=1
-                    else:
-                        ok=False
-            return lim
+        def limite(pos, posibles, eje, borde, dir, ciclo=0):
+            if ciclo == 6:
+                return posibles
+            else:
+                nueva=list(pos)
+                coord=dir(pos[eje], 1)
+                nueva[eje]=coord
+                if nueva[eje]==borde or self.getcasilla(nueva).ocupado==True:
+                        return posibles
+                else:
+                    posibles.append(tuple(nueva))
+                    return limite(nueva, posibles, eje,
+                                      borde, dir, ciclo+1)
+
+        def habilitados(posibles, eje, izquierda, derecha):
+            direcciones={'+': operator.add, '-': operator.sub}
+            bordes = self.getxy()
+            limite(derecha, posibles, eje, -1, direcciones['-'])
+            limite(izquierda, posibles, eje, bordes[eje], direcciones['+'])
 
         if self.getcasilla(pos).ocupado:
             return None
         else:
-            devolver=palabra.modificar(pos, origen, ficha)
-            if devolver!=None:
-                borrar=None
-                marcar=list(self.posibles)
-                if palabra.min==None:
-                    borrar=list(self.posibles)
-                    self.posibles=[]
-                else:
-                    marcar=pos
-                return marcar, borrar, devolver
-            else:
-                anteriores=list(self.posibles)
+            devolver = palabra.modificar(pos, origen, ficha)
+            anteriores=list(self.posibles)
+            if devolver!=None and palabra.min==None:
+                borrar=anteriores
                 self.posibles=[]
-                if palabra.eje==None:
-                    x=palabra.min[0]
-                    y=palabra.min[1]
-                    min_x=limite([x, y], 0, '-')
-                    max_x=limite([x, y], 0, '+')
-                    min_y=limite([x, y], 1, '-')
-                    max_y=limite([x, y], 1, '+')
-                    for i in range(min_x[0], max_x[0]+1):
-                        if i!=x:
-                            casilla=(i, y)
-                            self.posibles.append(casilla)
-                    for i in range(min_y[1], max_y[1]+1):
-                        if i!=y:
-                            casilla=(x, i)
-                            self.posibles.append(casilla)
+            else:
+                posibles=[]
+                eje=palabra.eje
+                min=palabra.min
+                if eje==None:
+                    habilitados(posibles, 0, min, min)
+                    habilitados(posibles, 1, min, min)
                 else:
-                    min=palabra.min
                     max=palabra.max
-                    max_eje=limite(list(min), palabra.eje, '+')
-                    min_eje=limite(list(max), palabra.eje, '-')
-                    for i in range(min_eje[palabra.eje], max_eje[palabra.eje]+1):
-                        casilla=list(min_eje)
-                        casilla[palabra.eje]=i
-                        casilla=tuple(casilla)
-                        if casilla not in palabra.getposiciones():
-                            self.posibles.append(casilla)
-
-                marcar=list(self.posibles)
+                    habilitados(posibles, eje, min, max)
+                self.posibles=posibles
                 borrar=list(set(anteriores)-set(self.posibles))
-                return marcar, borrar, None
+            marcar=list(self.posibles)
+            return marcar, borrar, devolver
 
 #####################################################################
 #                         FIN CLASE TABLERO                         #
@@ -356,7 +336,7 @@ class Atril:
     def pedirfichas(self):
         return len(self.vacias)
 
-    def recbirfichas(self, lista):
+    def recibirfichas(self, lista):
         """Lista debe ser una lista de tuplas (letra,valor) -el formato
         de salida de la clase 'bolsa'-, las convierte en fichas
         y las almacena en los casilleros libres. La función asume
@@ -364,7 +344,7 @@ class Atril:
         llenar el atril. Esto implica que la condición de fin 'no hay
         fichas suficientes' debe resolverse antes de esta instancia"""
 
-        for i in len(lista):
+        for i in range(len(lista)):
             letra=lista[i][0]
             valor=lista[i][1]
             ficha = Ficha(letra, valor)
