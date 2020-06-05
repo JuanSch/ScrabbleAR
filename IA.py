@@ -62,7 +62,7 @@ def elegir_palabra(letras, dificultad):
             for palabra in palabras:
                 puntaje_palabra_actual = 0
                 for char in palabra:
-                    puntaje_palabra_actual += puntajes['dificil'][char]
+                    puntaje_palabra_actual += puntajes['puntos_letra'][char]
                 if puntaje_palabra_actual > max:
                     max = puntaje_palabra_actual
                     palabra_elegida = palabra
@@ -78,7 +78,7 @@ def elegir_palabra(letras, dificultad):
             for palabra in palabras:
                 puntaje_palabra_actual = 0
                 for char in palabra:
-                    puntaje_palabra_actual += puntajes['medio'][char]
+                    puntaje_palabra_actual += puntajes['puntos_letra'][char]
                 palabras_posibles.append(palabra, puntaje_palabra_actual)
             
             palabra_elegida =  palabras_posibles[len(palabras_posibles)//2]
@@ -92,7 +92,7 @@ def elegir_palabra(letras, dificultad):
             for palabra in palabras:
                 puntaje_palabra_actual = 0
                 for char in palabra:
-                    puntaje_palabra_actual += puntajes['facil'][char]
+                    puntaje_palabra_actual += puntajes['puntos_letra'][char]
                 if puntaje_palabra_actual < min:
                     min = puntaje_palabra_actual
                     palabra_elegida = palabra
