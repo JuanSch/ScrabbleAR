@@ -74,11 +74,18 @@ class Casilla:
     def getestado(self):
         return self.ocupado
 
-    def getimagen(self):
+    def getimagen(self, resalte=False):
+
+        def imagenresaltada():
+            return f'imagenes{ruta()}casilla{self.tipo}P.png'
+
         try:
             return self.ficha.getimagen()
         except:
-            return self.img
+            if resalte:
+                return imagenresaltada()
+            else:
+                return self.img
 
     def marcar(self, ficha):
         """Una casilla sólo Sólo debería recibir fichas 'en proceso'
@@ -334,18 +341,34 @@ class Atril:
             vacias.append(nombre)
         self.vacias=vacias
         self.fichas=fichas
-        self.pasar=None
-        self.estado=Atril.estados[0]
+        self.cambiar=None
+        self.estado=self.setestado(0)
+
+    def setestado(self, valor):
+        self.estado = Atril.estados[valor]
 
     def click(self, evento):
-        if self.estado == 'CAMBIAR':
-            self.fichas[evento][0].cambiarselect()
-        if self.estado == 'ELEGIR':
-            ficha = self.fichas[evento][0]
-            if ficha.select == None:
+        ficha = self.fichas[evento]
+        if self.estado=='CAMBIAR':
+            ficha.cambiarselect()
+        if self.estado=='ELEGIR':
+            ficha = self.fichas[evento]
+            ficha.cambiarselect()
+            if ficha.select==False:
+                self.estado = self.setestado(2)
+            else:
+                pass
+            self.cambiar = (ficha, evento)
+        if self.estado=='PASAR':
+            if evento==self.cambiar[1]:
                 ficha.cambiarselect()
-                self.estado = 2
-                self.pasar = (ficha, evento)
+                self.cambiar = None
+                self.estado = self.setestado(1)
+            else:
+                pass
+
+    def getcambiar(self):
+        return self.cambiar
 
     def pedirfichas(self):
         return len(self.vacias)
@@ -362,7 +385,7 @@ class Atril:
             letra=lista[i][0]
             valor=lista[i][1]
             ficha = Ficha(letra, valor)
-            self.fichas[self.vacias[i]]=tuple(ficha,None)
+            self.fichas[self.vacias[i]]=tuple(ficha)
         self.vacias=[]
 
     def entregarfichas(self):

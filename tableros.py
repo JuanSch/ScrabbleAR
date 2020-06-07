@@ -78,14 +78,16 @@ def jugar():
                                             ficha.getimagen())
         try:
             for casilla in borrar:
+                imagen = tablero.getcasilla(casilla).getimagen()
                 window.FindElement(casilla).Update(
-                    button_color=('#DDDDDD', '#DDDDDD'))
+                    image_filename=imagen)
         except:
             pass
         try:
             for casilla in marcar:
+                imagen=tablero.getcasilla(casilla).getimagen(True)
                 window.FindElement(casilla).Update(
-                    button_color=('#0000FF', '#0000FF'))
+                    image_filename=imagen)
         except:
             pass
 
@@ -156,7 +158,6 @@ def jugar():
                     marcar, borrar, devolver=tablero.jugada(palabra, pos)
                     #se actualiza la GUI
                     deseleccionar_ficha(marcar, borrar, devolver, pos)
-                    
 
             else:
                 b_previo, f_previa = pasar[0], pasar[1]
@@ -187,12 +188,14 @@ def jugar():
                     window.FindElement(devolver).Update(image_filename=
                                                         ficha.getimagen())
                 else:
-                    for casilla in posibles:
-                        window.FindElement(casilla).Update(
-                            button_color=('#0000FF','#0000FF'))
-                    for casilla in borrar:
-                        window.FindElement(casilla).Update(
-                            button_color=('#DDDDDD', '#DDDDDD'))
+                    for pos in posibles:
+                        imagen = tablero.getcasilla(pos).getimagen(True)
+                        window.FindElement(pos).Update(
+                            image_filename=imagen)
+                    for pos in borrar:
+                        imagen = tablero.getcasilla(pos).getimagen()
+                        window.FindElement(pos).Update(
+                            image_filename=imagen)
 
                 for k, v in palabra.fichas.items():
                     posicion = k
