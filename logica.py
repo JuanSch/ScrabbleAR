@@ -323,6 +323,8 @@ class Tablero:
 #####################################################################
 
 class Atril:
+    estados={0:'APAGADO', 1:'ELEGIR', 2:'PASAR', 3:'CAMBIAR'}
+
     def __init__(self):
         fichas={}
         vacias=[]
@@ -332,6 +334,18 @@ class Atril:
             vacias.append(nombre)
         self.vacias=vacias
         self.fichas=fichas
+        self.pasar=None
+        self.estado=Atril.estados[0]
+
+    def click(self, evento):
+        if self.estado == 'CAMBIAR':
+            self.fichas[evento][0].cambiarselect()
+        if self.estado == 'ELEGIR':
+            ficha = self.fichas[evento][0]
+            if ficha.select == None:
+                ficha.cambiarselect()
+                self.estado = 2
+                self.pasar = (ficha, evento)
 
     def pedirfichas(self):
         return len(self.vacias)
@@ -348,13 +362,17 @@ class Atril:
             letra=lista[i][0]
             valor=lista[i][1]
             ficha = Ficha(letra, valor)
-            self.fichas[self.vacias[i]]=ficha
+            self.fichas[self.vacias[i]]=tuple(ficha,None)
         self.vacias=[]
 
     def entregarfichas(self):
+        """Devuelve una lista con las fichas que el usuario desea cambiar"""
+
         entregar=[]
         for k,v in self.fichas.items():
             if v.select==True:
                 entregar.append(v)
                 self.vacias.append(k)
         return entregar
+
+
