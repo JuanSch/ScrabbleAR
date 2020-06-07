@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 import json
-from tableros import jugar
+from tableros import jugar, Ficha
 
 def config_nuevo_juego(configuracion,timeout):
     
@@ -65,7 +65,7 @@ def pantalla_inicial():
         elif event in "-nueva-":
             with open('configuraciones.json','r') as f:
                 configs =json.load(f)
-                configs = config_nuevo_juego(configs,pantalla_inicial)
+                configs = config_nuevo_juego(configs)
             with open('configuraciones.json','w') as f:
                 json.dump(configs, f, indent= 4)
             break
