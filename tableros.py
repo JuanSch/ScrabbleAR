@@ -1,10 +1,6 @@
 import PySimpleGUI as sg
-<<<<<<< HEAD
 import logica as lg
 import string
-=======
-from logica import Ficha, Casilla, Palabra, Tablero, Atril
->>>>>>> 665eaab547588952458aa1301a33045892a86a40
 import random
 
 
