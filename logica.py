@@ -346,24 +346,33 @@ class Atril:
 
     def setestado(self, valor):
         self.estado = Atril.estados[valor]
+        if valor == 3:
+            self.cambiar=[]
 
     def click(self, evento):
         ficha = self.fichas[evento]
         if self.estado=='CAMBIAR':
-            ficha.cambiarselect()
-        if self.estado=='ELEGIR':
-            ficha = self.fichas[evento]
-            ficha.cambiarselect()
             if ficha.select==False:
-                self.estado = self.setestado(2)
+                self.cambiar.append(ficha)
+            else:
+                self.cambiar.pop(ficha)
+            ficha.cambiarselect()
+        elif self.estado=='ELEGIR':
+            if ficha.select==False:
+                self.setestado(2)
             else:
                 pass
-            self.cambiar = (ficha, evento)
-        if self.estado=='PASAR':
+            ficha.cambiarselect()
+            self.cambiar = (evento, ficha)
+        elif self.estado=='PASAR':
             if evento==self.cambiar[1]:
-                ficha.cambiarselect()
                 self.cambiar = None
-                self.estado = self.setestado(1)
+                ficha.cambiarselect()
+                self.setestado(1)
+            elif ficha.select==False:
+                self.cambiar[0].cambiarselect()
+                self.cambiar=(evento, ficha)
+                ficha.cambiarselect()
             else:
                 pass
 
@@ -385,7 +394,7 @@ class Atril:
             letra=lista[i][0]
             valor=lista[i][1]
             ficha = Ficha(letra, valor)
-            self.fichas[self.vacias[i]]=tuple(ficha)
+            self.fichas[self.vacias[i]]=ficha
         self.vacias=[]
 
     def entregarfichas(self):
