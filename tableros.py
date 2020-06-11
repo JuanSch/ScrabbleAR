@@ -94,11 +94,28 @@ def jugar():
     palabra=lg.Palabra()
 
     #interfaz
-    layout = armar_botones(tablero, dim_boton)
+    columna1 = armar_botones(tablero, dim_boton)
 
-    layout.append([sg.T('')])
+    columna1.append([sg.T('')])
 
-    layout.append(armar_atril(atriljugador, dim_boton))
+    linea_inferior = armar_atril(atriljugador, dim_boton)
+
+    botones_jugador = [sg.T('      '),
+                       sg.Button('JUGAR', key = '-JUGAR-', size = (12, 2)),
+                       sg.T(''),
+                       sg.Button('CAMBIAR', key = '-CAMBIAR-', size = (12, 2))]
+
+    for item in botones_jugador:
+        linea_inferior.append(item)
+
+    columna1.append(linea_inferior)
+
+    columna2 = [[sg.Button('COMENZAR', key = '-COMENZAR-', size = (12, 2))],
+                [sg.T('')],
+                [sg.T('TIEMPO')],
+                [sg.T('20:00', font = ('Arial', '18'))]]
+
+    layout = [[sg.Column(columna1), sg.Column(columna2, element_justification='center')]]
 
     #inicializacion
     window=sg.Window('Ventana de juego').Layout(layout)
