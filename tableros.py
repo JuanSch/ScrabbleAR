@@ -127,40 +127,42 @@ def jugar():
         if event is None:
             break
 
-        elif 'F' in event:  #sé que se está seleccionando una ficha
+        elif 'F' in event:  #el click sucede en el atril
             atriljugador.click(event)
             actualizar_atril(window, atriljugador)
-            print(atriljugador.cambiar)
-            print(atriljugador.estado)
 
-        elif type(event) == tuple:
-            if atriljugador.estado == 'PASAR':
+        elif type(event) == tuple: #el click sucede en el tablero
+            #si estado == PASAR hay una ficha seleccionada
+            #para colocar en el tablero
+            if atriljugador.estado == 'PASAR': 
                 posibles, borrar, devolver = tablero.jugada(
-                    palabra, event, *atriljugador.cambiar)
-                if devolver != None:
-                    ficha=atriljugador.fichas[devolver]
-                    ficha.cambiarselect()
-                    window.FindElement(devolver).Update(image_filename=
-                                                        ficha.getimagen())
+                    palabra, event, atriljugador.cambiar[0],
+                    atriljugador.cambiar[1])
+                if (posibles, borrar, devolver) == (None, None, None):
+                    pass
                 else:
-                    for pos in posibles:
-                        imagen = tablero.getcasilla(pos).getimagen(True)
-                        window.FindElement(pos).Update(
+                    if devolver != None:
+                        ficha=atriljugador.fichas[devolver]
+                        ficha.cambiarselect()
+                        window.FindElement(devolver).Update(
+                            image_filename=ficha.getimagen())
+                    else:
+                        for pos in posibles:
+                            imagen = tablero.getcasilla(pos).getimagen(True)
+                            window.FindElement(pos).Update(
+                                image_filename=imagen)
+                        for pos in borrar:
+                            imagen = tablero.getcasilla(pos).getimagen()
+                            window.FindElement(pos).Update(
+                                image_filename=imagen)
+                    for k, v in palabra.fichas.items():
+                        posicion = k
+                        imagen = v[0].getimagen()
+                        window.FindElement(posicion).Update(
                             image_filename=imagen)
-                    for pos in borrar:
-                        imagen = tablero.getcasilla(pos).getimagen()
-                        window.FindElement(pos).Update(
-                            image_filename=imagen)
-
-                for k, v in palabra.fichas.items():
-                    posicion = k
-                    imagen = v[0].getimagen()
-                    window.FindElement(posicion).Update(
-                        image_filename=imagen)
-                atriljugador.setestado(1)
+                    atriljugador.setestado(1)
 
             elif event in palabra.getposiciones():
-
                 marcar, borrar, devolver=tablero.jugada(palabra, event)
                 deseleccionar_ficha(marcar, borrar, devolver, event)
 

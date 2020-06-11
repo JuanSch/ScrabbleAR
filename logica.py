@@ -15,7 +15,7 @@ def ruta():
 
 
 #####################################################################
-#                       INICIO CLASE CASILLA                        #
+#                         INICIO CLASE FICHA                        #
 #####################################################################
 
 class Ficha:
@@ -244,7 +244,8 @@ class Tablero:
                 linea.append(casilla)
             matriz.append(linea)
         self.matriz=matriz
-        self.posibles=[]
+        self.inicio=[(7,7)]
+        self.posibles=list(self.inicio)
 
     def getmatriz(self):
         return self.matriz
@@ -297,8 +298,9 @@ class Tablero:
             limite(derecha, posibles, eje, -1, direcciones['-'])
             limite(izquierda, posibles, eje, bordes[eje], direcciones['+'])
 
-        if self.getcasilla(pos).ocupado:
-            return None
+        if (self.getcasilla(pos).ocupado 
+            or pos not in self.inicio):
+            return None, None, None
         else:
             devolver = palabra.modificar(pos, origen, ficha)
             anteriores=list(self.posibles)
@@ -312,12 +314,19 @@ class Tablero:
                 if eje==None:
                     habilitados(posibles, 0, min, min)
                     habilitados(posibles, 1, min, min)
+                    posibles.append(min)
                 else:
                     max=palabra.max
                     habilitados(posibles, eje, min, max)
-                self.posibles=posibles
-                borrar=list(set(anteriores)-set(self.posibles))
+                self.posibles=set(posibles)
+                borrar=list(set(anteriores)-(self.posibles))                      
             marcar=list(self.posibles)
+            #Con esto garantizamos que no se marquen como posibles
+            #casillas en las que hay una ficha
+            #de la palabra en construcción
+            for k, v in palabra.fichas.items():
+                    if k in marcar:
+                        marcar.remove(k)
             return marcar, borrar, devolver
 
 #####################################################################
@@ -342,7 +351,7 @@ class Atril:
         self.vacias=vacias
         self.fichas=fichas
         self.cambiar=None
-        self.estado=self.setestado(0)
+        self.estado=Atril.estados[0]
 
     def setestado(self, valor):
         self.estado = Atril.estados[valor]
