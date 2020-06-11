@@ -35,7 +35,8 @@ def simular_bolsa(letras):
     y directamente recibir una lista de fichas"""
 
     fichas=[]
-    for y in range(7):
+    for _y in range(7):
+        #pylint: disable=unused-argument
         letra=letras[random.randrange(len(letras))]
         ficha=(letra, 1)
         fichas.append(ficha)
@@ -122,8 +123,8 @@ def jugar():
 
     #bucle
     while True:
-        event, values = window.Read()
-
+        event, _values = window.Read()
+        #pylint: disable=unused-argument
         if event is None:
             break
 
