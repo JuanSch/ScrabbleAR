@@ -209,7 +209,8 @@ class Palabra:
 
     def getpalabra(self):
         palabra=''
-        for k, v in self.fichas.items():
+        for _k, v in self.fichas.items():
+            #pylint: disable=unused-argument
             palabra+=v[0].letra
         palabra.lower()
         return palabra
