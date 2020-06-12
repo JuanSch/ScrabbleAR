@@ -141,6 +141,7 @@ def elegir_palabra(letras, dificultad):
     if len(palabras_utilies) == 1:
         return(palabras_utilies)
     elif(len(palabras_utilies) > 1):
+        print(palabras_utilies)
         return(por_dificulad(palabras_utilies, dificultad))
     else:
         return(None)
@@ -171,9 +172,9 @@ def validar_palabra(palabra):
 
 
 if __name__ == '__main__':
-    dificultad = 'facil'
-    ejemplo = ['p','q,','r','t','y','f','m']
+    dificultad = 'dificil'
+    ejemplo = ['s','g','a','v','m','r','h']
     pas= elegir_palabra(ejemplo, dificultad)   
     print(pas)
-    #print(validar_palabra('asad'))
+    #print(validar_palabra('asada'))
 
