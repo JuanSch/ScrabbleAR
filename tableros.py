@@ -94,6 +94,8 @@ def jugar():
 
     palabra=lg.Palabra()
 
+    turno = 0
+
     #interfaz
     columna1 = armar_botones(tablero, dim_boton)
 
@@ -116,7 +118,7 @@ def jugar():
                 [sg.T('TIEMPO')],
                 [sg.T('20:00', font = ('Arial', '18'))]]
 
-    layout = [[sg.Column(columna1), sg.Column(columna2, element_justification='center')]]
+    layout = [[sg.Column(columna1), sg.Column(columna2)]]
 
     #inicializacion
     window=sg.Window('Ventana de juego').Layout(layout)
@@ -131,13 +133,18 @@ def jugar():
         elif 'F' in event:  #el click sucede en el atril
             atriljugador.click(event)
             actualizar_atril(window, atriljugador)
+            if atriljugador.estado == 'ELEGIR':
+                en_palabra, pos = palabra.posficha(atriljugador.cambiar)
+                if en_palabra:
+                    marcar, borrar, devolver=tablero.jugada(palabra, pos, turno)
+                    deseleccionar_ficha(marcar, borrar, devolver, pos)
 
         elif type(event) == tuple: #el click sucede en el tablero
             #si estado == PASAR hay una ficha seleccionada
             #para colocar en el tablero
             if atriljugador.estado == 'PASAR': 
                 posibles, borrar, devolver = tablero.jugada(
-                    palabra, event, atriljugador.cambiar[0],
+                    palabra, event, turno, atriljugador.cambiar[0],
                     atriljugador.cambiar[1])
                 if (posibles, borrar, devolver) == (None, None, None):
                     pass
@@ -164,7 +171,7 @@ def jugar():
                     atriljugador.setestado(1)
 
             elif event in palabra.getposiciones():
-                marcar, borrar, devolver=tablero.jugada(palabra, event)
+                marcar, borrar, devolver=tablero.jugada(palabra, event, turno)
                 deseleccionar_ficha(marcar, borrar, devolver, event)
 
 

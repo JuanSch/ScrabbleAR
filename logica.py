@@ -136,6 +136,15 @@ class Palabra:
     def getposiciones(self):
         return list(self.fichas.keys())
 
+    def posficha(self, atril):
+        encontre = False
+        pos = None
+        for k, v in self.fichas.items():
+            if v[1] == atril:
+                encontre = True
+                pos = k
+        return encontre, pos
+
     def agregarletra(self, pos, origen, ficha):
         """Sólo permite agregar letras en posiciones nuevas"""
 
@@ -264,7 +273,7 @@ class Tablero:
         x=pos[0]
         y=pos[1]
         casilla=self.matriz[y][x]
-        casilla.ocupar(ficha)
+        casilla.marcar(ficha)
 
     def getvalidos(self):
         validos=[]
@@ -274,7 +283,7 @@ class Tablero:
                     validos.append(casilla)
         return validos
 
-    def jugada(self, palabra, pos, origen=None, ficha=None):
+    def jugada(self, palabra, pos, turno, origen=None, ficha=None):
         """Método principal de lógica interna del tablero, debe recibir
         un objeto tipo palabra, y manejará las actualizaciones
         correspondientes a los estados de las casillas"""
@@ -299,8 +308,12 @@ class Tablero:
             limite(derecha, posibles, eje, -1, direcciones['-'])
             limite(izquierda, posibles, eje, bordes[eje], direcciones['+'])
 
+        if turno == 0 and palabra.min == None:
+            chequear = self.inicio
+        else:
+            chequear = self.posibles
         if (self.getcasilla(pos).ocupado 
-            or pos not in self.inicio):
+            or pos not in chequear):
             return None, None, None
         else:
             devolver = palabra.modificar(pos, origen, ficha)
@@ -361,33 +374,30 @@ class Atril:
 
     def click(self, evento):
         ficha = self.fichas[evento]
-        if self.estado=='CAMBIAR':
-            if ficha.select==False:
+        if self.estado == 'CAMBIAR':
+            if not ficha.select:
                 self.cambiar.append(ficha)
             else:
                 self.cambiar.pop(ficha)
             ficha.cambiarselect()
         elif self.estado=='ELEGIR':
-            if ficha.select==False:
+            if not ficha.select:
                 self.setestado(2)
+                ficha.cambiarselect()
+                self.cambiar=(evento, ficha)
             else:
                 pass
-            ficha.cambiarselect()
-            self.cambiar = (evento, ficha)
-        elif self.estado=='PASAR':
-            if evento==self.cambiar[1]:
+        elif self.estado == 'PASAR':
+            if evento == self.cambiar[0]:
                 self.cambiar = None
                 ficha.cambiarselect()
                 self.setestado(1)
-            elif ficha.select==False:
-                self.cambiar[0].cambiarselect()
-                self.cambiar=(evento, ficha)
+            elif not ficha.select:
+                self.cambiar[1].cambiarselect()
+                self.cambiar = (evento, ficha)
                 ficha.cambiarselect()
             else:
                 pass
-
-    def getcambiar(self):
-        return self.cambiar
 
     def pedirfichas(self):
         return len(self.vacias)
@@ -401,18 +411,18 @@ class Atril:
         fichas suficientes' debe resolverse antes de esta instancia"""
 
         for i in range(len(lista)):
-            letra=lista[i][0]
-            valor=lista[i][1]
+            letra = lista[i][0]
+            valor = lista[i][1]
             ficha = Ficha(letra, valor)
             self.fichas[self.vacias[i]]=ficha
-        self.vacias=[]
+        self.vacias = []
 
     def entregarfichas(self):
         """Devuelve una lista con las fichas que el usuario desea cambiar"""
 
-        entregar=[]
+        entregar = []
         for k,v in self.fichas.items():
-            if v.select==True:
+            if v.select:
                 entregar.append(v)
                 self.vacias.append(k)
         return entregar
