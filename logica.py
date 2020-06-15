@@ -20,23 +20,20 @@ def ruta():
 
 class Ficha:
     """El parámetro valor está definido por la dificultad seleccionada.
-    La clase incluye la ruta a las imágenes correspondientes a la letra,
-    tanto para el caso de estar seleccionada como no, un indicador
-    de selección (si/no), y los métodos necesarios para acceder
-    o modificar estos argumentos"""
+    La clase incluye un indicador de selección (si/no),
+    y los métodos necesarios para acceder a o modificar estos argumentos,
+    así como devolver presentar la ruta de imagen que corresponda"""
 
     def __init__(self, letra, valor):
         self.letra=letra
         self.valor=valor
-        self.img=f'imagenes{ruta()}{letra.upper()}.png'
-        self.img_click=f'imagenes{ruta()}{letra.upper()}click.png'
         self.select=False
 
     def getimagen(self):
         if self.select:
-            return self.img_click
+            return f'imagenes{ruta()}{self.letra.upper()}click.png'
         else:
-            return self.img
+            return f'imagenes{ruta()}{self.letra.upper()}.png'
 
     def cambiarselect(self):
         self.select=not self.select
@@ -64,7 +61,6 @@ class Casilla:
     def __init__(self, pos, tipo=''):
         self.pos=pos
         self.tipo=tipo
-        self.img=f'imagenes{ruta()}casilla{tipo}.png'
         self.ocupado=False
         self.ficha=None
 
@@ -76,16 +72,13 @@ class Casilla:
 
     def getimagen(self, resalte=False):
 
-        def imagenresaltada():
-            return f'imagenes{ruta()}casilla{self.tipo}P.png'
-
         try:
             return self.ficha.getimagen()
         except:
             if resalte:
-                return imagenresaltada()
+                return f'imagenes{ruta()}casilla{self.tipo}P.png'
             else:
-                return self.img
+                return f'imagenes{ruta()}casilla{self.tipo}.png'
 
     def marcar(self, ficha):
         """Una casilla sólo Sólo debería recibir fichas 'en proceso'
@@ -163,66 +156,61 @@ class Palabra:
                 # suceden a lo largo del eje y, el valor en la posición [1]
                 # de la tupla de coordenadas, en caso contrario
                 # puede asegurarse lo opuesto
-                if posiciones[0][0]==x:
-                    self.eje=1
+                if posiciones[0][0] == x:
+                    self.eje = 1
                 else:
-                    self.eje=0
+                    self.eje = 0
             # para facilitar operaciones, el diccionario siempre se ordena
-            self.fichas=dict(sorted(self.fichas.items(),
+            self.fichas = dict(sorted(self.fichas.items(),
                                     key=lambda kv: kv[0][self.eje]))
-            evaluar=pos[self.eje]
+            evaluar = pos[self.eje]
             # se debe evaluar si hubo un cambio en la posición de min o max,
             # las precondiciones evitan que puedan suceder ambos a la vez
-            if evaluar<self.min[self.eje]:
-                self.min=pos
-            elif evaluar>self.max[self.eje]:
-                self.max=pos
+            if evaluar < self.min[self.eje]:
+                self.min = pos
+            elif evaluar > self.max[self.eje]:
+                self.max = pos
 
     def cambiarletra(self, pos, origen, ficha):
         """Permite hacer tanto hacer un intercambio de fichas como simplemente
         cambiar una ficha por un espacio vacío, siempre devuelve la casilla
         de origen de esa ficha"""
 
-        devolver=self.fichas[pos][1]
-        if ficha==None:  # en este caso se elimina el elemento
+        devolver = self.fichas[pos][1]
+        if ficha == None:  # en este caso se elimina el elemento
             del self.fichas[pos]
             # debe evaluarse si la palabra quedó vacía, si es así vuelve
             # los valores posicionales a None
-            if len(self.fichas)==0:
-                self.min=None
-                self.max=None
-                self.eje=None
+            if len(self.fichas) == 0:
+                self.min = None
+                self.max = None
+                self.eje = None
             # en caso contrario debe revisarse si se eliminó alguno
             # de los extremos, en cuyo caso debe recalcularse
             else:
-                claves=list(self.fichas.keys())
-                if pos==self.max:
-                    self.max=claves[-1]
-                elif pos==self.min:
+                claves = list(self.fichas.keys())
+                if pos == self.max:
+                    self.max = claves[-1]
+                elif pos == self.min:
                     self.min=claves[0]
                 # si la palabra pasó a tener un sólo elemento,
                 # el valor de eje vuelve a None
                 if len(self.fichas) == 1:
-                    self.eje=None
+                    self.eje = None
         else:
-            self.fichas[pos]=(ficha, origen)
+            self.fichas[pos] = (ficha, origen)
         return devolver
 
     def modificar(self, pos, origen=None, ficha=None):
         if pos in self.fichas:
-            devolver=self.cambiarletra(pos, origen, ficha)
+            devolver = self.cambiarletra(pos, origen, ficha)
             return devolver
         else:
             self.agregarletra(pos, origen, ficha)
             return None
 
-    def getpalabra(self):
-        palabra=''
-        for _k, v in self.fichas.items():
-            #pylint: disable=unused-argument
-            palabra+=v[0].letra
-        palabra.lower()
-        return palabra
+    def __str__(self):
+        return ''.join(val[1][0].letra for val in self.fichas.items())
 
 
 #####################################################################
@@ -241,21 +229,21 @@ class Tablero:
     definida por el tipo de tablero"""
 
     def __init__(self, columnas, filas):
-        self.xy=(columnas, filas)
-        matriz=[]
+        self.xy = (columnas, filas)
+        matriz = []
         for x in range(columnas):
-            linea=[]
+            linea = []
             for y in range(filas):
-                pos=tuple([x, y])
-                if x==y or x+y==filas-1:
-                    casilla=Casilla(pos, '2L')
+                pos = tuple([x, y])
+                if x == y or x+y == filas-1:
+                    casilla = Casilla(pos, '2L')
                 else:
-                    casilla=Casilla(pos)
+                    casilla = Casilla(pos)
                 linea.append(casilla)
             matriz.append(linea)
-        self.matriz=matriz
-        self.inicio=[(7,7)]
-        self.posibles=list(self.inicio)
+        self.matriz = matriz
+        self.inicio = [(7,7)]
+        self.posibles = list(self.inicio)
 
     def getmatriz(self):
         return self.matriz
@@ -263,27 +251,34 @@ class Tablero:
     def getxy(self):
         return self.xy
 
+    def getposibles(self, palabra, turno):
+        if turno == 0 and palabra.min == None:
+            return self.inicio
+        else:
+            return self.posibles
+
+
     def getcasilla(self, pos):
-        x=pos[0]
-        y=pos[1]
-        casilla=self.matriz[y][x]
+        x = pos[0]
+        y = pos[1]
+        casilla = self.matriz[y][x]
         return casilla
 
     def setcasilla(self, pos, ficha):
-        x=pos[0]
-        y=pos[1]
-        casilla=self.matriz[y][x]
+        x = pos[0]
+        y = pos[1]
+        casilla = self.matriz[y][x]
         casilla.marcar(ficha)
 
     def getvalidos(self):
-        validos=[]
+        validos = []
         for linea in self.matriz:
             for casilla in linea:
                 if not casilla.ocupado:
                     validos.append(casilla)
         return validos
 
-    def jugada(self, palabra, pos, turno, origen=None, ficha=None):
+    def jugada(self, palabra, pos, origen=None, ficha=None):
         """Método principal de lógica interna del tablero, debe recibir
         un objeto tipo palabra, y manejará las actualizaciones
         correspondientes a los estados de las casillas"""
@@ -292,10 +287,10 @@ class Tablero:
             if ciclo == 6:
                 return posibles
             else:
-                nueva=list(pos)
-                coord=dir(pos[eje], 1)
-                nueva[eje]=coord
-                if nueva[eje]==borde or self.getcasilla(nueva).ocupado==True:
+                nueva = list(pos)
+                coord = dir(pos[eje], 1)
+                nueva[eje] = coord
+                if nueva[eje] == borde or self.getcasilla(nueva).ocupado == True:
                         return posibles
                 else:
                     posibles.append(tuple(nueva))
@@ -303,45 +298,38 @@ class Tablero:
                                       borde, dir, ciclo+1)
 
         def habilitados(posibles, eje, izquierda, derecha):
-            direcciones={'+': operator.add, '-': operator.sub}
+            direcciones = {'+': operator.add, '-': operator.sub}
             bordes = self.getxy()
             limite(derecha, posibles, eje, -1, direcciones['-'])
             limite(izquierda, posibles, eje, bordes[eje], direcciones['+'])
 
-        if turno == 0 and palabra.min == None:
-            chequear = self.inicio
+
+        devolver = palabra.modificar(pos, origen, ficha)
+        anteriores = list(self.posibles)
+        if devolver is not None and palabra.min is None:
+            borrar = anteriores
+            self.posibles = []
         else:
-            chequear = self.posibles
-        if (self.getcasilla(pos).ocupado 
-            or pos not in chequear):
-            return None, None, None
-        else:
-            devolver = palabra.modificar(pos, origen, ficha)
-            anteriores=list(self.posibles)
-            if devolver!=None and palabra.min==None:
-                borrar=anteriores
-                self.posibles=[]
+            posibles = []
+            eje = palabra.eje
+            min = palabra.min
+            if eje is None:
+                habilitados(posibles, 0, min, min)
+                habilitados(posibles, 1, min, min)
+                posibles.append(min)
             else:
-                posibles=[]
-                eje=palabra.eje
-                min=palabra.min
-                if eje==None:
-                    habilitados(posibles, 0, min, min)
-                    habilitados(posibles, 1, min, min)
-                    posibles.append(min)
-                else:
-                    max=palabra.max
-                    habilitados(posibles, eje, min, max)
-                self.posibles=set(posibles)
-                borrar=list(set(anteriores)-(self.posibles))                      
-            marcar=list(self.posibles)
-            #Con esto garantizamos que no se marquen como posibles
-            #casillas en las que hay una ficha
-            #de la palabra en construcción
-            for k, v in palabra.fichas.items():
-                    if k in marcar:
-                        marcar.remove(k)
-            return marcar, borrar, devolver
+                max = palabra.max
+                habilitados(posibles, eje, min, max)
+            self.posibles = set(posibles)
+            borrar = list(set(anteriores)-(self.posibles))
+        marcar = list(self.posibles)
+        #Con esto garantizamos que no se marquen como posibles
+        #casillas en las que hay una ficha
+        #de la palabra en construcción
+        for k, v in palabra.fichas.items():
+                if k in marcar:
+                    marcar.remove(k)
+        return marcar, borrar, devolver
 
 #####################################################################
 #                         FIN CLASE TABLERO                         #
@@ -353,24 +341,24 @@ class Tablero:
 #####################################################################
 
 class Atril:
-    estados={0:'APAGADO', 1:'ELEGIR', 2:'PASAR', 3:'CAMBIAR'}
+    estados = {0:'APAGADO', 1:'ELEGIR', 2:'PASAR', 3:'CAMBIAR'}
 
     def __init__(self):
-        fichas={}
-        vacias=[]
+        fichas = {}
+        vacias = []
         for i in range(7):
-            nombre=f'F{i}'
-            fichas[nombre]=None
+            nombre = f'F{i}'
+            fichas[nombre] = None
             vacias.append(nombre)
-        self.vacias=vacias
-        self.fichas=fichas
-        self.cambiar=None
-        self.estado=Atril.estados[0]
+        self.vacias = vacias
+        self.fichas = fichas
+        self.cambiar = None
+        self.estado = Atril.estados[0]
 
     def setestado(self, valor):
         self.estado = Atril.estados[valor]
         if valor == 3:
-            self.cambiar=[]
+            self.cambiar = []
 
     def click(self, evento):
         ficha = self.fichas[evento]
@@ -380,11 +368,11 @@ class Atril:
             else:
                 self.cambiar.pop(ficha)
             ficha.cambiarselect()
-        elif self.estado=='ELEGIR':
+        elif self.estado == 'ELEGIR':
             if not ficha.select:
                 self.setestado(2)
                 ficha.cambiarselect()
-                self.cambiar=(evento, ficha)
+                self.cambiar = (evento, ficha)
             else:
                 pass
         elif self.estado == 'PASAR':

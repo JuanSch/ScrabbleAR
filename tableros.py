@@ -48,18 +48,16 @@ def actualizar_atril(window, atril):
 
 def jugar():
 
-    def deseleccionar_ficha(marcar, borrar, devolver, pos):
-        """se encarga de las actualizaciones a la GUI en el caso
-        de suceder una deselección de ficha"""
+    def actualizar_pantalla(marcar, borrar, devolver):
+        """se encarga de las actualizaciones a la GUI"""
 
         nonlocal window
         nonlocal tablero
         nonlocal atriljugador
-        imagen = tablero.getcasilla(pos).getimagen()
-        window.FindElement(pos).Update(image_filename=imagen)
-        ficha = atriljugador.fichas[devolver]
-        ficha.cambiarselect()
-        window.FindElement(devolver).Update(image_filename=
+        if devolver is not None:
+            ficha = atriljugador.fichas[devolver]
+            ficha.cambiarselect()
+            window.FindElement(devolver).Update(image_filename=
                                             ficha.getimagen())
         try:
             for casilla in borrar:
@@ -133,47 +131,30 @@ def jugar():
         elif 'F' in event:  #el click sucede en el atril
             atriljugador.click(event)
             actualizar_atril(window, atriljugador)
-            if atriljugador.estado == 'ELEGIR':
-                en_palabra, pos = palabra.posficha(atriljugador.cambiar)
-                if en_palabra:
-                    marcar, borrar, devolver=tablero.jugada(palabra, pos, turno)
-                    deseleccionar_ficha(marcar, borrar, devolver, pos)
+            if (atriljugador.estado == 'ELEGIR'
+                and atriljugador.cambiar is not None):
+                    en_palabra, pos = palabra.posficha(atriljugador.cambiar[0])
+                    if en_palabra:
+                        marcar, borrar, devolver=tablero.jugada(palabra, pos)
+                        actualizar_pantalla(marcar, borrar, devolver)
 
-        elif type(event) == tuple: #el click sucede en el tablero
-            #si estado == PASAR hay una ficha seleccionada
-            #para colocar en el tablero
+        # chequea si el click sucede en una posición válida del tablero
+        elif event in tablero.getposibles(palabra, turno):
+            # si estado == PASAR hay una ficha seleccionada
+            # para colocar en el tablero
             if atriljugador.estado == 'PASAR': 
-                posibles, borrar, devolver = tablero.jugada(
-                    palabra, event, turno, atriljugador.cambiar[0],
+                marcar, borrar, devolver = tablero.jugada(
+                    palabra, event, atriljugador.cambiar[0],
                     atriljugador.cambiar[1])
-                if (posibles, borrar, devolver) == (None, None, None):
-                    pass
-                else:
-                    if devolver != None:
-                        ficha=atriljugador.fichas[devolver]
-                        ficha.cambiarselect()
-                        window.FindElement(devolver).Update(
-                            image_filename=ficha.getimagen())
-                    else:
-                        for pos in posibles:
-                            imagen = tablero.getcasilla(pos).getimagen(True)
-                            window.FindElement(pos).Update(
-                                image_filename=imagen)
-                        for pos in borrar:
-                            imagen = tablero.getcasilla(pos).getimagen()
-                            window.FindElement(pos).Update(
-                                image_filename=imagen)
-                    for k, v in palabra.fichas.items():
-                        posicion = k
-                        imagen = v[0].getimagen()
-                        window.FindElement(posicion).Update(
-                            image_filename=imagen)
-                    atriljugador.setestado(1)
+                actualizar_pantalla(marcar, borrar, devolver)
+                imagen = palabra.fichas[event][0].getimagen()
+                window.FindElement(event).Update(
+                    image_filename=imagen)
+                atriljugador.setestado(1)
 
             elif event in palabra.getposiciones():
-                marcar, borrar, devolver=tablero.jugada(palabra, event, turno)
-                deseleccionar_ficha(marcar, borrar, devolver, event)
-
+                marcar, borrar, devolver=tablero.jugada(palabra, event)
+                actualizar_pantalla(marcar, borrar, devolver)
 
     #cierre
     window.Close()
