@@ -74,6 +74,12 @@ def jugar():
         except:
             pass
 
+    def estado_botones(estado):
+        nonlocal window
+
+        window.FindElement('-JUGAR-').Update(disabled=not estado)
+        window.FindElement('-CAMBIAR-').Update(disabled=not estado)
+
 
     letras = [char for char in string.ascii_uppercase]
     #Temporalmente se generó una lista de letras a-z(salvo ñ) para operar
@@ -93,6 +99,9 @@ def jugar():
     palabra=lg.Palabra()
 
     turno = 0
+    eval_turno = lambda x,y: (x % 2) == y
+    turno_jugador = random.randrange(0,2)
+    print(turno_jugador)
 
     #interfaz
     columna1 = armar_botones(tablero, dim_boton)
@@ -102,19 +111,21 @@ def jugar():
     linea_inferior = armar_atril(atriljugador, dim_boton)
 
     botones_jugador = [sg.T('      '),
-                       sg.Button('JUGAR', key = '-JUGAR-', size = (12, 2)),
+                       sg.Button('JUGAR', key='-JUGAR-', size=(12, 2),
+                                 disabled=True),
                        sg.T(''),
-                       sg.Button('CAMBIAR', key = '-CAMBIAR-', size = (12, 2))]
+                       sg.Button('CAMBIAR', key='-CAMBIAR-', size=(12, 2),
+                                 disabled=True)]
 
     for item in botones_jugador:
         linea_inferior.append(item)
 
     columna1.append(linea_inferior)
 
-    columna2 = [[sg.Button('COMENZAR', key = '-COMENZAR-', size = (12, 2))],
+    columna2 = [[sg.Button('COMENZAR', key='-INI/FIN-', size=(12, 2))],
                 [sg.T('')],
                 [sg.T('TIEMPO')],
-                [sg.T('20:00', font = ('Arial', '18'))]]
+                [sg.T('20:00', font=('Arial', '18'))]]
 
     layout = [[sg.Column(columna1), sg.Column(columna2)]]
 
@@ -123,16 +134,39 @@ def jugar():
 
     #bucle
     while True:
-        event, _values = window.Read()
+        event, values = window.Read()
         #pylint: disable=unused-argument
-        if event is None:
-            break
+
+        try:
+        #este bloque es una forma temporal de simular
+        # el paso de los turnos
+            if eval_turno(turno, turno_jugador):
+            #chquea que sea el turno del jugador
+                estado_botones(True)
+                #activa los botones del jugador
+            else:
+                turno += 1
+        except:
+            pass
+
+        if (event is None
+            or (event is '-INI/FIN-' and turno is not 0)):
+                break
+
+        elif turno is 0 and event is '-INI/FIN-':
+        # la primera parte de la condición en realidad
+        # debería evaluar si el timer está o no en funcionamiento
+        # sólo debería ser True cuando se está empezando una partida
+            window.FindElement(event).Update('PAUSA')
+            # acá debería iniciar el timer
+            # también deberían llenarse los atriles
 
         elif 'F' in event:  #el click sucede en el atril
             atriljugador.click(event)
             actualizar_atril(window, atriljugador)
             if (atriljugador.estado == 'ELEGIR'
                 and atriljugador.cambiar is not None):
+                # si esto sucede significa que el click fue una deselección
                     en_palabra, pos = palabra.posficha(atriljugador.cambiar[0])
                     if en_palabra:
                         marcar, borrar, devolver=tablero.jugada(palabra, pos)
@@ -142,7 +176,7 @@ def jugar():
         elif event in tablero.getposibles(palabra, turno):
             # si estado == PASAR hay una ficha seleccionada
             # para colocar en el tablero
-            if atriljugador.estado == 'PASAR': 
+            if atriljugador.estado == 'PASAR':
                 marcar, borrar, devolver = tablero.jugada(
                     palabra, event, atriljugador.cambiar[0],
                     atriljugador.cambiar[1])
