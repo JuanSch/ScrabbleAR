@@ -12,7 +12,7 @@ class TimeOutException(Exception):
 
 def config_nuevo_juego(configuracion):
     def timeout():
-        print(TimeOutException)
+        print('Juego terminado')
     
     def temporizador(time,timeout):
         from threading import Timer as timer
@@ -38,7 +38,6 @@ def config_nuevo_juego(configuracion):
 
     while True:
         event, value = window.read()
-        print(event,value)
         if event == "-jugar-":
             configuracion['dificultad'] = value[0]
             configuracion['tiempo'] = value[1]
@@ -106,6 +105,7 @@ def pantalla_inicial():
         #pylint: disable=unused-argument
         if event in ("-salir-", None):
             break
+
         elif event in "-nueva-":
             with open('configuraciones.json','r') as f:
                 configs =json.load(f)
@@ -115,13 +115,15 @@ def pantalla_inicial():
                 if condicion:
                     jugar() #pasar configs para que tenga la configuracion 
             break
+
         elif event in "-continuar-":
             pass
+
         elif event in "-configuracion-":
-            with open('configuraciones.json','w') as f:
-                configs =json.load(f)
-                configurar(configs)
-            
+            with open('configuraciones.json') as f:
+                configs = json.load(f)
+            configurar(configs)
+
         elif event in "-puntajes-":
             pass
         

@@ -2,6 +2,32 @@ from pattern.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
 import json
 
+def validar_palabra(palabra):
+    palabra = parse(palabra).split('/')
+    if palabra[1] in ('AO','JJ','AQ','DI','DT','VAG','VBG','VAI','VAN','MD','VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS','VSG','VSI','VSN','VSP','VSS'): #VB:verbo  ,  JJ:adjetivo
+        if palabra[0] not in lexicon.keys():
+            if palabra[0] not in spelling.keys(): #si es adj o verbo y no esta en el lexicon ni el spelling comprueba con wiktionary
+                w = Wiktionary(language="es")
+                article = w.search(palabra[0])
+                if article != None :
+                    return True
+                else:
+                    return  False
+            else:
+                return True
+        else:
+            return True
+    elif palabra[1] in ('NC','NN','NCS','NCP','NNS','NP','NNP','W'): #sustantivo comprueba con wiktionary 
+        w = Wiktionary(language="es")
+        article = w.search(palabra[0])
+        if article != None :
+            return True
+        else:
+            return False
+
+
+
+
 def elegir_palabra(letras, dificultad):
     """
     Esta funcion Elige la palabra mas adecuada para nuestra IA y así ganar la mayor cantidad de puntos 
@@ -111,14 +137,14 @@ def elegir_palabra(letras, dificultad):
     for palabra in lexicon.keys():
         if palabra in spelling.keys(): #por cada palabra que tiene pattern
             palabra_deletrada = []
-            for char in palabra: #la separamos por caracteres y la ordenamos 
+            for char in palabra: #la separamos por caracteres, la ordenamos y generamos una luista con ellas
                 palabra_deletrada.append(char)
             palabra_deletrada.sort()
             if (sirve(letras, palabra_deletrada) ): #si la lista de letras ordenadas es igual a la lista de letras de la IA
                 palabras_posibles.append(palabra)  #agregamos la palabra a nuestra lista de palabras utiles
     
 
-    palabras_posibles_dos = [] #esto no está al pedo, es para hacer la busqueda de wiktionary mas rapida
+    palabras_posibles_dos = [] #elimina las palabras de menos de 3 caracteres 
     for palabra in palabras_posibles:
         if len(palabra) > 2:
             palabras_posibles_dos.append(palabra)
@@ -126,17 +152,17 @@ def elegir_palabra(letras, dificultad):
     if len(palabras_posibles_dos) == 0:
         return(None)
     palabras_utilies = []
-    w = Wiktionary(language="es")
+    # w = Wiktionary(language="es")
     for palabra in palabras_posibles_dos:
-        cumple = False
-        analisis = parse(palabra).split('/')
-        if (analisis[1] in ('AO','JJ','AQ','DI','DT','NC','NN','NCS','NCP','NNS','NP','NNP','W','VAG','VBG','VAI','VAN','MD','VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS','VSG','VSI','VSN','VSP','VSS')):
-            article=w.search(palabra)
-            if article!=None:
-                cumple= True
-            else:
-                cumple = False
-        if cumple:
+    #     cumple = False
+    #     analisis = parse(palabra).split('/')
+    #     if (analisis[1] in ('AO','JJ','AQ','DI','DT','NC','NN','NCS','NCP','NNS','NP','NNP','W','VAG','VBG','VAI','VAN','MD','VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS','VSG','VSI','VSN','VSP','VSS')):
+    #         article=w.search(palabra)
+    #         if article!=None:
+    #             cumple= True
+    #         else:
+    #             cumple = False
+        if validar_palabra(palabra):
             palabras_utilies.append(palabra)
     if len(palabras_utilies) == 1:
         return(palabras_utilies)
@@ -147,34 +173,12 @@ def elegir_palabra(letras, dificultad):
         return(None)
 
 
-def validar_palabra(palabra):
-    palabra = parse(palabra).split('/')
-    if palabra[1] in ('AO','JJ','AQ','DI','DT','VAG','VBG','VAI','VAN','MD','VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS','VSG','VSI','VSN','VSP','VSS'): #VB:verbo  ,  JJ:adjetivo
-        if palabra[0] not in lexicon.keys():
-            if palabra[0] not in spelling.keys():
-                w = Wiktionary(language="es")
-                article = w.search(palabra[0])
-                if article != None :
-                    return True
-                else:
-                    return  False
-            else:
-                return True
-        else:
-            return True
-    elif palabra[1] in ('NC','NN','NCS','NCP','NNS','NP','NNP','W'): #sustantivo 
-        w = Wiktionary(language="es")
-        article = w.search(palabra[0])
-        if article != None :
-            return True
-        else:
-            return False
 
 
 if __name__ == '__main__':
-    dificultad = 'dificil'
+    dificultad = 'facil'
     ejemplo = ['s','g','a','v','m','r','h']
-    pas= elegir_palabra(ejemplo, dificultad)   
-    print(pas)
+    res= elegir_palabra(ejemplo, dificultad)   
+    print(res)
     #print(validar_palabra('asada'))
-
+    #$%Comprobar espacio en tablero para la palabra 
