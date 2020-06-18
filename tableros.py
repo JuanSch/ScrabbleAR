@@ -125,7 +125,7 @@ def jugar():
     columna2 = [[sg.Button('COMENZAR', key='-INI/FIN-', size=(12, 2))],
                 [sg.T('')],
                 [sg.T('TIEMPO')],
-                [sg.T('20:00', font=('Arial', '18'))]]
+                [sg.T('20:00', key='-RELOJ-', font=('Arial', '18'))]]
 
     layout = [[sg.Column(columna1), sg.Column(columna2)]]
 
@@ -135,15 +135,15 @@ def jugar():
     #bucle
     while True:
         event, values = window.Read()
-        #pylint: disable=unused-argument
-
+        # pylint: disable=unused-argument
+        
         try:
-        #este bloque es una forma temporal de simular
+        # este bloque es una forma temporal de simular
         # el paso de los turnos
             if eval_turno(turno, turno_jugador):
-            #chquea que sea el turno del jugador
+            # chquea que sea el turno del jugador
                 estado_botones(True)
-                #activa los botones del jugador
+                # activa los botones del jugador
             else:
                 turno += 1
         except:
@@ -158,8 +158,8 @@ def jugar():
         # debería evaluar si el timer está o no en funcionamiento
         # sólo debería ser True cuando se está empezando una partida
             window.FindElement(event).Update('PAUSA')
-            # acá debería iniciar el timer
-            # también deberían llenarse los atriles
+            #$% acá debería iniciar el timer
+            #$% también deberían llenarse los atriles
 
         elif 'F' in event:  #el click sucede en el atril
             atriljugador.click(event)
