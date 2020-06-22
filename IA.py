@@ -146,7 +146,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
 
         palabras_posibles_dos = [] #elimina las palabras de menos de 3 caracteres 
         for palabra in palabras_posibles:
-            if len(palabra) > 2 and len(palabra) > long_maxima:
+            if len(palabra) > 2 and len(palabra) < long_maxima:
                 palabras_posibles_dos.append(palabra)
         
         if len(palabras_posibles_dos) == 0:
