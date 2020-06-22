@@ -25,8 +25,8 @@ def validar_palabra(palabra):
             return True
         else:
             return False
-def elegir_palabra(letras, dificultad):
-    def elegir_palabra_dos(letras, dificultad):
+def elegir_palabra(letras, dificultad,long_maxima = 7):
+    def elegir_palabra_dos(letras, dificultad, long_maxima):
         """
         Esta funcion Elige la palabra mas adecuada para nuestra IA y así ganar la mayor cantidad de puntos 
         primero se fija que palabras puede armar con sus letras y depues evalua cual es la palabra que más puntaje da
@@ -73,7 +73,9 @@ def elegir_palabra(letras, dificultad):
                         break
             return(condicion)
         def por_dificulad(palabras_utilies, dificultad):
-            
+            """
+            segun la dificultad elige una u otra palaba 
+            """
             def dificil(palabras):
                 """
                 cargo los puntajes y me fijo cual es la palabra que mayor puntaje da 
@@ -135,16 +137,16 @@ def elegir_palabra(letras, dificultad):
         for palabra in lexicon.keys():
             if palabra in spelling.keys(): #por cada palabra que tiene pattern
                 palabra_deletrada = []
-                for char in palabra: #la separamos por caracteres, la ordenamos y generamos una luista con ellas
+                for char in palabra: #la separamos por caracteres, la ordenamos y generamos una lista con ellas
                     palabra_deletrada.append(char)
                 palabra_deletrada.sort()
-                if (sirve(letras, palabra_deletrada) ): #si la lista de letras ordenadas es igual a la lista de letras de la IA
+                if (sirve(letras, palabra_deletrada) ): #Comparamos ambas listas y si me sirve 
                     palabras_posibles.append(palabra)  #agregamos la palabra a nuestra lista de palabras utiles
         
 
         palabras_posibles_dos = [] #elimina las palabras de menos de 3 caracteres 
         for palabra in palabras_posibles:
-            if len(palabra) > 2:
+            if len(palabra) > 2 and len(palabra) > long_maxima:
                 palabras_posibles_dos.append(palabra)
         
         if len(palabras_posibles_dos) == 0:
@@ -158,34 +160,15 @@ def elegir_palabra(letras, dificultad):
         
             resultados = []
             for f in concurrent.futures.as_completed(results): #genero un iterador
-                # print(f.result())
-                resultados.append(f.result())
-            #print(resultados)
-            #resultados = executor.map(validar_palabra, palabras_posibles_dos)
+                resultados.append(f.result()) # f es un objeto que tienen método result
         
         for i in range(0,len(resultados)): #si la palabra existe la aghrego a la lista de palabras utiles
             if resultados[i] == True:
                 palabras_utilies.append(palabras_posibles_dos[i])
-        #print(palabras_utilies)
 
-        # w = Wiktionary(language="es")
-        # for palabra in palabras_posibles_dos:
-        #     cumple = False
-        #     analisis = parse(palabra).split('/')
-        #     if (analisis[1] in ('AO','JJ','AQ','DI','DT','NC','NN','NCS','NCP','NNS','NP','NNP','W','VAG','VBG','VAI','VAN','MD','VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS','VSG','VSI','VSN','VSP','VSS')):
-        #         article=w.search(palabra)
-        #         if article!=None:
-        #             cumple= True
-        #         else:
-        #             cumple = False
-        #     if validar_palabra(palabra):
-        #         palabras_utilies.append(palabra)
-
-        
         if len(palabras_utilies) == 1:
             return(palabras_utilies)
         elif(len(palabras_utilies) > 1):
-            #print(palabras_utilies)
             return(por_dificulad(palabras_utilies, dificultad))
         else:
             return(None) 
@@ -193,11 +176,11 @@ def elegir_palabra(letras, dificultad):
     # Cuando sucede solo volvemos a ejecutar el codigo 
     try: 
         try:
-            return elegir_palabra_dos(letras, dificultad)
+            return elegir_palabra_dos(letras, dificultad,long_maxima)
         except:
-            return elegir_palabra_dos(letras, dificultad)
+            return elegir_palabra_dos(letras, dificultad,long_maxima)
     except:
-        return elegir_palabra_dos(letras, dificultad)
+        return elegir_palabra_dos(letras, dificultad,long_maxima)
 
 if __name__ == '__main__':
     dificultad = 'dificil'
@@ -205,4 +188,5 @@ if __name__ == '__main__':
     res= elegir_palabra(ejemplo, dificultad)   
     print(res)
     #print(validar_palabra('asada'))
-    #$%Comprobar espacio en tablero para la palabra 
+    #$%Comprobar espacio en tablero para la palabra  
+    
