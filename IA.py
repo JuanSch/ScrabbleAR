@@ -5,9 +5,13 @@ import json
 
 def validar_palabra(palabra):
     palabra = parse(palabra).split('/')
-    if palabra[1] in ('AO','JJ','AQ','DI','DT','VAG','VBG','VAI','VAN','MD','VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS','VSG','VSI','VSN','VSP','VSS'): #VB:verbo  ,  JJ:adjetivo
+    if palabra[1] in ('AO','JJ','AQ','DI','DT','VAG','VBG','VAI','VAN','MD',
+                      'VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS',
+                      'VSG','VSI','VSN','VSP','VSS'): #VB:verbo, JJ:adjetivo
         if palabra[0] not in lexicon.keys():
-            if palabra[0] not in spelling.keys(): #si es adj o verbo y no esta en el lexicon ni el spelling comprueba con wiktionary
+            # si es adj o verbo y no esta en el lexicon
+            # ni el spelling comprueba con wiktionary
+            if palabra[0] not in spelling.keys():
                 w = Wiktionary(language="es")
                 article = w.search(palabra[0])
                 if article != None :
@@ -18,13 +22,16 @@ def validar_palabra(palabra):
                 return True
         else:
             return True
-    elif palabra[1] in ('NC','NN','NCS','NCP','NNS','NP','NNP','W'): #sustantivo comprueba con wiktionary 
+    elif palabra[1] in ('NC','NN','NCS','NCP','NNS','NP','NNP','W'):
+        # sustantivo comprueba con wiktionary
         w = Wiktionary(language="es")
         article = w.search(palabra[0])
         if article != None :
             return True
         else:
             return False
+
+
 def elegir_palabra(letras, dificultad,long_maxima = 7):
     def elegir_palabra_dos(letras, dificultad, long_maxima):
         """
@@ -72,9 +79,11 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                         condicion = False
                         break
             return(condicion)
+
+
         def por_dificulad(palabras_utilies, dificultad):
             """
-            segun la dificultad elige una u otra palaba 
+            Segun la dificultad elige una u otra palaba
             """
             def dificil(palabras):
                 """
@@ -95,11 +104,10 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                         
                 return(palabra_elegida)
 
+
             def medio(palabras):
                 with open('valores_puntajes.json') as f:
                     puntajes = json.load(f)
-
-                palabra_elegida = ''
                 palabras_posibles = []
                 for palabra in palabras:
                     puntaje_palabra_actual = 0
@@ -109,6 +117,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                 
                 palabra_elegida =  palabras_posibles[len(palabras_posibles)//2]
                 return(palabra_elegida)
+
 
             def facil(palabras):
                 palabra_elegida = str
@@ -124,13 +133,13 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                         palabra_elegida = palabra
                 return(palabra_elegida)
 
+
             if dificultad == 'facil':
                 return(facil(palabras_utilies))
             elif dificultad == "dificil":
                 return(dificil(palabras_utilies))
             else:
                 return(medio(palabras_utilies))
-
 
         letras.sort()
         palabras_posibles = []
@@ -142,8 +151,6 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                 palabra_deletrada.sort()
                 if (sirve(letras, palabra_deletrada) ): #Comparamos ambas listas y si me sirve 
                     palabras_posibles.append(palabra)  #agregamos la palabra a nuestra lista de palabras utiles
-        
-
         palabras_posibles_dos = [] #elimina las palabras de menos de 3 caracteres 
         for palabra in palabras_posibles:
             if len(palabra) > 2 and len(palabra) < long_maxima:
@@ -172,8 +179,9 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
             return(por_dificulad(palabras_utilies, dificultad))
         else:
             return(None) 
-    #Aveces ocurre algun error por parte de wiktionary ageno al codigo escrito por los aulumnos
-    # Cuando sucede solo volvemos a ejecutar el codigo 
+    # Aveces ocurre algun error por parte de wiktionary ajeno
+    # al codigo escrito por los aulumnos; cuando sucede
+    # solo volvemos a ejecutar el codigo
     try: 
         try:
             return elegir_palabra_dos(letras, dificultad,long_maxima)
@@ -184,7 +192,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
 
 if __name__ == '__main__':
     dificultad = 'dificil'
-    ejemplo = ['c','e','b','d','n','u','n','a']
+    ejemplo = ['a','p','q','d','t','z','n']
     res= elegir_palabra(ejemplo, dificultad)   
     print(res)
     #print(validar_palabra('asada'))

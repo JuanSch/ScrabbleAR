@@ -101,7 +101,6 @@ def jugar():
     turno = 0
     eval_turno = lambda x,y: (x % 2) == y
     turno_jugador = random.randrange(0,2)
-    print(turno_jugador)
 
     #interfaz
     columna1 = armar_botones(tablero, dim_boton)
@@ -130,12 +129,12 @@ def jugar():
     layout = [[sg.Column(columna1), sg.Column(columna2)]]
 
     #inicializacion
-    window=sg.Window('Ventana de juego').Layout(layout)
+    window = sg.Window('Ventana de juego').Layout(layout)
 
     #bucle
-    while True:
+    FIN = False
+    while not FIN:
         event, values = window.Read()
-        # pylint: disable=unused-argument
         
         try:
         # este bloque es una forma temporal de simular
