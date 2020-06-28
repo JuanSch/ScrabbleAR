@@ -68,7 +68,7 @@ def configurar(dic):
         elif event == '-guardar-':
             df_vl = letras[value[0]] = value[1]
             dic['personalizada'] = letras
-            with open('configuraciones.json','w') as f:
+            with open('configuraciones.json','w', encoding='UTF-8') as f:
                 json.dump(dic, f, indent= 4)
     window.close()
     
@@ -94,10 +94,10 @@ def pantalla_inicial():
             break
 
         elif event in "-nueva-":
-            with open('configuraciones.json','r') as f:
+            with open('configuraciones.json','r', encoding='UTF-8') as f:
                 configs =json.load(f)
                 configs, condicion = config_nuevo_juego(configs)
-            with open('configuraciones.json','w') as f:
+            with open('configuraciones.json','w', encoding='UTF-8') as f:
                 json.dump(configs, f, indent= 4)
                 if condicion:
                     jugar() #pasar configs para que tenga la configuracion 
@@ -107,7 +107,7 @@ def pantalla_inicial():
             pass
 
         elif event in "-configuracion-":
-            with open('configuraciones.json') as f:
+            with open('configuraciones.json', encoding='UTF-8') as f:
                 configs = json.load(f)
             configurar(configs)
 
@@ -124,6 +124,6 @@ if __name__ == "__main__":
     #config(configuracion)
     pantalla_inicial()
     #temporizador(2)
-    # with open('configuraciones.json','r') as f:
+    # with open('configuraciones.json','r', encoding='UTF-8') as f:
     #     configs =json.load(f)
     #     configurar(configs)

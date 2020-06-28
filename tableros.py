@@ -1,7 +1,10 @@
 import PySimpleGUI as sg
+from IA import temporizador
+import time as t
 import logica as lg
 import string
 import random
+import json
 
 
 def armar_botones(tablero, dim_boton):
@@ -121,10 +124,18 @@ def jugar():
 
     columna1.append(linea_inferior)
 
-    columna2 = [[sg.Button('COMENZAR', key='-INI/FIN-', size=(12, 2))],
+    ###############
+    with open('configuraciones.json','r', encoding='UTF-8') as f:
+        configs =json.load(f)
+        tiempo = int(configs['tiempo']) * 60 #conversion a minutos
+        #tiempo = 20 * 60 #por si no  queres usar el tiempo de la config solo descomentas la linea
+        reloj = f'{divmod(tiempo, 60)[0]:02}:{divmod(tiempo, 60)[1]:02}'
+    ###############
+
+    columna2 = [[sg.Button('COMENZAR', key='-INI/PAUSA-', size=(12, 2))],
                 [sg.T('')],
                 [sg.T('TIEMPO')],
-                [sg.T('20:00', key='-RELOJ-', font=('Arial', '18'))]]
+                [sg.T(reloj, key='-RELOJ-', font=('Arial', '18'))]]
 
     layout = [[sg.Column(columna1), sg.Column(columna2)]]
 
@@ -132,33 +143,28 @@ def jugar():
     window = sg.Window('Ventana de juego').Layout(layout)
 
     #bucle
-    FIN = False
-    while not FIN:
-        event, values = window.Read()
+    corriendo = False
+    inicio = 0
+    while True:
+        event, _values = window.Read(timeout= 500)
+        if corriendo:
+            reloj, corriendo = temporizador(tiempo, inicio, corriendo)
+            if reloj != '-1:59':
+                window.find_element('-RELOJ-').Update(reloj)
+            else: #aprovecha e bug!
+                window.find_element('-RELOJ-').Update('FIN')
+
+        if (event is None):
+            break
         
-        try:
-        # este bloque es una forma temporal de simular
-        # el paso de los turnos
-            if eval_turno(turno, turno_jugador):
-            # chquea que sea el turno del jugador
-                estado_botones(True)
-                # activa los botones del jugador
+        if event == '-INI/PAUSA-':
+            if not(corriendo):
+                window.find_element(event).Update('Pausar')
+                corriendo = True
+                inicio = int(t.time())
             else:
-                turno += 1
-        except:
-            pass
-
-        if (event is None
-            or (event is '-INI/FIN-' and turno is not 0)):
-                break
-
-        elif turno is 0 and event is '-INI/FIN-':
-        # la primera parte de la condición en realidad
-        # debería evaluar si el timer está o no en funcionamiento
-        # sólo debería ser True cuando se está empezando una partida
-            window.FindElement(event).Update('PAUSA')
-            #$% acá debería iniciar el timer
-            #$% también deberían llenarse los atriles
+                corriendo = False
+                window.find_element(event).Update('Reiniciar')
 
         elif 'F' in event:  #el click sucede en el atril
             atriljugador.click(event)

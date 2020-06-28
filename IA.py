@@ -13,7 +13,8 @@ def temporizador(tiempo, inicio, corriendo):
         reloj = f'{divmod(tiempo, 60)[0]:02}:{divmod(tiempo, 60)[1]:02}'
         if tiempo < 0:
             corriendo = False
-        return reloj, corriendo
+        return reloj, corriendo, 
+
 
 def validar_palabra(palabra):
     palabra = parse(palabra).split('/')
