@@ -1,23 +1,12 @@
+import concurrent.futures
 import PySimpleGUI as sg
 import json
+import time as t
 from tableros import jugar
+from IA import temporizador
 
-class TimeOutException(Exception):
-    def __init__(self):
-        sg.popup('Juego terminado')
-        pass
-    def __str__(self):
-        error = 'Tiempo de juego terminado'
-        return(error)
 
 def config_nuevo_juego(configuracion):
-    def timeout():
-        print('Juego terminado')
-    
-    def temporizador(time,timeout):
-        from threading import Timer as timer
-        t = timer(time*6, timeout)
-        t.start()
     
     s = []
     for i in range(1,61):
@@ -40,14 +29,12 @@ def config_nuevo_juego(configuracion):
         event, value = window.read()
         if event == "-jugar-":
             configuracion['dificultad'] = value[0]
-            configuracion['tiempo'] = value[1]
+            configuracion['tiempo'] = value[1] 
             break
         elif event == "-personalizar-":
             configurar(configuracion)
         else:
             break
-
-    temporizador(float(configuracion['tiempo']), timeout)
 
     window.close()
     if event == "-jugar-":

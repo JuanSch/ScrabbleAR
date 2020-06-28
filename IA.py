@@ -5,9 +5,8 @@ import time as t
 import concurrent.futures
 import json
 
-def temporizador(tiempo, inicio):
+def temporizador(tiempo, inicio, corriendo):
     reloj = f'{divmod(tiempo,60)[0]:02}:{divmod(tiempo,60)[1]:02}'
-    corriendo = True
     while corriendo:
         transcurrido = int(t.time())-inicio
         tiempo -= transcurrido
@@ -43,7 +42,6 @@ def validar_palabra(palabra):
             return True
         else:
             return False
-
 
 def elegir_palabra(letras, dificultad,long_maxima = 7):
     def elegir_palabra_dos(letras, dificultad, long_maxima):
@@ -92,7 +90,6 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                         condicion = False
                         break
             return(condicion)
-
 
         def por_dificulad(palabras_utilies, dificultad):
             """
@@ -180,7 +177,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
         
             resultados = []
             for f in concurrent.futures.as_completed(results): #genero un iterador
-                resultados.append(f.result()) # f es un objeto que tienen método result
+                resultados.append(f.result()) # f es un objeto que tienen método result que te da el return de "cada thread"
         
         for i in range(0,len(resultados)): #si la palabra existe la aghrego a la lista de palabras utiles
             if resultados[i] == True:
@@ -192,6 +189,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
             return(por_dificulad(palabras_utilies, dificultad))
         else:
             return(None) 
+
     # Aveces ocurre algun error por parte de wiktionary ajeno
     # al codigo escrito por los aulumnos; cuando sucede
     # solo volvemos a ejecutar el codigo
@@ -204,15 +202,15 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
         return elegir_palabra_dos(letras, dificultad,long_maxima)
 
 if __name__ == '__main__':
-    # dificultad = 'dificil'
-    # ejemplo = ['a','p','q','d','t','z','n']
-    # res= elegir_palabra(ejemplo, dificultad)   
+    dificultad = 'dificil'
+    ejemplo = ['a','p','q','d','t','z','n']
+    res= elegir_palabra(ejemplo, dificultad)   
     # print(res)
     #print(validar_palabra('asada'))
     #$%Comprobar espacio en tablero para la palabra  
     corriendo = True
     inicio = int(t.time())
     while corriendo:
-        reloj, corriendo = temporizador(10, inicio)
-        print(reloj)
-    
+        reloj, corriendo = temporizador(10, inicio, corriendo)
+        print(reloj, corriendo)
+        print(res)
