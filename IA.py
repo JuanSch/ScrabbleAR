@@ -1,7 +1,20 @@
 from pattern.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
+import PySimpleGUI as sg
+import time as t
 import concurrent.futures
 import json
+
+def temporizador(tiempo, inicio):
+    reloj = f'{divmod(tiempo,60)[0]:02}:{divmod(tiempo,60)[1]:02}'
+    corriendo = True
+    while corriendo:
+        transcurrido = int(t.time())-inicio
+        tiempo -= transcurrido
+        reloj = f'{divmod(tiempo, 60)[0]:02}:{divmod(tiempo, 60)[1]:02}'
+        if tiempo < 0:
+            corriendo = False
+        return reloj, corriendo
 
 def validar_palabra(palabra):
     palabra = parse(palabra).split('/')
@@ -191,10 +204,15 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
         return elegir_palabra_dos(letras, dificultad,long_maxima)
 
 if __name__ == '__main__':
-    dificultad = 'dificil'
-    ejemplo = ['a','p','q','d','t','z','n']
-    res= elegir_palabra(ejemplo, dificultad)   
-    print(res)
+    # dificultad = 'dificil'
+    # ejemplo = ['a','p','q','d','t','z','n']
+    # res= elegir_palabra(ejemplo, dificultad)   
+    # print(res)
     #print(validar_palabra('asada'))
     #$%Comprobar espacio en tablero para la palabra  
+    corriendo = True
+    inicio = int(t.time())
+    while corriendo:
+        reloj, corriendo = temporizador(10, inicio)
+        print(reloj)
     
