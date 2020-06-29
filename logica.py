@@ -365,6 +365,10 @@ class Atril:
         if valor == 3:
             self.cambiar = []
 
+    def imagen(self, espacio):
+        if espacio is None:
+
+
     def click(self, evento):
         ficha = self.fichas[evento]
         if self.estado == 'CAMBIAR':
@@ -428,5 +432,8 @@ class Atril:
                 entregar.append(v)
                 self.vacias.append(k)
         return entregar
+
+class AtrilIA(Atril):
+
 
 
