@@ -366,8 +366,10 @@ class Atril:
             self.cambiar = []
 
     def imagen(self, espacio):
-        if espacio is None:
-
+        if self.fichas[espacio] is None:
+            return f'imagenes{ruta()}Atril.png'
+        else:
+            return self.fichas[espacio].getimagen()
 
     def click(self, evento):
         ficha = self.fichas[evento]
@@ -434,6 +436,8 @@ class Atril:
         return entregar
 
 class AtrilIA(Atril):
-
-
-
+    def imagen(self, espacio):
+        if self.fichas[espacio] is None:
+            return f'imagenes{ruta()}Atril.png'
+        else:
+            return f'imagenes{ruta()}FichaIA.png'

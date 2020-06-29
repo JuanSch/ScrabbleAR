@@ -36,10 +36,10 @@ def armar_botones(tablero, dim_boton):
     return botones
 
 def armar_atril(atril, dim_boton):
-    fichas = [sg.Button(key=k, pad=(0, 0), image_filename=v.getimagen(),
+    fichas = [sg.Button(key=k, pad=(0, 0), image_filename=atril.imagen(k),
                image_size=dim_boton, border_width=0,
                button_color=('#DDDDDD', '#DDDDDD'))
-            for k,v in atril.fichas.items()]
+            for k in atril.fichas.keys()]
     return fichas
 
 def simular_bolsa(letras):
@@ -64,7 +64,7 @@ def jugar():
 
         nonlocal window
         for k, v in atril.fichas.items():
-            window.FindElement(k).Update(image_filename=v.getimagen())
+            window.FindElement(k).Update(image_filename=v.imagen())
 
 
     def actualizar_tablero(marcar, borrar):
@@ -72,7 +72,7 @@ def jugar():
 
         nonlocal window
         nonlocal tablero
-        nonlocal atriljugador
+        nonlocal atril_jugador
         try:
             for casilla in borrar:
                 imagen = tablero.getcasilla(casilla).getimagen()
@@ -105,10 +105,11 @@ def jugar():
 
     tablero = lg.Tablero(columnas, filas)
 
-    atriljugador = lg.Atril()
+    atril_jugador = lg.Atril()
+    atril_IA = lg.AtrilIA()
 
-    atriljugador.recibirfichas(simular_bolsa(letras))
-    atriljugador.setestado(1)
+    # atril_jugador.recibirfichas(simular_bolsa(letras))
+    # atril_jugador.setestado(1)
 
     palabra=lg.Palabra()
 
@@ -121,7 +122,7 @@ def jugar():
 
     columna1.append([sg.T('')])
 
-    linea_inferior = armar_atril(atriljugador, dim_boton)
+    linea_inferior = armar_atril(atril_jugador, dim_boton)
 
     botones_jugador = [sg.T('      '),
                        sg.Button('JUGAR', key='-JUGAR-', size=(12, 2),
@@ -185,13 +186,13 @@ def jugar():
                 #$% al menú principal o cerrar el juego ("Volver al escritorio")
                 window.FindElement(event).Update('Comenzar')
 
-        elif event in atriljugador.fichas.keys():  # el click sucede en el atril
-            atriljugador.click(event)
-            actualizar_atril(atriljugador)
-            if (atriljugador.estado == 'ELEGIR'
-                and atriljugador.cambiar is not None):
+        elif event in atril_jugador.fichas.keys():  # el click sucede en el atril
+            atril_jugador.click(event)
+            actualizar_atril(atril_jugador)
+            if (atril_jugador.estado == 'ELEGIR'
+                and atril_jugador.cambiar is not None):
                 # si esto sucede significa que el click fue una deselección
-                    pos = palabra.posficha(atriljugador.cambiar[0])
+                    pos = palabra.posficha(atril_jugador.cambiar[0])
                     if pos is not None:
                         marcar, borrar, devolver = tablero.jugada(palabra, pos)
                         actualizar_tablero(marcar, borrar)
@@ -200,22 +201,22 @@ def jugar():
         elif event in tablero.getposibles(palabra, turno):
             # si estado == PASAR hay una ficha seleccionada
             # para colocar en el tablero
-            if atriljugador.estado == 'PASAR':
+            if atril_jugador.estado == 'PASAR':
                 marcar, borrar, devolver = tablero.jugada(
-                    palabra, event, atriljugador.cambiar[0],
-                    atriljugador.cambiar[1])
+                    palabra, event, atril_jugador.cambiar[0],
+                    atril_jugador.cambiar[1])
                 actualizar_tablero(marcar, borrar)
                 imagen = palabra.fichas[event][0].getimagen()
                 window.FindElement(event).Update(image_filename=imagen)
-                atriljugador.setestado(1)
+                atril_jugador.setestado(1)
 
             elif event in palabra.getposiciones():
                 marcar, borrar, devolver = tablero.jugada(palabra, event)
                 actualizar_tablero(marcar, borrar)
 
             if devolver is not None:
-                atriljugador.click(devolver)
-                actualizar_atril(atriljugador)
+                atril_jugador.click(devolver)
+                actualizar_atril(atril_jugador)
 
 
     #cierre
