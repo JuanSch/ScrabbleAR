@@ -25,9 +25,9 @@ class Ficha:
     así como devolver presentar la ruta de imagen que corresponda"""
 
     def __init__(self, letra, valor):
-        self.letra=letra
-        self.valor=valor
-        self.select=False
+        self.letra = letra
+        self.valor = valor
+        self.select = False
 
     def getimagen(self):
         if self.select:
@@ -134,13 +134,14 @@ class Palabra:
         return list(self.fichas.keys())
 
     def posficha(self, atril):
-        encontre = False
+        """Busca si el valor de atril que recibe está entre los que conforman
+        la palabra en curso. Si lo está devuelve la posición de la ficha
+        en el tablero, en caso contrario devuelve None"""
         pos = None
         for k, v in self.fichas.items():
             if v[1] == atril:
-                encontre = True
                 pos = k
-        return encontre, pos
+        return pos
 
     def agregarletra(self, pos, origen, ficha):
         """Sólo permite agregar letras en posiciones nuevas"""
@@ -367,29 +368,38 @@ class Atril:
     def click(self, evento):
         ficha = self.fichas[evento]
         if self.estado == 'CAMBIAR':
+            # Se seleccionarán tantas fichas como se desee intercambiar
+            # con la bolsa
             if not ficha.select:
                 self.cambiar.append(ficha)
             else:
                 self.cambiar.pop(ficha)
             ficha.cambiarselect()
         elif self.estado == 'ELEGIR':
+            # Se seleccionará una ficha para colocar en el tablero
+            # o se deselccionará una ya colocada
             if not ficha.select:
+                # Si la ficha no estaba seleccionada, siginifica que se eligió
+                # una para colocar en el tablero, se cambia el estado
+                # del atril a 'PASAR'
                 self.setestado(2)
-                ficha.cambiarselect()
-                self.cambiar = (evento, ficha)
-            else:
-                pass
+            ficha.cambiarselect()
+            self.cambiar = (evento, ficha)
         elif self.estado == 'PASAR':
+            # Se deseleccionará la ficha en curso, o se seleccionará otra
+            # en este estado no se pueden sacar fichas del tablero
             if evento == self.cambiar[0]:
+                # Se hizo click en la ficha que ya estaba seleccionada
+                # para colocar en el tablero
                 self.cambiar = None
                 ficha.cambiarselect()
                 self.setestado(1)
             elif not ficha.select:
+                # Se decidió cambiar qué ficha se iba a colocar en el tablero
                 self.cambiar[1].cambiarselect()
                 self.cambiar = (evento, ficha)
                 ficha.cambiarselect()
-            else:
-                pass
+
 
     def pedirfichas(self):
         return len(self.vacias)

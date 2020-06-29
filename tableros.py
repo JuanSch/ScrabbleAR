@@ -1,10 +1,21 @@
 import PySimpleGUI as sg
-from IA import temporizador
 import time as t
 import logica as lg
 import string
 import random
 import json
+
+
+def temporizador(tiempo, inicio, corriendo):
+    transcurrido = int(t.time())-inicio
+    actual = tiempo - transcurrido
+    print(actual)
+    if actual > 0:
+        reloj = f'{divmod(actual, 60)[0]:02}:{divmod(actual, 60)[1]:02}'
+    else:
+        corriendo = False
+        reloj = 'FIN'
+    return reloj, corriendo
 
 
 def armar_botones(tablero, dim_boton):
@@ -45,23 +56,23 @@ def simular_bolsa(letras):
         fichas.append(ficha)
     return fichas
 
-def actualizar_atril(window, atril):
-    for k, v in atril.fichas.items():
-        window.FindElement(k).Update(image_filename=v.getimagen())
 
 def jugar():
 
-    def actualizar_pantalla(marcar, borrar, devolver):
-        """se encarga de las actualizaciones a la GUI"""
+    def actualizar_atril(atril):
+        """se encarga de las actualizacines a la GUI de un atril"""
+
+        nonlocal window
+        for k, v in atril.fichas.items():
+            window.FindElement(k).Update(image_filename=v.getimagen())
+
+
+    def actualizar_tablero(marcar, borrar):
+        """se encarga de las actualizaciones a la GUI del tablero"""
 
         nonlocal window
         nonlocal tablero
         nonlocal atriljugador
-        if devolver is not None:
-            ficha = atriljugador.fichas[devolver]
-            ficha.cambiarselect()
-            window.FindElement(devolver).Update(image_filename=
-                                            ficha.getimagen())
         try:
             for casilla in borrar:
                 imagen = tablero.getcasilla(casilla).getimagen()
@@ -144,38 +155,46 @@ def jugar():
 
     #bucle
     corriendo = False
+    fin = False
     inicio = 0
-    while True:
+    while not fin:
         event, _values = window.Read(timeout= 500)
         if corriendo:
             reloj, corriendo = temporizador(tiempo, inicio, corriendo)
-            if reloj != '-1:59':
-                window.find_element('-RELOJ-').Update(reloj)
-            else: #aprovecha e bug!
-                window.find_element('-RELOJ-').Update('FIN')
+            window.FindElement('-RELOJ-').Update(reloj)
+            if reloj == 'FIN':
+                corriendo = False
+                fin = True
 
         if (event is None):
             break
         
         if event == '-INI/PAUSA-':
-            if not(corriendo):
-                window.find_element(event).Update('Pausar')
+            if not corriendo:
+                window.FindElement(event).Update('Pausar')
+                #$% 'Pausar' es un término ambiguo, debería ser claro que
+                #$% al hacer click se está decidiendo SALIR para retomar
+                #$% en otro momento
                 corriendo = True
                 inicio = int(t.time())
             else:
                 corriendo = False
-                window.find_element(event).Update('Reiniciar')
+                sg.Popup('Partida guardada, podrá retomarla\n'
+                         'la próxima vez que acceda a ScrabbleAr')
+                #$% Debería generarse una ventana NO POPUP que permita volver
+                #$% al menú principal o cerrar el juego ("Volver al escritorio")
+                window.FindElement(event).Update('Comenzar')
 
-        elif 'F' in event:  #el click sucede en el atril
+        elif event in atriljugador.fichas.keys():  # el click sucede en el atril
             atriljugador.click(event)
-            actualizar_atril(window, atriljugador)
+            actualizar_atril(atriljugador)
             if (atriljugador.estado == 'ELEGIR'
                 and atriljugador.cambiar is not None):
                 # si esto sucede significa que el click fue una deselección
-                    en_palabra, pos = palabra.posficha(atriljugador.cambiar[0])
-                    if en_palabra:
-                        marcar, borrar, devolver=tablero.jugada(palabra, pos)
-                        actualizar_pantalla(marcar, borrar, devolver)
+                    pos = palabra.posficha(atriljugador.cambiar[0])
+                    if pos is not None:
+                        marcar, borrar, devolver = tablero.jugada(palabra, pos)
+                        actualizar_tablero(marcar, borrar)
 
         # chequea si el click sucede en una posición válida del tablero
         elif event in tablero.getposibles(palabra, turno):
@@ -185,19 +204,25 @@ def jugar():
                 marcar, borrar, devolver = tablero.jugada(
                     palabra, event, atriljugador.cambiar[0],
                     atriljugador.cambiar[1])
-                actualizar_pantalla(marcar, borrar, devolver)
+                actualizar_tablero(marcar, borrar)
                 imagen = palabra.fichas[event][0].getimagen()
-                window.FindElement(event).Update(
-                    image_filename=imagen)
+                window.FindElement(event).Update(image_filename=imagen)
                 atriljugador.setestado(1)
 
             elif event in palabra.getposiciones():
-                marcar, borrar, devolver=tablero.jugada(palabra, event)
-                actualizar_pantalla(marcar, borrar, devolver)
+                marcar, borrar, devolver = tablero.jugada(palabra, event)
+                actualizar_tablero(marcar, borrar)
+
+            if devolver is not None:
+                atriljugador.click(devolver)
+                actualizar_atril(atriljugador)
+
 
     #cierre
     window.Close()
 
+    if fin:
+        sg.Popup('Puntajes')
 
 if __name__ == '__main__':
     jugar()
