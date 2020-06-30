@@ -2,7 +2,6 @@ import PySimpleGUI as sg
 import IA as ia
 import time as t
 import logica as lg
-import string
 import random
 import json
 
