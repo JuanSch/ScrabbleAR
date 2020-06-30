@@ -3,11 +3,37 @@ import PySimpleGUI as sg
 import json
 import time as t
 from tableros import jugar
-from IA import temporizador
 
+def salir():
+    """
+    Ventana de PySimpleGUI que te pregunta si realmente deseas salir
+    Honestamente es un juego genial, ¿queien querria salir?
+    """
+    layout = [
+        [sg.T("¿Realmente deseas salir?", size=(17,1), justification = "center",
+              font=("Georgia", 17))],
+        [sg.B("Si", size=(12, 1)),sg.B("No",size=(12,1))]
+        ]
+    window_salir = sg.Window("ScrabbleAR - salir del juego", layout)
+
+    while True:
+        event, _value = window_salir.read()
+        if event == 'Si':
+            condicion = True
+            break
+        else:
+            condicion = False
+            break
+    window_salir.close()
+
+    return(condicion)
 
 def config_nuevo_juego(configuracion):
-    
+    """
+    Muestra una ventana de PySimpleGUI en la que podemos elegir la dificultad y el tiempo de juego 
+    tambien acceder al menu de configuracion, una vez definidas las preferencias podremos jugar
+    haciendo click en "Jugar"
+    """
     s = []
     for i in range(1,61):
         s.append(str(i))
@@ -23,10 +49,10 @@ def config_nuevo_juego(configuracion):
         [sg.B("Jugar", size=(12, 1), key="-jugar-"),sg.B("Personalizar",size=(12,1), key="-personalizar-")]
         ]
 
-    window = sg.Window("ScrabbleAR - Nuevo juego", layout)
+    window_nuevo_juego = sg.Window("ScrabbleAR - Nuevo juego", layout)
 
     while True:
-        event, value = window.read()
+        event, value = window_nuevo_juego.read()
         if event == "-jugar-":
             configuracion['dificultad'] = value[0]
             configuracion['tiempo'] = value[1] 
@@ -36,13 +62,18 @@ def config_nuevo_juego(configuracion):
         else:
             break
 
-    window.close()
+    window_nuevo_juego.close()
+    
     if event == "-jugar-":
         return(configuracion,True)
     else:
         return(configuracion,False)
 
 def configurar(dic):
+    """
+    Muestra una ventana de PySimpleGui donde podemos elegir la cantidad de apariciones de cada letra
+    en caso de modificar un valor, debemos hacer click en guardar por cada letra modificada 
+    """
     letras = dic['personalizada']
     lista_letras= []
     lista_valores = []
@@ -59,10 +90,10 @@ def configurar(dic):
         [sg.B("Guardar", size=(12, 1), key="-guardar-")]
         ]
 
-    window = sg.Window("ScrabbleAR - Configurar", layout)
+    window_configurar = sg.Window("ScrabbleAR - Configurar", layout)
 
     while True:
-        event, value = window.read()
+        event, value = window_configurar.read()
         if event == None:
             break
         elif event == '-guardar-':
@@ -70,9 +101,18 @@ def configurar(dic):
             dic['personalizada'] = letras
             with open('configuraciones.json','w', encoding='UTF-8') as f:
                 json.dump(dic, f, indent= 4)
-    window.close()
+    window_configurar.close()
     
-def pantalla_inicial():
+def pantalla_inicial(): 
+    """
+    Muestra una ventana de PySimpleGui donde está el menu principal 
+    las opciones del menu son 
+        Crear nueva partida
+        Continuar una partida existente
+        Configurar la dificultad personalizada
+        Mostrar los diez mejores puntajes
+        Salir
+    """
 
     layout = [
         [sg.T("Scrabble AR", size=(17, 1), justification="center",
@@ -89,9 +129,14 @@ def pantalla_inicial():
     
     while True:
         event, _value = window.read()
-        #pylint: disable=unused-argument
-        if event in ("-salir-", None):
+        if event == None:
+            sg.popup('psicopata')
             break
+        elif event == "-salir-":
+            if salir():
+                break
+            else:
+                pass
 
         elif event in "-nueva-":
             with open('configuraciones.json','r', encoding='UTF-8') as f:
@@ -99,9 +144,9 @@ def pantalla_inicial():
                 configs, condicion = config_nuevo_juego(configs)
             with open('configuraciones.json','w', encoding='UTF-8') as f:
                 json.dump(configs, f, indent= 4)
-                if condicion:
-                    jugar() #pasar configs para que tenga la configuracion 
-            break
+            if condicion:
+                jugar() 
+                break
 
         elif event in "-continuar-":
             pass

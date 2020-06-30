@@ -3,8 +3,11 @@ from pattern.web import Wiktionary
 import concurrent.futures
 import json
 
-
 def validar_palabra(palabra):
+    """
+    Comprueba que el string que se pasa como palabra sea una palabra valida
+    retorna True si lo es. Caso contrario retorna False
+    """
     palabra = parse(palabra).split('/')
     if palabra[1] in ('AO','JJ','AQ','DI','DT','VAG','VBG','VAI','VAN','MD',
                       'VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS',
@@ -31,6 +34,17 @@ def validar_palabra(palabra):
             return True
         else:
             return False
+
+def calcular_puntaje(palabra):
+    """
+    Funcion que calcula el puntaje de la palabra ingresada 
+    """
+    puntaje = 0
+    with open('valores_puntajes.json') as f: #Abro el archivo
+        puntajes = json.load(f)
+    for char in palabra:
+        puntaje += puntajes['puntos_letra'][char] #por cada caracter evaluo cuanto vale y lo sumo al total
+    return(puntaje)
 
 def elegir_palabra(letras, dificultad,long_maxima = 7):
     def elegir_palabra_dos(letras, dificultad, long_maxima):
@@ -90,13 +104,9 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                 """
                 max = 0
                 palabra_elegida = str
-                with open('valores_puntajes.json') as f:
-                    puntajes = json.load(f)
                     
                 for palabra in palabras:
-                    puntaje_palabra_actual = 0
-                    for char in palabra:
-                        puntaje_palabra_actual += puntajes['puntos_letra'][char]
+                    puntaje_palabra_actual = calcular_puntaje(palabra)
                     if puntaje_palabra_actual > max:
                         max = puntaje_palabra_actual
                         palabra_elegida = palabra
@@ -105,13 +115,9 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
 
 
             def medio(palabras):
-                with open('valores_puntajes.json') as f:
-                    puntajes = json.load(f)
                 palabras_posibles = []
                 for palabra in palabras:
-                    puntaje_palabra_actual = 0
-                    for char in palabra:
-                        puntaje_palabra_actual += puntajes['puntos_letra'][char]
+                    puntaje_palabra_actual = calcular_puntaje(palabra)
                     palabras_posibles.append(palabra, puntaje_palabra_actual)
                 
                 palabra_elegida =  palabras_posibles[len(palabras_posibles)//2]
@@ -120,13 +126,9 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
 
             def facil(palabras):
                 palabra_elegida = str
-                with open('valores_puntajes.json') as f:
-                    puntajes = json.load(f)
                 min = 999
                 for palabra in palabras:
-                    puntaje_palabra_actual = 0
-                    for char in palabra:
-                        puntaje_palabra_actual += puntajes['puntos_letra'][char]
+                    puntaje_palabra_actual = calcular_puntaje(palabra)
                     if puntaje_palabra_actual < min:
                         min = puntaje_palabra_actual
                         palabra_elegida = palabra
@@ -192,8 +194,8 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
 
 if __name__ == '__main__':
     dificultad = 'dificil'
-    ejemplo = ['a','p','q','d','t','z','n']
+    ejemplo = ['a','p','q','d','t','z','n','a','o','o','a']
     res= elegir_palabra(ejemplo, dificultad)   
-    print(res)
+    print(res, calcular_puntaje(res))
     #print(validar_palabra('asada'))
     #$%Comprobar espacio en tablero para la palabra
