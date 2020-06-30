@@ -1,5 +1,6 @@
 import platform
 import operator
+from functools import reduce
 
 
 def ruta():
@@ -56,11 +57,13 @@ class Casilla:
     (en función de la existencia o no de una ficha y el modificador
     de la casilla)."""
 
-    valores={'2L': lambda x: x*2,
+    valores={'': lambda x: x,
+             '2L': lambda x: x*2,
              '3L': lambda x: x*3,
              '-3': lambda x: x-3,
              '3P': 3,
-             '2P': 2}
+             '2P': 2
+             }
 
     def __init__(self, pos, tipo=''):
         self.pos=pos
@@ -84,28 +87,23 @@ class Casilla:
             else:
                 return f'imagenes{ruta()}casilla{self.tipo}.png'
 
-    def marcar(self, ficha):
-        """Una casilla sólo Sólo debería recibir fichas 'en proceso'
-        mientras el jugador o la IA definen la palabra"""
-        self.ficha=ficha
-
-    def ocupar(self):
+    def ocupar(self, ficha):
         """Una casilla no se da por ocupada hasta que no se concreta
         la jugada"""
-        self.ocupado=True
+        self.ocupado = True
+        self.ficha = ficha
         self.ficha.cambiarselect()
 
     def valor(self):
         """Esta función devuelve el valor que contiene la casilla
         y el modificador de palabra (si no multiplica por 2 o 3,
-        siempre multiplica por 1"""
+        siempre multiplica por 1)"""
         try:
-            valor=Casilla.valores[self.tipo](self.ficha.getvalor())
-            puntos=(valor, 1)
+            valor = Casilla.valores[self.tipo](self.ficha.getvalor())
+            return (valor, 1)
         except:
-            valor=self.ficha.getvalor()
-            puntos=(valor, Casilla.valores[self.tipo])
-        return puntos
+            valor = self.ficha.getvalor()
+            return (valor, Casilla.valores[self.tipo])
 
 
 #####################################################################
@@ -214,6 +212,19 @@ class Palabra:
             self.agregarletra(pos, origen, ficha)
             return None
 
+    def vaciar(self):
+        self.min=None
+        self.max=None
+        self.eje=None
+        self.fichas={}
+
+    def probar(self):
+        ok = False
+        cant = len(self.fichas)
+        if cant > 2 and self.max[self.eje] + 1 - self.min[self.eje] == cant:
+            ok = True
+        return ok
+
     def __str__(self):
         return ''.join(val[1][0].letra for val in self.fichas.items())
 
@@ -262,18 +273,11 @@ class Tablero:
         else:
             return self.posibles
 
-
     def getcasilla(self, pos):
         x = pos[0]
         y = pos[1]
         casilla = self.matriz[y][x]
         return casilla
-
-    def setcasilla(self, pos, ficha):
-        x = pos[0]
-        y = pos[1]
-        casilla = self.matriz[y][x]
-        casilla.marcar(ficha)
 
     def getvalidos(self):
         validos = []
@@ -308,7 +312,6 @@ class Tablero:
             limite(derecha, posibles, eje, -1, direcciones['-'])
             limite(izquierda, posibles, eje, bordes[eje], direcciones['+'])
 
-
         devolver = palabra.modificar(pos, origen, ficha)
         anteriores = list(self.posibles)
         if devolver is not None and palabra.min is None:
@@ -328,13 +331,39 @@ class Tablero:
             self.posibles = set(posibles)
             borrar = list(set(anteriores)-(self.posibles))
         marcar = list(self.posibles)
-        #Con esto garantizamos que no se marquen como posibles
-        #casillas en las que hay una ficha
-        #de la palabra en construcción
+        # Con esto garantizamos que no se marquen como posibles
+        # casillas en las que hay una ficha
+        # de la palabra en construcción
         for k, v in palabra.fichas.items():
                 if k in marcar:
                     marcar.remove(k)
         return marcar, borrar, devolver
+
+    def valor_palabra(self, palabra):
+        puntos_base = 0
+        multiplicador = 1
+        for key in palabra.keys():
+            casilla = self.getcasilla(key)
+            puntos_base += casilla.valor()[0]
+            multiplicador *= casilla.valor()[1]
+        return puntos_base*multiplicador
+
+    def fijar_palabra(self, palabra):
+
+        def calcular(tupla1, tupla2):
+            valor = tupla1[0] + tupla2[0]
+            multi = tupla1[1] * tupla2[1]
+            return (valor, multi)
+
+        valores = []
+        for k, v in palabra.fichas.items():
+            ficha = v[0]
+            casilla = self.getcasilla(k)
+            casilla.ocupar(ficha)
+            valores.append(casilla.valor())
+        valor = reduce(lambda x, y: x*y, reduce(calcular, valores))
+        self.posibles = self.getvalidos()
+        return valor
 
 #####################################################################
 #                         FIN CLASE TABLERO                         #
@@ -348,11 +377,11 @@ class Tablero:
 class Atril:
     estados = {0:'APAGADO', 1:'ELEGIR', 2:'PASAR', 3:'CAMBIAR'}
 
-    def __init__(self):
+    def __init__(self, inicio='F'):
         fichas = {}
         vacias = []
         for i in range(7):
-            nombre = f'F{i}'
+            nombre = f'{inicio}{i}'
             fichas[nombre] = None
             vacias.append(nombre)
         self.vacias = vacias
@@ -432,10 +461,18 @@ class Atril:
         for k,v in self.fichas.items():
             if v.select:
                 entregar.append(v)
+                self.fichas[k] = None
                 self.vacias.append(k)
         return entregar
 
+    def eliminar(self, palabra):
+        for _k, v in palabra.fichas.items():
+            self.fichas[v[1]] = None
+
 class AtrilIA(Atril):
+    def __init__(self):
+        Atril.__init__(self, inicio='IA')
+
     def imagen(self, espacio):
         if self.fichas[espacio] is None:
             return f'imagenes{ruta()}Atril.png'
