@@ -244,17 +244,21 @@ class Tablero:
     tipos de casilla aún no está implementada, pero debería estar
     definida por el tipo de tablero"""
 
-    def __init__(self, columnas, filas):
+    def __init__(self, columnas, filas, casillas):
         self.xy = (columnas, filas)
         matriz = []
         for x in range(columnas):
             linea = []
             for y in range(filas):
-                pos = tuple([x, y])
-                if x == y or x+y == filas-1:
-                    casilla = Casilla(pos, '2L')
-                else:
-                    casilla = Casilla(pos)
+                pos = [x, y]
+                ok = False
+                for key in list(Casilla.valores.keys())[1:]:
+                    if pos in casillas[key]:
+                        casilla = Casilla(tuple(pos), key)
+                        ok = True
+                        break
+                if not ok:
+                    casilla = Casilla(tuple(pos))
                 linea.append(casilla)
             matriz.append(linea)
         self.matriz = matriz

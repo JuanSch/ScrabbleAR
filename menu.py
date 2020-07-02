@@ -1,37 +1,12 @@
-import concurrent.futures
 import PySimpleGUI as sg
 import json
-import time as t
 from tableros import jugar
-
-def salir():
-    """
-    Ventana de PySimpleGUI que te pregunta si realmente deseas salir
-    Honestamente es un juego genial, ¿queien querria salir?
-    """
-    layout = [
-        [sg.T("¿Realmente deseas salir?", size=(17,1), justification = "center",
-              font=("Georgia", 17))],
-        [sg.B("Si", size=(12, 1)),sg.B("No",size=(12,1))]
-        ]
-    window_salir = sg.Window("ScrabbleAR - salir del juego", layout)
-
-    while True:
-        event, _value = window_salir.read()
-        if event == 'Si':
-            condicion = True
-            break
-        else:
-            condicion = False
-            break
-    window_salir.close()
-
-    return(condicion)
 
 def config_nuevo_juego(configuracion):
     """
-    Muestra una ventana de PySimpleGUI en la que podemos elegir la dificultad y el tiempo de juego 
-    tambien acceder al menu de configuracion, una vez definidas las preferencias podremos jugar
+    Muestra una ventana de PySimpleGUI en la que podemos elegir
+    la dificultad y el tiempo de juego tambien acceder al menu
+    de configuracion, una vez definidas las preferencias podremos jugar
     haciendo click en "Jugar"
     """
     s = []
@@ -44,25 +19,26 @@ def config_nuevo_juego(configuracion):
         [sg.T("Dificultad: "),
          sg.DropDown(('Facil','Medio','Dificil','Personalizada'),
                      default_value=(configuracion['dificultad']),size=(10,1))],
-        [sg.T("Tiempo de juego (en minutos): ", size=(22, 1)),
+        [sg.T("Tiempo de juego (minutos): ", size=(22, 1)),
          sg.InputCombo((s),size=(5,1),default_value=(configuracion['tiempo']))],
-        [sg.B("Jugar", size=(12, 1), key="-jugar-"),sg.B("Personalizar",size=(12,1), key="-personalizar-")]
+        [sg.Button("Jugar", size=(12, 1), key="-jugar-"),
+         sg.Button("Personalizar",size=(12,1), key="-personalizar-")]
         ]
 
-    window_nuevo_juego = sg.Window("ScrabbleAR - Nuevo juego", layout)
+    window_nuevo_juego = sg.Window("ScrabbleAR - Nuevo juego").Layout(layout)
 
     while True:
-        event, value = window_nuevo_juego.read()
+        event, values = window_nuevo_juego.Read()
         if event == "-jugar-":
-            configuracion['dificultad'] = value[0]
-            configuracion['tiempo'] = value[1] 
+            configuracion['dificultad'] = values[0]
+            configuracion['tiempo'] = values[1]
             break
         elif event == "-personalizar-":
             configurar(configuracion)
         else:
             break
 
-    window_nuevo_juego.close()
+    window_nuevo_juego.Close()
     
     if event == "-jugar-":
         return(configuracion,True)
@@ -71,8 +47,9 @@ def config_nuevo_juego(configuracion):
 
 def configurar(dic):
     """
-    Muestra una ventana de PySimpleGui donde podemos elegir la cantidad de apariciones de cada letra
-    en caso de modificar un valor, debemos hacer click en guardar por cada letra modificada 
+    Muestra una ventana de PySimpleGui donde podemos elegir la cantidad
+    de apariciones de cada letra en caso de modificar un valor,
+    debemos hacer click en guardar por cada letra modificada
     """
     letras = dic['personalizada']
     lista_letras= []
@@ -85,23 +62,25 @@ def configurar(dic):
     layout=[
         [sg.T("Perfil personalizado", size=(17,1), justification = "center",
               font=("Georgia", 17))],
-        [sg.T("Letra",font=("Georgia", 12)), sg.Combo(lista_letras, size=(8,1), default_value= 'a'),
-         sg.T("Cantidad:", font=("Georgia", 12),),sg.Combo(lista_valores,size=(8,1), default_value=df_vl)],
-        [sg.B("Guardar", size=(12, 1), key="-guardar-")]
+        [sg.T("Letra",font=("Georgia", 12)),
+         sg.Combo(lista_letras, size=(8,1), default_value= 'a'),
+         sg.T("Cantidad:", font=("Georgia", 12),),
+         sg.Combo(lista_valores, size=(8,1), default_value=df_vl)],
+        [sg.Button("Guardar", size=(12, 1), key="-guardar-")]
         ]
 
-    window_configurar = sg.Window("ScrabbleAR - Configurar", layout)
+    window_configurar = sg.Window("ScrabbleAR - Configurar").Layout(layout)
 
     while True:
-        event, value = window_configurar.read()
+        event, values = window_configurar.Read()
         if event == None:
             break
         elif event == '-guardar-':
-            df_vl = letras[value[0]] = value[1]
+            df_vl = letras[values[0]] = values[1]
             dic['personalizada'] = letras
             with open('configuraciones.json','w', encoding='UTF-8') as f:
-                json.dump(dic, f, indent= 4)
-    window_configurar.close()
+                json.dump(dic, f, indent=4)
+    window_configurar.Close()
     
 def pantalla_inicial(): 
     """
@@ -111,36 +90,36 @@ def pantalla_inicial():
         Continuar una partida existente
         Configurar la dificultad personalizada
         Mostrar los diez mejores puntajes
-        Salir
     """
 
     layout = [
         [sg.T("Scrabble AR", size=(17, 1), justification="center",
               font=("Georgia", 17))],
-        [sg.T(' '),sg.B('Nueva partida', size=(25, 2), key="-nueva-")],
-        [sg.T(' '),sg.B('Continuar partida', size=(25, 2), key="-continuar-")],
-        [sg.T(' '),sg.B('Configuración', size=(25, 2), key="-configuracion-")],
-        [sg.T(' '),sg.B('Mejores puntajes', size=(25, 2), key="-puntajes-")],
-        [sg.T(' '),sg.B('Salir', size=(25, 2), key="-salir-")],
-        [sg.T(' '),sg.T("  ", size=(17, 1), justification="center",)]
+        [sg.T(' '),
+         sg.Button('Nueva partida', size=(25, 2), key="-nueva-")],
+        [sg.T(' '),
+         #$% Este botón sólo debería estar habilitado si es que hay
+         #$%una partida guardada lista para continuar
+         sg.Button('Continuar partida', size=(25, 2),
+                   key="-continuar-", disabled=True)],
+        [sg.T(' '),
+         sg.Button('Configuración', size=(25, 2), key="-configuracion-")],
+        [sg.T(' '),
+         sg.Button('Mejores puntajes', size=(25, 2), key="-puntajes-")],
+        [sg.T(' '), sg.T("  ", size=(17, 1), justification="center")]
         ]
 
-    window = sg.Window("ScrabbleAR - Menu", layout)
+    window = sg.Window("Menu Principal").Layout(layout)
     
     while True:
-        event, _value = window.read()
+        event, _values = window.Read()
+
         if event == None:
-            sg.popup('psicopata')
             break
-        elif event == "-salir-":
-            if salir():
-                break
-            else:
-                pass
 
         elif event in "-nueva-":
             with open('configuraciones.json','r', encoding='UTF-8') as f:
-                configs =json.load(f)
+                configs = json.load(f)
                 configs, condicion = config_nuevo_juego(configs)
             with open('configuraciones.json','w', encoding='UTF-8') as f:
                 json.dump(configs, f, indent= 4)
@@ -149,6 +128,7 @@ def pantalla_inicial():
                 break
 
         elif event in "-continuar-":
+
             pass
 
         elif event in "-configuracion-":
@@ -159,7 +139,7 @@ def pantalla_inicial():
         elif event in "-puntajes-":
             pass
         
-    window.close()
+    window.Close()
 
 
     

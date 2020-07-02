@@ -41,7 +41,14 @@ def armar_atril(atril, dim_boton):
               for k in atril.fichas.keys()]
     return fichas
 
-def simular_bolsa(letras):
+def generar_bolsa(cant_letras):
+    bolsa = []
+    for item in cant_letras:
+        for _i in range(item[1]):
+            bolsa.append(item[0])
+    return bolsa
+
+def simular_bolsa(bolsa, puntos):
     """Genera la lista de fichas disponibles para el jugador, es sólo
     la lógica subyacente a la GUI. Esta es la sección menos desarrollada
     por el momento, debería estar vinculada a la 'bolsa de fichas'
@@ -49,10 +56,11 @@ def simular_bolsa(letras):
 
     fichas=[]
     for _i in range(7):
-        pos = random.randrange(len(letras))
-        letra_valor = letras[pos]
-        letras.pop(pos)
-        ficha=(letra_valor)
+        pos = random.randrange(len(bolsa))
+        letra = bolsa[pos]
+        bolsa.pop(pos)
+        valor = puntos[letra]
+        ficha=(letra, valor)
         fichas.append(ficha)
     return fichas
 
@@ -89,6 +97,8 @@ def jugar():
             pass
 
     ###############
+    # Apertura de archivos
+
     with open('configuraciones.json', 'r', encoding='UTF-8') as f:
         configs=json.load(f)
         dificultad = configs['dificultad'].lower()
@@ -99,16 +109,19 @@ def jugar():
 
     with open('valores_puntajes.json', 'r', encoding='UTF-8') as f:
         valores=json.load(f)
-        bolsa = valores[f'bolsa_{dificultad}']
+        cant_letras = valores[f'{dificultad}']['bolsa']
+        casillas = valores[f'{dificultad}']['tablero']
+        puntos = valores['puntos_letra']
     ###############
 
     filas = columnas = 15
     dim_boton = (40,40)
 
-    tablero = lg.Tablero(columnas, filas)
+    tablero = lg.Tablero(columnas, filas, casillas)
     atril_jugador = lg.Atril()
     atril_IA = lg.AtrilIA()
     palabra = lg.Palabra()
+    bolsa = generar_bolsa(cant_letras)
 
     eval_turno = lambda x,y: (x % 2) == y
 
@@ -181,10 +194,10 @@ def jugar():
                 inicio = int(t.time())
 
                 # Inicialización de atriles
-                atril_jugador.recibirfichas(simular_bolsa(bolsa))
+                atril_jugador.recibirfichas(simular_bolsa(bolsa, puntos))
                 atril_jugador.setestado(0)
                 actualizar_atril(atril_jugador)
-                atril_IA.recibirfichas(simular_bolsa(bolsa))
+                atril_IA.recibirfichas(simular_bolsa(bolsa, puntos))
                 actualizar_atril(atril_IA)
                 window.FindElement('-BOLSA-').Update(
                     f'QUEDAN {len(bolsa)} FICHAS')
