@@ -338,7 +338,7 @@ class Tablero:
         # Con esto garantizamos que no se marquen como posibles
         # casillas en las que hay una ficha
         # de la palabra en construcción
-        for k, v in palabra.fichas.items():
+        for k, _ in palabra.fichas.items():
                 if k in marcar:
                     marcar.remove(k)
         return marcar, borrar, devolver
@@ -433,7 +433,7 @@ class Atril:
                 self.cambiar = None
                 ficha.cambiarselect()
                 self.setestado(1)
-            elif not ficha.select:
+            elif not ficha.select: #$%Cuando haces click en una ficha usada se rompe
                 # Se decidió cambiar qué ficha se iba a colocar en el tablero
                 self.cambiar[1].cambiarselect()
                 self.cambiar = (evento, ficha)
