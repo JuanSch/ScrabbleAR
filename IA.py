@@ -153,13 +153,13 @@ def elegir_palabra(Fichas, dificultad,long_maxima = 7):
                         puntaje += tupla[1]
                         break
             return puntaje
-            
+
         # letras = [v.letrar for _, v in Fichas.items()]
         letras = [] 
         puntaje_letra = [] 
         for key, value in Fichas.items():
             letras.append(key)
-            puntaje_letra.append(tuple(letras, value))
+            puntaje_letra.append(tuple(key, value))
         # letras.sort() #Genero la lista de letras 
         
         palabras_posibles = []
