@@ -302,8 +302,8 @@ def jugar():
 
             # TURNO IA
             else:
-                letras_ia = [v.letra for _k, v in atril_IA.fichas.items()]
-                palabra_ia = ia.elegir_palabra(letras_ia, "dificil")
+                # letras_ia = [v.letra for _k, v in atril_IA.fichas.items()]
+                palabra_ia = ia.elegir_palabra(atril_IA.fichas, "dificil")
                 sg.Popup('La IA todavía no aprendió a usar el tablero\n'
                          f'pero quiso jugar la palabra: "{palabra_ia}"')
                 # Cambio de turnos

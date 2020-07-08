@@ -1,5 +1,6 @@
 from pattern.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
+from logica import Ficha, Casilla, Palabra, Tablero, Atril
 import concurrent.futures
 import json
 
@@ -46,8 +47,8 @@ def calcular_puntaje(palabra):
         puntaje += puntajes['puntos_letra'][char] #por cada caracter evaluo cuanto vale y lo sumo al total
     return(puntaje)
 
-def elegir_palabra(letras, dificultad,long_maxima = 7):
-    def elegir_palabra_dos(letras, dificultad, long_maxima):
+def elegir_palabra(Fichas, dificultad,long_maxima = 7):
+    def elegir_palabra_dos(Fichas, dificultad, long_maxima):
         """
         Esta funcion Elige la palabra mas adecuada para nuestra IA y así ganar la mayor cantidad de puntos 
         primero se fija que palabras puede armar con sus letras y depues evalua cual es la palabra que más puntaje da
@@ -61,40 +62,42 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
             dic_uno = {}
             dic_dos = {}
 
-            for key in lista_uno:
+            for key in lista_uno: #Genero un diccionario con key = letra y value = cantidad de apariciones
                 if key in dic_uno:
                     dic_uno[key] = dic_uno[key] + 1
                 else:
-                    dic_uno[key] = 1
+                    dic_uno[key] = 1 
 
-            for key in lista_dos:
+            for key in lista_dos:#Genero un diccionario con key = letra y value = cantidad de apariciones
                 if key in dic_dos:
                     dic_dos[key] = dic_dos[key] + 1
                 else:
                     dic_dos[key] = 1
             
-            dic_uno_keys  = []
+            dic_uno_keys  = [] #Genero una lista de claves del diccionario uno (las letras de la IA)
             for key in dic_uno:
                 dic_uno_keys.append(key)
 
             cumple = False
-            for key in dic_dos:
+            for key in dic_dos: #si el diccionario dos tiene las mismas letras que el diccionario uno
                 if key in dic_uno_keys:
                     cumple = True
                 else:
                     cumple = False
                     break
             condicion = False
+
             if cumple:
-                for key in dic_dos:
+                for key in dic_dos: #si las cantidad de letras de la IA alcanzan para formar la palabra condicion = True
                     if dic_uno[key] >= dic_dos[key]:
-                        condicion = True
+                        condicion = True 
                     else:
                         condicion = False
                         break
-            return(condicion)
+            return(condicion) 
 
-        def por_dificulad(palabras_utilies, dificultad):
+        def por_dificulad(palabras_utilies, dificultad, puntaje_letra):
+
             """
             Segun la dificultad elige una u otra palaba
             """
@@ -106,7 +109,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                 palabra_elegida = str
                     
                 for palabra in palabras:
-                    puntaje_palabra_actual = calcular_puntaje(palabra)
+                    puntaje_palabra_actual = calcular_puntaje_IA(palabra,puntaje_letra)
                     if puntaje_palabra_actual > max:
                         max = puntaje_palabra_actual
                         palabra_elegida = palabra
@@ -117,7 +120,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
             def medio(palabras):
                 palabras_posibles = []
                 for palabra in palabras:
-                    puntaje_palabra_actual = calcular_puntaje(palabra)
+                    puntaje_palabra_actual = calcular_puntaje_IA(palabra,puntaje_letra)
                     palabras_posibles.append(palabra, puntaje_palabra_actual)
                 
                 palabra_elegida =  palabras_posibles[len(palabras_posibles)//2]
@@ -128,7 +131,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                 palabra_elegida = str
                 min = 999
                 for palabra in palabras:
-                    puntaje_palabra_actual = calcular_puntaje(palabra)
+                    puntaje_palabra_actual = calcular_puntaje_IA(palabra,puntaje_letra)
                     if puntaje_palabra_actual < min:
                         min = puntaje_palabra_actual
                         palabra_elegida = palabra
@@ -141,8 +144,24 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
                 return(dificil(palabras_utilies))
             else:
                 return(medio(palabras_utilies))
-
-        letras.sort()
+        
+        def calcular_puntaje_IA(palabra, puntos):
+            puntaje = 0
+            for char in palabra:
+                for tupla in puntos:
+                    if tupla[0] == char:
+                        puntaje += tupla[1]
+                        break
+            return puntaje
+            
+        # letras = [v.letrar for _, v in Fichas.items()]
+        letras = [] 
+        puntaje_letra = [] 
+        for key, value in Fichas.items():
+            letras.append(key)
+            puntaje_letra.append(tuple(letras, value))
+        # letras.sort() #Genero la lista de letras 
+        
         palabras_posibles = []
         for palabra in lexicon.keys():
             if palabra in spelling.keys(): #por cada palabra que tiene pattern
@@ -177,7 +196,7 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
         if len(palabras_utilies) == 1:
             return(palabras_utilies)
         elif(len(palabras_utilies) > 1):
-            return(por_dificulad(palabras_utilies, dificultad))
+            return(por_dificulad(palabras_utilies, dificultad, puntaje_letra))
         else:
             return(None) 
 
@@ -186,11 +205,11 @@ def elegir_palabra(letras, dificultad,long_maxima = 7):
     # solo volvemos a ejecutar el codigo
     try: 
         try:
-            return elegir_palabra_dos(letras, dificultad,long_maxima)
+            return elegir_palabra_dos(Fichas, dificultad,long_maxima)
         except:
-            return elegir_palabra_dos(letras, dificultad,long_maxima)
+            return elegir_palabra_dos(Fichas, dificultad,long_maxima)
     except:
-        return elegir_palabra_dos(letras, dificultad,long_maxima)
+        return elegir_palabra_dos(Fichas, dificultad,long_maxima)
 
 if __name__ == '__main__':
     dificultad = 'dificil'
