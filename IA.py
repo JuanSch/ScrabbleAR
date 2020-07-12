@@ -138,9 +138,9 @@ def elegir_palabra(Fichas, dificultad,long_maxima = 7):
                 return(palabra_elegida)
 
 
-            if dificultad == 'facil':
+            if dificultad == 'Facil':
                 return(facil(palabras_utilies))
-            elif dificultad == "dificil":
+            elif dificultad == "Dificil":
                 return(dificil(palabras_utilies))
             else:
                 return(medio(palabras_utilies))
@@ -159,7 +159,7 @@ def elegir_palabra(Fichas, dificultad,long_maxima = 7):
         puntaje_letra = [] 
         for key, value in Fichas.items():
             letras.append(key)
-            puntaje_letra.append(tuple(key, value))
+            puntaje_letra.append([key, value])
         # letras.sort() #Genero la lista de letras 
         
         palabras_posibles = []

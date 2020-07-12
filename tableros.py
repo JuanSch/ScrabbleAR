@@ -101,7 +101,7 @@ def jugar():
 
     with open('configuraciones.json', 'r', encoding='UTF-8') as f:
         configs=json.load(f)
-        dificultad = configs['dificultad'].lower()
+        dificultad = configs['dificultad']
         tiempo=int(configs['tiempo'])*60  # conversion a minutos
         # tiempo = 20 * 60 #por si no  queres usar el tiempo de la config
         # solo descomentas la linea
@@ -109,9 +109,18 @@ def jugar():
 
     with open('valores_puntajes.json', 'r', encoding='UTF-8') as f:
         valores=json.load(f)
-        cant_letras = valores[f'{dificultad}']['bolsa']
-        casillas = valores[f'{dificultad}']['tablero']
-        puntos = valores['puntos_letra']
+        if dificultad != "Personalizada":
+            cant_letras = valores[f'{dificultad}']['bolsa']
+            casillas = valores[f'{dificultad}']['tablero']
+            puntos = valores['puntos_letra']
+        else:
+            dificultad = valores['Personalizada']['dificultad_IA']
+            dificultad_tablero = valores['Personalizada']['dificultad_Tablero']
+            cant_letras = valores['Personalizada']['bolsa']
+            casillas = valores[dificultad_tablero]['tablero']
+            puntos = valores['puntos_letra']
+            pass
+
     ###############
 
     filas = columnas = 15
@@ -184,7 +193,7 @@ def jugar():
         
         if event == '-INI/PAUSA-':
             if not corriendo:
-                window.FindElement(event).Update('Pausar')
+                window.FindElement(event).Update('Terminar')
                 #$% 'Pausar' es un término ambiguo, debería ser claro que
                 #$% al hacer click se está decidiendo SALIR para retomar
                 #$% en otro momento
@@ -303,9 +312,12 @@ def jugar():
             # TURNO IA
             else:
                 # letras_ia = [v.letra for _k, v in atril_IA.fichas.items()]
-                palabra_ia = ia.elegir_palabra(atril_IA.fichas, "dificil")
-                sg.Popup('La IA todavía no aprendió a usar el tablero\n'
-                         f'pero quiso jugar la palabra: "{palabra_ia}"')
+                palabra_ia = ia.elegir_palabra(atril_IA.fichas, dificultad)
+                if palabra_ia != None:
+                    sg.Popup('La IA todavía no aprendió a usar el tablero\n'
+                            f'pero quiso jugar la palabra: "{palabra_ia}"')
+                else: 
+                    sg.Popup('La IA no puede formar ninguna palabra, pasa de turno')
                 # Cambio de turnos
                 turno += 1
                 window.FindElement('-TURNO-').Update('JUGADOR')
