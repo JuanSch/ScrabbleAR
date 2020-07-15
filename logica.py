@@ -37,7 +37,7 @@ class Ficha:
             return f'imagenes{ruta()}{self.letra.upper()}.png'
 
     def cambiarselect(self):
-        self.select=not self.select
+        self.select = not self.select
 
     def getvalor(self):
         return self.valor

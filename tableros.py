@@ -4,66 +4,7 @@ import time as t
 import logica as lg
 import random
 import json
-
-
-def temporizador(tiempo, inicio, corriendo):
-    transcurrido = int(t.time())-inicio
-    actual = tiempo - transcurrido
-    if actual > 0:
-        reloj = f'{divmod(actual, 60)[0]:02}:{divmod(actual, 60)[1]:02}'
-    else:
-        corriendo = False
-        reloj = 'FIN'
-    return reloj, corriendo
-
-
-def armar_tablero(tablero, dim_boton):
-    """Genera una matriz de botones con base en la matriz lógica del tablero,
-    es esencialmente el layout del tablero en términos de GUI"""
-
-    base = tablero.getmatriz()
-    botones = []
-    for fila in base:
-        linea = []
-        for casilla in fila:
-            boton = sg.Button(key=casilla.getpos(), image_size=dim_boton,
-                              image_filename=casilla.getimagen(), pad=(0, 0),
-                              button_color=('#DDDDDD', '#DDDDDD'),
-                              border_width=0)
-            linea.append(boton)
-        botones.append(linea)
-    return botones
-
-def armar_atril(atril, dim_boton):
-    fichas = [sg.Button(key=k, pad=(0, 0), image_filename=atril.imagen(k),
-                        image_size=dim_boton, border_width=0,
-                        button_color=('#DDDDDD', '#DDDDDD'))
-              for k in atril.fichas.keys()]
-    return fichas
-
-def generar_bolsa(cant_letras):
-    bolsa = []
-    for item in cant_letras:
-        for _i in range(item[1]):
-            bolsa.append(item[0])
-    return bolsa
-
-def simular_bolsa(bolsa, puntos):
-    """Genera la lista de fichas disponibles para el jugador, es sólo
-    la lógica subyacente a la GUI. Esta es la sección menos desarrollada
-    por el momento, debería estar vinculada a la 'bolsa de fichas'
-    y directamente recibir una lista de fichas"""
-
-    fichas=[]
-    for _i in range(7):
-        pos = random.randrange(len(bolsa))
-        letra = bolsa[pos]
-        bolsa.pop(pos)
-        valor = puntos[letra]
-        ficha=(letra, valor)
-        fichas.append(ficha)
-    return fichas
-
+import gui
 
 def jugar():
 
@@ -130,14 +71,14 @@ def jugar():
     atril_jugador = lg.Atril()
     atril_IA = lg.AtrilIA()
     palabra = lg.Palabra()
-    bolsa = generar_bolsa(cant_letras)
+    bolsa = gui.generar_bolsa(cant_letras)
 
     eval_turno = lambda x,y: (x % 2) == y
 
     # interfaz
-    linea_superior = armar_atril(atril_IA, dim_boton)
-    botones_tablero = armar_tablero(tablero, dim_boton)
-    linea_inferior = armar_atril(atril_jugador, dim_boton)
+    linea_superior = gui.armar_atril(atril_IA, dim_boton)
+    botones_tablero = gui.armar_tablero(tablero, dim_boton)
+    linea_inferior = gui.armar_atril(atril_jugador, dim_boton)
     botones_jugador = [sg.T('      '),
                        sg.Button('JUGAR', key='-JUGAR-', size=(12, 2),
                                  disabled=True),
@@ -186,9 +127,9 @@ def jugar():
     puntos_ia = 0
     turno_jugador=random.randrange(0, 2)
     while not fin:
-        event, _values = window.Read(timeout= 500)
+        event, _values = window.Read(timeout=500)
 
-        if (event is None):
+        if event is None:
             break
         
         if event == '-INI/PAUSA-':
@@ -203,10 +144,10 @@ def jugar():
                 inicio = int(t.time())
 
                 # Inicialización de atriles
-                atril_jugador.recibirfichas(simular_bolsa(bolsa, puntos))
+                atril_jugador.recibirfichas(gui.simular_bolsa(bolsa, puntos))
                 atril_jugador.setestado(0)
                 actualizar_atril(atril_jugador)
-                atril_IA.recibirfichas(simular_bolsa(bolsa, puntos))
+                atril_IA.recibirfichas(gui.simular_bolsa(bolsa, puntos))
                 actualizar_atril(atril_IA)
                 window.FindElement('-BOLSA-').Update(
                     f'QUEDAN {len(bolsa)} FICHAS')
@@ -311,7 +252,6 @@ def jugar():
 
             # TURNO IA
             else:
-                # letras_ia = [v.letra for _k, v in atril_IA.fichas.items()]
                 palabra_ia = ia.elegir_palabra(atril_IA.fichas, dificultad)
                 if palabra_ia != None:
                     sg.Popup('La IA todavía no aprendió a usar el tablero\n'
@@ -326,7 +266,7 @@ def jugar():
 
 
             # Control y actualización de reloj
-            reloj, corriendo = temporizador(tiempo, inicio, corriendo)
+            reloj, corriendo = gui.temporizador(tiempo, inicio, corriendo)
             window.FindElement('-RELOJ-').Update(reloj)
             if reloj=='FIN':
                 corriendo=False
