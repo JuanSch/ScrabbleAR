@@ -12,6 +12,15 @@ def config_nuevo_juego(configuracion):
     s = []
     for i in range(1,61):
         s.append(str(i))
+    try:
+        with open('configuraciones.json','r', encoding='UTF-8') as f:
+            configs = json.load(f)
+            nombre = configs['nombre']
+    except FileNotFoundError:
+        #$% crearconfiguracion()
+        with open('configuraciones.json','r', encoding='UTF-8') as f:
+            configs = json.load(f)
+            nombre = configs['nombre']
 
     layout = [
         [sg.T("Nuevo juego", size=(17,1), justification = "center",
@@ -21,24 +30,30 @@ def config_nuevo_juego(configuracion):
                      default_value=(configuracion['dificultad']),size=(10,1))],
         [sg.T("Tiempo de juego (minutos): ", size=(22, 1)),
          sg.InputCombo((s),size=(5,1),default_value=(configuracion['tiempo']))],
+        [sg.T('Nombre de usuario'), sg.Input(nombre,size=(17,1))],
         [sg.Button("Jugar", size=(12, 1), key="-jugar-"),
          sg.Button("Personalizar",size=(12,1), key="-personalizar-")]
+        
         ]
 
     window_nuevo_juego = sg.Window("ScrabbleAR - Nuevo juego").Layout(layout)
 
     while True:
         event, values = window_nuevo_juego.Read()
-        if event == "-jugar-":
+        if event == "-jugar-" and values[2] != "":
             configuracion['dificultad'] = values[0]
             configuracion['tiempo'] = values[1]
+            configuracion['nombre'] = values[2]
             break
+        elif event == "-jugar-" and values[2] == "":
+            sg.popup('Ingrse un nombre')
         elif event == "-personalizar-":
             with open('valores_puntajes.json', encoding='UTF-8') as f:
                 config = json.load(f)
-            configurar(config)
+                configurar(config)
         else:
             break
+
 
     window_nuevo_juego.Close()
     
@@ -103,7 +118,29 @@ def configurar(dic):
             with open('valores_puntajes.json','w', encoding='UTF-8') as f:
                 json.dump(dic, f, indent=4)
     window_configurar.Close()
-    
+
+def top10():
+    with open('valores_puntajes.json','r', encoding='UTF-8') as f:
+        dic = json.load(f)
+        top = dic['top10']
+    texto = ""
+    i = 1
+    for elemento in top:
+        texto += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
+        i += 1
+    print('texto:' + texto)
+
+    layout = [  [sg.Text('TOP 10')],
+        [sg.Text(texto, size=(35,10), key='-OUTPUT-')],
+        [sg.Button('Volver')]]
+    window = sg.Window('', layout)
+
+    while True:
+        event, _ = window.read()
+        if event in [None, 'Volver']:
+            break
+    window.close()
+
 def pantalla_inicial(): 
     """
     Muestra una ventana de PySimpleGui donde está el menu principal 
@@ -158,7 +195,7 @@ def pantalla_inicial():
             configurar(configs)
 
         elif event in "-puntajes-":
-            pass
+            top10()
         
     window.Close()
 
@@ -168,7 +205,8 @@ def pantalla_inicial():
 if __name__ == "__main__":
     #configuracion= {'dificultad': 'Facil', 'tiempo': 30}
     #config(configuracion)
-    pantalla_inicial()
+    #pantalla_inicial()
+    top10()
     #temporizador(2)
     # with open('configuraciones.json','r', encoding='UTF-8') as f:
     #     configs =json.load(f)

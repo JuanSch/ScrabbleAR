@@ -4,6 +4,24 @@ from logica import Ficha, Casilla, Palabra, Tablero, Atril
 import concurrent.futures
 import json
 
+def actualizar_puntajes(tupla):
+    """recibe una tupla[0]= nombre de usuario y tupla[1] el puntaje
+    si el puntaje entra en el top diez, se lo inserta donde corresponde en orden descendiente de puntajes
+    y se elemina el ultimo ya que la lista con el nuevo puntaje insertado tiene 11 elementos"""
+    try:
+        with open("valores_puntajes.json",'r') as f: #Cargo el diccionario de puntajes
+            dic = json.load(f)
+    except FileNotFoundError: #si no existe el archivo, lo creo
+        #$% crearvalores()
+        with open("valores_puntajes.json",'r') as f:
+            dic = json.load(f)
+    top = dic['top10']
+    if (tupla[1] >= top[9][1]): #si el puntaje es mayor o igual al puntaje minimo en el top
+        for i in range (10):
+            if top(i)[1] > tupla[1]: #busco la posicion a insertar
+                top.insert(i,tupla) #inserto (ahora la lista tiene 11 elementos, desde 0 a 10)
+                top.pop(10) #remuevo el elemento en la posicion 10, es decir el decimo-primer elemento
+
 def validar_palabra(palabra):
     """
     Comprueba que el string que se pasa como palabra sea una palabra valida
