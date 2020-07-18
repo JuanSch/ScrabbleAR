@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 import json
 from tableros import jugar
 
-def config_nuevo_juego(configuracion):
+def config_nuevo_juego():
     """
     Muestra una ventana de PySimpleGUI en la que podemos elegir
     la dificultad y el tiempo de juego tambien acceder al menu
@@ -14,13 +14,13 @@ def config_nuevo_juego(configuracion):
         s.append(str(i))
     try:
         with open('configuraciones.json','r', encoding='UTF-8') as f:
-            configs = json.load(f)
-            nombre = configs['nombre']
+            configuracion = json.load(f)
+            nombre = configuracion['nombre']
     except FileNotFoundError:
         #$% crearconfiguracion()
         with open('configuraciones.json','r', encoding='UTF-8') as f:
-            configs = json.load(f)
-            nombre = configs['nombre']
+            configuracion = json.load(f)
+            nombre = configuracion['nombre']
 
     layout = [
         [sg.T("Nuevo juego", size=(17,1), justification = "center",
@@ -48,32 +48,35 @@ def config_nuevo_juego(configuracion):
         elif event == "-jugar-" and values[2] == "":
             sg.popup('Ingrse un nombre')
         elif event == "-personalizar-":
-            with open('valores_puntajes.json', encoding='UTF-8') as f:
-                config = json.load(f)
-                configurar(config)
+            configurar()
         else:
             break
 
+    with open('configuraciones.json','w', encoding='UTF-8') as f:
+        json.dump(configuracion, f, indent= 4)
 
     window_nuevo_juego.Close()
     
     if event == "-jugar-":
-        return(configuracion,True)
+        return True
     else:
-        return(configuracion,False)
+        return False
 
-def configurar(dic):
+def configurar():
     """
     Muestra una ventana de PySimpleGui donde podemos elegir la cantidad
     de apariciones de cada letra en caso de modificar un valor,
     debemos hacer click en guardar por cada letra modificada
     """
+    with open('valores_puntajes.json', encoding='UTF-8') as f:
+                dic = json.load(f)
+
     letras = dic['Personalizada']['bolsa']
     print(letras)
     lista_letras= []
     lista_valores = []
     for key in letras:
-        lista_letras.append(key)
+        lista_letras.append(key[0])
     for y in range(13):
         lista_valores.append(y)
     df_vl = letras[0][1] 
@@ -177,22 +180,14 @@ def pantalla_inicial():
             break
 
         elif event in "-nueva-":
-            with open('configuraciones.json','r', encoding='UTF-8') as f:
-                configs = json.load(f)
-                configs, condicion = config_nuevo_juego(configs)
-            with open('configuraciones.json','w', encoding='UTF-8') as f:
-                json.dump(configs, f, indent= 4)
-            if condicion:
-                jugar() 
+            if config_nuevo_juego():
+                jugar()
 
         elif event in "-continuar-":
-
             pass
 
         elif event in "-configuracion-":
-            with open('valores_puntajes.json', encoding='UTF-8') as f:
-                configs = json.load(f)
-            configurar(configs)
+            configurar()
 
         elif event in "-puntajes-":
             top10()
@@ -203,11 +198,4 @@ def pantalla_inicial():
     
 
 if __name__ == "__main__":
-    #configuracion= {'dificultad': 'Facil', 'tiempo': 30}
-    #config(configuracion)
-    #pantalla_inicial()
-    top10()
-    #temporizador(2)
-    # with open('configuraciones.json','r', encoding='UTF-8') as f:
-    #     configs =json.load(f)
-    #     configurar(configs)
+    pantalla_inicial()
