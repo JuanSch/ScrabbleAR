@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import IA as ia
 import time as t
+import ScrabbleAR as scr
 import logica as lg
 import random
 import json
@@ -42,6 +43,7 @@ def jugar():
 
     with open('configuraciones.json', 'r', encoding='UTF-8') as f:
         configs=json.load(f)
+        nombre = configs['nombre']
         dificultad = configs['dificultad']
         tiempo=int(configs['tiempo'])*60  # conversion a minutos
         # tiempo = 20 * 60 #por si no  queres usar el tiempo de la config
@@ -274,9 +276,27 @@ def jugar():
 
     #cierre
     window.Close()
-
+    #$% yo creo que la funcion actualizar puntajes va dentro de logica en vez de la IA 
     if fin:
-        sg.Popup('Puntajes')
+        if puntos_jugador > puntos_ia: #evalua quien gana
+            if ia.actualizar_puntajes([nombre, puntos_jugador]): #evalua si entra en el top10 (si entra se agrega)
+                sg.Popup('¡Ganaste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+                scr.top10()
+            else:
+                sg.Popup('¡Ganaste! \n Tu puntiacion es: ' + str(puntos_jugador))
+            #ganaste
+        elif puntos_jugador == puntos_ia:
+            if ia.actualizar_puntajes([nombre, puntos_jugador]):
+                sg.Popup('¡Empataste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+                scr.top10()
+            else:
+                sg.Popup('¡Empataste! La proxima ganarás \n Tu puntiacion es: ' + str(puntos_jugador))
+        else:
+            if ia.actualizar_puntajes([nombre, puntos_jugador]):
+                sg.Popup('¡Perdiste pero entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+                scr.top10()
+            else:
+                sg.Popup('!Perdiste suerte la próxima! \n Tu puntiacion es: ' + str(puntos_jugador))
 
 if __name__ == '__main__':
     jugar()

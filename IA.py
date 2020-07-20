@@ -1,5 +1,6 @@
 from pattern.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
+from ScrabbleAR import top10
 from logica import Ficha, Casilla, Palabra, Tablero, Atril
 import concurrent.futures
 import json
@@ -21,6 +22,10 @@ def actualizar_puntajes(tupla):
             if top(i)[1] > tupla[1]: #busco la posicion a insertar
                 top.insert(i,tupla) #inserto (ahora la lista tiene 11 elementos, desde 0 a 10)
                 top.pop(10) #remuevo el elemento en la posicion 10, es decir el decimo-primer elemento
+                return True
+    else: 
+        return False
+
 
 def validar_palabra(palabra):
     """

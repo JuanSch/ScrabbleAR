@@ -1255,8 +1255,49 @@
                 1
             ]
         ],
-        "dificultad_IA": "Dificil",
-        "dificultad_Tablero": "Facil"
+        "dificultad_IA": "Medio",
+        "dificultad_Tablero": "Medio"
     },
-    "top10": [["Test0", 90], ["Test1", 80], ["Test2", 70], ["Test3", 60], ["Test4", 50], ["Test5", 40], ["Test6", 30], ["Test7", 20], ["Test8", 10], ["Test9", 1]]
+    "top10": [
+        [
+            "Test0",
+            90
+        ],
+        [
+            "Test1",
+            80
+        ],
+        [
+            "Test2",
+            70
+        ],
+        [
+            "Test3",
+            60
+        ],
+        [
+            "Test4",
+            50
+        ],
+        [
+            "Test5",
+            40
+        ],
+        [
+            "Test6",
+            30
+        ],
+        [
+            "Test7",
+            20
+        ],
+        [
+            "Test8",
+            10
+        ],
+        [
+            "Test9",
+            1
+        ]
+    ]
 }

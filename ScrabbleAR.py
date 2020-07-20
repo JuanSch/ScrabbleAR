@@ -33,7 +33,6 @@ def config_nuevo_juego():
         [sg.T('Nombre de usuario'), sg.Input(nombre,size=(17,1))],
         [sg.Button("Jugar", size=(12, 1), key="-jugar-"),
          sg.Button("Personalizar",size=(12,1), key="-personalizar-")]
-        
         ]
 
     window_nuevo_juego = sg.Window("ScrabbleAR - Nuevo juego").Layout(layout)
