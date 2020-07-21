@@ -1,6 +1,9 @@
 import platform
 import operator
+import random
 from functools import reduce
+from itertools import chain
+from bisect import insort
 
 
 def ruta():
@@ -291,7 +294,7 @@ class Tablero:
                     validos.append(casilla)
         return validos
 
-    def jugada(self, palabra, pos, origen=None, ficha=None):
+    def jugada(self, palabra, pos, turno, origen=None, ficha=None):
         """Método principal de lógica interna del tablero, debe recibir
         un objeto tipo palabra, y manejará las actualizaciones
         correspondientes a los estados de las casillas"""
@@ -320,7 +323,10 @@ class Tablero:
         anteriores = list(self.posibles)
         if devolver is not None and palabra.min is None:
             borrar = anteriores
-            self.posibles = []
+            if turno == 0:
+                self.posibles = self.inicio
+            else:
+                self.posibles = []
         else:
             posibles = []
             eje = palabra.eje
@@ -338,9 +344,9 @@ class Tablero:
         # Con esto garantizamos que no se marquen como posibles
         # casillas en las que hay una ficha
         # de la palabra en construcción
-        for k, _ in palabra.fichas.items():
-                if k in marcar:
-                    marcar.remove(k)
+        for k, _v in palabra.fichas.items():
+            if k in marcar:
+                marcar.remove(k)
         return marcar, borrar, devolver
 
     def valor_palabra(self, palabra):
@@ -482,3 +488,65 @@ class AtrilIA(Atril):
             return f'imagenes{ruta()}Atril.png'
         else:
             return f'imagenes{ruta()}FichaIA.png'
+
+#####################################################################
+#                           FIN CLASE ATRIL                         #
+#####################################################################
+
+
+#####################################################################
+#                         INICIO CLASE BOLSA                        #
+#####################################################################
+class Bolsa:
+    """
+    Clase de control de bolsa de fichas, contiene una lista de letras
+    con tantas letras como fichas por letra haya disponibles
+    y otra con un diccionario letra: valor.
+    El formato de salida de las fichas es [(letra, valor)*letras a entregar]
+    """
+
+    def __init__(self, letras, valores):
+        fichas = list(map(lambda x: [x[0]]*x[1], letras))
+        self.fichas = list(chain.from_iterable(fichas))
+        self.valores = valores
+
+    def entregar_fichas(self, cant):
+        """
+        Recibe una cantidad (int) de fichas a entregar.
+        Genera [(letra, valor)*cantidad] seleccionando letras al azar
+        de la bolsa y eliminándolas.
+        Si hay menos letras en la bolsa que cant, devolverá una lista
+        vacía.
+        """
+
+        entregar = []
+        if len(self.fichas) >= cant:
+            for _i in range(cant):
+                pos = random.randrange(len(self.fichas))
+                letra = self.fichas[pos]
+                self.fichas.pop(pos)
+                valor = self.valores[letra]
+                ficha = (letra, valor)
+                entregar.append(ficha)
+        return entregar
+
+    def intercambiar_fichas(self, fichas):
+        """
+        Recibe una lista de fichas [(letra, valor)*cant].
+        Reincorpora las letras a la bolsa, y entrega nuevamente
+        tantas como haya recibido.
+        Para la reincorporación se emplea bisect.insort()
+        (inserción ordenada) para evitar la posible acumulación
+        de letras indseadas al final de la lista que surgirían
+        de un lista.append()
+        """
+
+        lista = list(map(lambda x: x[0], fichas))
+        for letra in lista:
+            insort(self.fichas, letra)
+        return self.entregar_fichas(len(lista))
+
+
+#####################################################################
+#                           FIN CLASE BOLSA                         #
+#####################################################################

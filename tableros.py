@@ -1,42 +1,13 @@
 import PySimpleGUI as sg
+import random
 import IA as ia
 import time as t
 import ScrabbleAR as scr
 import logica as lg
-import random
 import json
 import gui
 
 def jugar():
-
-    def actualizar_atril(atril):
-        """se encarga de las actualizacines a la GUI de un atril"""
-
-        nonlocal window
-        for k in atril.fichas.keys():
-            window.FindElement(k).Update(image_filename=atril.imagen(k))
-
-
-    def actualizar_tablero(marcar, borrar):
-        """se encarga de las actualizaciones a la GUI del tablero"""
-
-        nonlocal window
-        nonlocal tablero
-        nonlocal atril_jugador
-        try:
-            for casilla in borrar:
-                imagen = tablero.getcasilla(casilla).getimagen()
-                window.FindElement(casilla).Update(
-                    image_filename=imagen)
-        except:
-            pass
-        try:
-            for casilla in marcar:
-                imagen=tablero.getcasilla(casilla).getimagen(True)
-                window.FindElement(casilla).Update(
-                    image_filename=imagen)
-        except:
-            pass
 
     ###############
     # Apertura de archivos
@@ -54,26 +25,27 @@ def jugar():
         valores=json.load(f)
         if dificultad != "Personalizada":
             cant_letras = valores[f'{dificultad}']['bolsa']
-            casillas = valores[f'{dificultad}']['tablero']
+            casillas = valores[f'{dificultad}']['tablero'][1:]
+            columnas, filas = valores[dificultad_tablero]['tablero'][0]
             puntos = valores['puntos_letra']
         else:
             dificultad = valores['Personalizada']['dificultad_IA']
             dificultad_tablero = valores['Personalizada']['dificultad_Tablero']
             cant_letras = valores['Personalizada']['bolsa']
-            casillas = valores[dificultad_tablero]['tablero']
+            casillas = valores[dificultad_tablero]['tablero'][1:]
+            columnas, filas = valores[dificultad_tablero]['tablero'][0]
             puntos = valores['puntos_letra']
             pass
 
     ###############
 
-    filas = columnas = 15
-    dim_boton = (40,40)
+    dim_boton = (40, 40)
 
     tablero = lg.Tablero(columnas, filas, casillas)
     atril_jugador = lg.Atril()
     atril_IA = lg.AtrilIA()
     palabra = lg.Palabra()
-    bolsa = gui.generar_bolsa(cant_letras)
+    bolsa = lg.Bolsa(cant_letras, puntos)
 
     eval_turno = lambda x,y: (x % 2) == y
 
@@ -127,7 +99,7 @@ def jugar():
     turno = 0
     puntos_jugador = 0
     puntos_ia = 0
-    turno_jugador=random.randrange(0, 2)
+    turno_jugador = random.randrange(0, 2)
     while not fin:
         event, _values = window.Read(timeout=500)
 
@@ -136,7 +108,7 @@ def jugar():
         
         if event == '-INI/PAUSA-':
             if not corriendo:
-                window.FindElement(event).Update('Terminar')
+                window.FindElement(event).Update('Posponer')
                 #$% 'Pausar' es un término ambiguo, debería ser claro que
                 #$% al hacer click se está decidiendo SALIR para retomar
                 #$% en otro momento
@@ -148,9 +120,9 @@ def jugar():
                 # Inicialización de atriles
                 atril_jugador.recibirfichas(gui.simular_bolsa(bolsa, puntos))
                 atril_jugador.setestado(0)
-                actualizar_atril(atril_jugador)
+                gui.actualizar_atril(atril_jugador)
                 atril_IA.recibirfichas(gui.simular_bolsa(bolsa, puntos))
-                actualizar_atril(atril_IA)
+                gui.actualizar_atril(atril_IA)
                 window.FindElement('-BOLSA-').Update(
                     f'QUEDAN {len(bolsa)} FICHAS')
                 window.FindElement('-PJUGADOR-').Update(
@@ -187,7 +159,7 @@ def jugar():
                             pos = palabra.posficha(atril_jugador.cambiar[0])
                             if pos is not None:
                                 marcar, borrar, devolver =\
-                                    tablero.jugada(palabra, pos)
+                                    tablero.jugada(palabra, pos, turno)
                                 actualizar_tablero(marcar, borrar)
                                 # Se deshabilita el boton de jugar
                                 # si la palabra ya no es testeable
@@ -201,7 +173,7 @@ def jugar():
                     # para colocar en el tablero
                     if atril_jugador.estado == 'PASAR':
                         marcar, borrar, _devolver = tablero.jugada(
-                            palabra, event, atril_jugador.cambiar[0],
+                            palabra, event, turno, atril_jugador.cambiar[0],
                             atril_jugador.cambiar[1])
                         actualizar_tablero(marcar, borrar)
                         imagen = palabra.fichas[event][0].getimagen()
@@ -211,7 +183,7 @@ def jugar():
                     # si estado != PASAR puede haberse deseleccionado una ficha
                     # ya colocada en el tablero
                     elif event in palabra.getposiciones():
-                        marcar, borrar, devolver = tablero.jugada(palabra, event)
+                        marcar, borrar, devolver = tablero.jugada(palabra, event, turno)
                         actualizar_tablero(marcar, borrar)
                         atril_jugador.click(devolver)
                         actualizar_atril(atril_jugador)
@@ -276,6 +248,7 @@ def jugar():
 
     #cierre
     window.Close()
+
     #$% yo creo que la funcion actualizar puntajes va dentro de logica en vez de la IA 
     if fin:
         if puntos_jugador > puntos_ia: #evalua quien gana

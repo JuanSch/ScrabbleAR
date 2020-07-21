@@ -30,6 +30,10 @@
     },
     "Facil": {
         "tablero": {
+            "dimensiones": [
+                15,
+                15
+                ],
             "2L": [
                 [
                     3,
@@ -402,6 +406,10 @@
     },
     "Medio": {
         "tablero": {
+            "dimensiones": [
+                15,
+                15
+                ],
             "2L": [
                 [
                     3,
@@ -774,6 +782,10 @@
     },
     "Dificil": {
         "tablero": {
+            "dimensiones": [
+                15,
+                15
+                ],
             "2L": [
                 [
                     3,

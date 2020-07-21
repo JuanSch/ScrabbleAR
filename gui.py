@@ -36,25 +36,28 @@ def armar_atril(atril, dim_boton):
               for k in atril.fichas.keys()]
     return fichas
 
-def generar_bolsa(cant_letras):
-    bolsa = []
-    for item in cant_letras:
-        for _i in range(item[1]):
-            bolsa.append(item[0])
-    return bolsa
+def actualizar_atril(atril, window):
+    """se encarga de las actualizacines a la GUI de un atril"""
 
-def simular_bolsa(bolsa, puntos):
-    """Genera la lista de fichas disponibles para el jugador, es sólo
-    la lógica subyacente a la GUI. Esta es la sección menos desarrollada
-    por el momento, debería estar vinculada a la 'bolsa de fichas'
-    y directamente recibir una lista de fichas"""
+    for k in atril.fichas.keys():
+        window.FindElement(k).Update(image_filename=atril.imagen(k))
 
-    fichas=[]
-    for _i in range(7):
-        pos = random.randrange(len(bolsa))
-        letra = bolsa[pos]
-        bolsa.pop(pos)
-        valor = puntos[letra]
-        ficha=(letra, valor)
-        fichas.append(ficha)
-    return fichas
+
+def actualizar_tablero(marcar, borrar, window, tablero):
+    """se encarga de las actualizaciones a la GUI del tablero"""
+
+    try:
+        for casilla in borrar:
+            imagen = tablero.getcasilla(casilla).getimagen()
+            window.FindElement(casilla).Update(
+                image_filename=imagen)
+    except:
+        pass
+    try:
+        for casilla in marcar:
+            imagen=tablero.getcasilla(casilla).getimagen(True)
+            window.FindElement(casilla).Update(
+                image_filename=imagen)
+    except:
+        pass
+
