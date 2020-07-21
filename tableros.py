@@ -25,17 +25,15 @@ def jugar():
         valores=json.load(f)
         if dificultad != "Personalizada":
             cant_letras = valores[f'{dificultad}']['bolsa']
-            casillas = valores[f'{dificultad}']['tablero'][1:]
-            columnas, filas = valores[dificultad_tablero]['tablero'][0]
-            puntos = valores['puntos_letra']
+            datos = valores[f'{dificultad}']['tablero']
         else:
             dificultad = valores['Personalizada']['dificultad_IA']
             dificultad_tablero = valores['Personalizada']['dificultad_Tablero']
             cant_letras = valores['Personalizada']['bolsa']
-            casillas = valores[dificultad_tablero]['tablero'][1:]
-            columnas, filas = valores[dificultad_tablero]['tablero'][0]
-            puntos = valores['puntos_letra']
-            pass
+            datos = valores[dificultad_tablero]['tablero']
+        casillas = {k: v for k, v in list(datos.items())[1:]}
+        columnas, filas = datos['dimensiones']
+        puntos = valores['puntos_letra']
 
     ###############
 
@@ -84,7 +82,7 @@ def jugar():
                 [sg.T('IA:', size=(15,1), key='-PIA-', font=('Arial', '14'))],
                 [sg.T('')],
                 [sg.T('BOLSA', font=('Arial', '11'))],
-                [sg.T(f'QUEDAN {len(bolsa)} FICHAS',
+                [sg.T(f'QUEDAN {len(bolsa.fichas)} FICHAS',
                       key='-BOLSA-', font=('Arial', '14'))]
                 ]
 
@@ -118,13 +116,15 @@ def jugar():
                 inicio = int(t.time())
 
                 # Inicialización de atriles
-                atril_jugador.recibirfichas(gui.simular_bolsa(bolsa, puntos))
+                atril_jugador.recibirfichas(bolsa.entregar_fichas(
+                    atril_jugador.pedirfichas()))
                 atril_jugador.setestado(0)
-                gui.actualizar_atril(atril_jugador)
-                atril_IA.recibirfichas(gui.simular_bolsa(bolsa, puntos))
-                gui.actualizar_atril(atril_IA)
+                gui.actualizar_atril(atril_jugador, window)
+                atril_IA.recibirfichas(bolsa.entregar_fichas(
+                    atril_IA.pedirfichas()))
+                gui.actualizar_atril(atril_IA, window)
                 window.FindElement('-BOLSA-').Update(
-                    f'QUEDAN {len(bolsa)} FICHAS')
+                    f'QUEDAN {len(bolsa.fichas)} FICHAS')
                 window.FindElement('-PJUGADOR-').Update(
                     f'JUGADOR: {puntos_jugador}')
                 window.FindElement('-PIA-').Update(
@@ -151,7 +151,7 @@ def jugar():
             if eval_turno(turno, turno_jugador):
                 if event in atril_jugador.fichas.keys(): # click en el atril
                     atril_jugador.click(event)
-                    actualizar_atril(atril_jugador)
+                    gui.actualizar_atril(atril_jugador, window)
                     if (atril_jugador.estado == 'ELEGIR'
                         and atril_jugador.cambiar is not None):
                         # si esto sucede significa que el click
@@ -160,7 +160,7 @@ def jugar():
                             if pos is not None:
                                 marcar, borrar, devolver =\
                                     tablero.jugada(palabra, pos, turno)
-                                actualizar_tablero(marcar, borrar)
+                                gui.actualizar_tablero(marcar, borrar, window, tablero)
                                 # Se deshabilita el boton de jugar
                                 # si la palabra ya no es testeable
                                 if not palabra.probar():
@@ -175,7 +175,7 @@ def jugar():
                         marcar, borrar, _devolver = tablero.jugada(
                             palabra, event, turno, atril_jugador.cambiar[0],
                             atril_jugador.cambiar[1])
-                        actualizar_tablero(marcar, borrar)
+                        gui.actualizar_tablero(marcar, borrar, window, tablero)
                         imagen = palabra.fichas[event][0].getimagen()
                         window.FindElement(event).Update(image_filename=imagen)
                         atril_jugador.setestado(1)
@@ -184,9 +184,9 @@ def jugar():
                     # ya colocada en el tablero
                     elif event in palabra.getposiciones():
                         marcar, borrar, devolver = tablero.jugada(palabra, event, turno)
-                        actualizar_tablero(marcar, borrar)
+                        gui.actualizar_tablero(marcar, borrar, window, tablero)
                         atril_jugador.click(devolver)
-                        actualizar_atril(atril_jugador)
+                        gui.actualizar_atril(atril_jugador, window)
 
                     if palabra.probar():
                         window.FindElement('-JUGAR-').Update(disabled=False)
@@ -199,7 +199,7 @@ def jugar():
                         puntos_jugador += tablero.fijar_palabra(palabra)
                         atril_jugador.eliminar(palabra)
                         #Actualizaciones de GUI
-                        actualizar_tablero((), marcar)
+                        gui.actualizar_tablero((), marcar, window, tablero)
                         # marcar siempre va a tener algún valor,
                         # aunque sea vacío, en cuyo caso
                         # lo maneja la excepción en la propia función
@@ -209,7 +209,7 @@ def jugar():
                                 image_filename=imagen)
                         window.FindElement('-PJUGADOR-').Update(
                             f'JUGADOR: {puntos_jugador}')
-                        actualizar_atril(atril_jugador)
+                        gui.actualizar_atril(atril_jugador, window)
                         window.FindElement('-TURNO-').Update('IA')
                         atril_jugador.setestado(0)
                         window.FindElement('-CAMBIAR-').Update(disabled=True)

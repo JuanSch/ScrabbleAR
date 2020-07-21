@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+import time as t
 import random
 
 def temporizador(tiempo, inicio, corriendo):

@@ -224,7 +224,7 @@ class Palabra:
     def probar(self):
         ok = False
         cant = len(self.fichas)
-        if cant > 2 and self.max[self.eje] + 1 - self.min[self.eje] == cant:
+        if cant > 1 and self.max[self.eje] + 1 - self.min[self.eje] == cant:
             ok = True
         return ok
 
