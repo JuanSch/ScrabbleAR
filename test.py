@@ -47,22 +47,18 @@ def comentado():
 ######
 import json
 
-with open('configuraciones.json','r', encoding='UTF-8') as f:
-    configs = json.load(f)
-    personalizada = configs['Personalizada']
-    bolsa = []
-    for key in personalizada:
-        value = personalizada[key]
-        bolsa.append([key,value])
-    print(bolsa)
-    with open('valores_puntajes.json', 'r', encoding='UTF-8') as v:
-        valores = json.load(v)
-        dic = {}
-        dic['bolsa'] = bolsa
-        dic['dificultad_IA'] = 'Facil'
-        dic['dificultad_Tablero'] = 'Facil'
-        valores['Personalizada'] = dic
-    print(valores)
-    with open('valores_puntajes.json', 'w', encoding='UTF-8') as v:
-        json.dump(valores, v, indent= 4)
-print('fin')
+with open('valores_puntajes.json','r') as f:
+    valores_puntajes = json.load(f)
+    top_diez= valores_puntajes['top10']
+    print(top_diez)
+    top10 = {}
+    top10['Facil'] = top_diez
+    top10['Medio'] = top_diez
+    top10['Dificil'] = top_diez
+    valores_puntajes.pop('top10')
+    valores_puntajes['top10'] = top10
+    print('\n')
+    print(valores_puntajes)
+
+with open('valores_puntajes.json','w') as f:
+    json.dump(valores_puntajes, f, indent=4)

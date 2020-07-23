@@ -1,10 +1,58 @@
 import platform
 import operator
 import random
+import json
+import PySimpleGUI as sg
 from functools import reduce
 from itertools import chain
 from bisect import insort
 
+def top10(dificultad = None):
+    with open('valores_puntajes.json','r', encoding='UTF-8') as f:
+        dic = json.load(f)
+        if dificultad == None:
+            top = dic['top10']
+        else: 
+            top = dic['top10'][dificultad]
+    if dificultad == None:
+        texto_facil = ""
+        texto_medio = ""
+        texto_dificil = ""
+        i = 1
+        for elemento in top['Facil']: #Forma el string por la dificultad
+            if elemento[0] != "None":
+                texto_facil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
+                i += 1
+
+        i = 1
+        for elemento in top['Medio']: #Forma el string por la dificultad
+            if elemento[0] != "None":
+                texto_medio += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
+                i += 1
+
+        i = 1
+        for elemento in top['Dificil']: #Forma el string por la dificultad
+            if elemento[0] != "None":
+                texto_dificil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
+                i += 1
+
+        layout = [[sg.Text('TOP 10')],
+            [sg.Output(size=(35,10), key='-OUTPUT-')],
+            [sg.Button('Facil'),sg.Button('Medio'),sg.Button('Dificil')],
+            [sg.Button('Volver')]]
+        window = sg.Window('', layout)
+
+        while True:
+            event, _ = window.read()
+            if event in [None, 'Volver']:
+                break
+            if event in 'Facil':
+                window['-OUTPUT-'].update(texto_facil)
+            if event in 'Medio':
+                window['-OUTPUT-'].update(texto_medio)
+            if event in 'Dificil':
+                window['-OUTPUT-'].update(texto_dificil)                
+        window.close()
 
 def ruta():
     """Retorna el caracter que el sistema operativo en el que se está

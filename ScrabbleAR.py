@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import json
 from tableros import jugar
+from logica import top10
 
 def config_nuevo_juego():
     """
@@ -43,6 +44,8 @@ def config_nuevo_juego():
             configuracion['dificultad'] = values[0]
             configuracion['tiempo'] = values[1]
             configuracion['nombre'] = values[2]
+            if values[0] == 'Personalizada':
+                sg.popup('¡Atencion! \n En la dificultad personalizada no se guardan los puntajes')
             break
         elif event == "-jugar-" and values[2] == "":
             sg.popup('Ingrse un nombre')
@@ -120,28 +123,6 @@ def configurar():
             with open('valores_puntajes.json','w', encoding='UTF-8') as f:
                 json.dump(dic, f, indent=4)
     window_configurar.Close()
-
-def top10():
-    with open('valores_puntajes.json','r', encoding='UTF-8') as f:
-        dic = json.load(f)
-        top = dic['top10']
-    texto = ""
-    i = 1
-    for elemento in top:
-        texto += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
-        i += 1
-    print('texto:' + texto)
-
-    layout = [  [sg.Text('TOP 10')],
-        [sg.Text(texto, size=(35,10), key='-OUTPUT-')],
-        [sg.Button('Volver')]]
-    window = sg.Window('', layout)
-
-    while True:
-        event, _ = window.read()
-        if event in [None, 'Volver']:
-            break
-    window.close()
 
 def pantalla_inicial(): 
     """

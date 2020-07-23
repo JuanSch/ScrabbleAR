@@ -1,11 +1,10 @@
 from pattern.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
-from ScrabbleAR import top10
-from logica import Ficha, Casilla, Palabra, Tablero, Atril
+from logica import Ficha, Casilla, Palabra, Tablero, Atril, top10
 import concurrent.futures
 import json
 
-def actualizar_puntajes(tupla):
+def actualizar_puntajes(tupla, dificultad):
     """recibe una tupla[0]= nombre de usuario y tupla[1] el puntaje
     si el puntaje entra en el top diez, se lo inserta donde corresponde en orden descendiente de puntajes
     y se elemina el ultimo ya que la lista con el nuevo puntaje insertado tiene 11 elementos"""
@@ -16,16 +15,20 @@ def actualizar_puntajes(tupla):
         #$% crearvalores()
         with open("valores_puntajes.json",'r') as f:
             dic = json.load(f)
-    top = dic['top10']
-    if (tupla[1] >= top[9][1]): #si el puntaje es mayor o igual al puntaje minimo en el top
-        for i in range (10):
+    top = dic['top10'][dificultad]
+    ok = False
+    if (tupla[1] >= top[-1][1]): #si el puntaje es mayor o igual al puntaje minimo en el top
+        for i in range (len(top)):
             if top(i)[1] > tupla[1]: #busco la posicion a insertar
                 top.insert(i,tupla) #inserto (ahora la lista tiene 11 elementos, desde 0 a 10)
-                top.pop(10) #remuevo el elemento en la posicion 10, es decir el decimo-primer elemento
-                return True
-    else: 
-        return False
-
+                if len(top) == 11:
+                    top.pop(10) #remuevo el elemento en la posicion 10, es decir el decimo-primer elemento
+                ok= True
+    if ok:
+        dic['top10'][dificultad] = top
+    with open("valores_puntajes.json",'w') as f:
+        json.dump(top, f, indent= 4)
+    return ok
 
 def validar_palabra(palabra):
     """
@@ -235,9 +238,12 @@ def elegir_palabra(Fichas, dificultad,long_maxima = 7):
         return elegir_palabra_dos(Fichas, dificultad,long_maxima)
 
 if __name__ == '__main__':
-    dificultad = 'dificil'
-    ejemplo = ['a','p','q','d','t','z','n','a','o','o','a']
-    res= elegir_palabra(ejemplo, dificultad)   
-    print(res, calcular_puntaje(res))
-    #print(validar_palabra('asada'))
+    # dificultad = 'dificil'
+    # ejemplo = ['a','p','q','d','t','z','n','a','o','o','a']
+    # res= elegir_palabra(ejemplo, dificultad)   
+    # print(res, calcular_puntaje(res))
+    # palabras = ['humanidad','humano','persona','gente','hombre','mujer','niño','niña','adolescente','adulto','adulta','anciano','ancaina','zapo','pho','albol']
+    # for palabra in palabras:
+    #     print(validar_palabra(palabra))
     #$%Comprobar espacio en tablero para la palabra
+    pass

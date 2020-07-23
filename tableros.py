@@ -2,7 +2,6 @@ import PySimpleGUI as sg
 import random
 import IA as ia
 import time as t
-import ScrabbleAR as scr
 import logica as lg
 import json
 import gui
@@ -252,22 +251,22 @@ def jugar():
     #$% yo creo que la funcion actualizar puntajes va dentro de logica en vez de la IA 
     if fin:
         if puntos_jugador > puntos_ia: #evalua quien gana
-            if ia.actualizar_puntajes([nombre, puntos_jugador]): #evalua si entra en el top10 (si entra se agrega)
+            if ia.actualizar_puntajes([nombre, puntos_jugador], difucultad): #evalua si entra en el top10 (si entra se agrega)
                 sg.Popup('¡Ganaste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
-                scr.top10()
+                lg.top10()
             else:
                 sg.Popup('¡Ganaste! \n Tu puntiacion es: ' + str(puntos_jugador))
             #ganaste
         elif puntos_jugador == puntos_ia:
-            if ia.actualizar_puntajes([nombre, puntos_jugador]):
+            if ia.actualizar_puntajes([nombre, puntos_jugador], dificultadd):
                 sg.Popup('¡Empataste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
-                scr.top10()
+                lg.top10()
             else:
                 sg.Popup('¡Empataste! La proxima ganarás \n Tu puntiacion es: ' + str(puntos_jugador))
         else:
-            if ia.actualizar_puntajes([nombre, puntos_jugador]):
+            if ia.actualizar_puntajes([nombre, puntos_jugador], dificultad):
                 sg.Popup('¡Perdiste pero entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
-                scr.top10()
+                lg.top10()
             else:
                 sg.Popup('!Perdiste suerte la próxima! \n Tu puntiacion es: ' + str(puntos_jugador))
 
