@@ -1,4 +1,6 @@
 import PySimpleGUI as sg
+from os import remove
+import pickle
 import random
 import IA as ia
 import time as t
@@ -6,7 +8,7 @@ import logica as lg
 import json
 import gui
 
-def jugar():
+def jugar(Continuar = False):
 
     ###############
     # Apertura de archivos
@@ -15,10 +17,11 @@ def jugar():
         configs=json.load(f)
         nombre = configs['nombre']
         dificultad = configs['dificultad']
-        tiempo=int(configs['tiempo'])*60  # conversion a minutos
+        if not Continuar:
+            tiempo=int(configs['tiempo'])*60  # conversion a minutos
         # tiempo = 20 * 60 #por si no  queres usar el tiempo de la config
         # solo descomentas la linea
-        reloj=f'{divmod(tiempo, 60)[0]:02}:{divmod(tiempo, 60)[1]:02}'
+            reloj=f'{divmod(tiempo, 60)[0]:02}:{divmod(tiempo, 60)[1]:02}'
 
     with open('valores_puntajes.json', 'r', encoding='UTF-8') as f:
         valores=json.load(f)
@@ -37,12 +40,51 @@ def jugar():
     ###############
 
     dim_boton = (40, 40)
+    if not Continuar:
+        tablero = lg.Tablero(columnas, filas, casillas)
+        atril_jugador = lg.Atril()
+        atril_IA = lg.AtrilIA()
+        palabra = lg.Palabra()
+        bolsa = lg.Bolsa(cant_letras, puntos)
+        corriendo = False
+        fin = False
+        turno = 0
+        puntos_jugador = 0
+        puntos_ia = 0
+        turno_jugador = random.randrange(0, 2)
+        # dic = {}
+        # dic['tablero'] = tablero
+        # dic['atril_jugador'] = atril_jugador
+        # dic['atril_IA'] = atril_IA
+        # dic['palabra'] = palabra
+        # dic['bolsa'] = bolsa
+        # dic['corriendo'] = corriendo
+        # dic['fin'] = fin
+        # dic['turno'] = turno
+        # dic['puntos_jugador'] = puntos_jugador
+        # dic['puntos_ia'] = puntos_ia
+        # dic['turno_jugador'] = turno_jugador
+        # dic['tiempo'] = tiempo
+        # with open('continuar_partida.pickle','wb') as f:
+        #     pickle.dump(dic, f)
+    else:
+        with open('continuar_partida.pickle','rb') as f:
+            partida = pickle.load(f)
+        tablero = partida['tablero'] 
+        atril_jugador = partida['atril_jugador']
+        atril_IA = partida['atril_IA']
+        palabra = partida['palabra']
+        bolsa = partida['bolsa']
+        corriendo = partida['corriendo']
+        fin = partida['fin']
+        turno = partida['turno']
+        puntos_jugador = partida['puntos_jugador']
+        puntos_ia = partida['puntos_ia']
+        turno_jugador = partida['turno_jugador']
+        tiempo = partida['tiempo']
+        reloj=f'{divmod(tiempo, 60)[0]:02}:{divmod(tiempo, 60)[1]:02}'
+        inicio = int(t.time())
 
-    tablero = lg.Tablero(columnas, filas, casillas)
-    atril_jugador = lg.Atril()
-    atril_IA = lg.AtrilIA()
-    palabra = lg.Palabra()
-    bolsa = lg.Bolsa(cant_letras, puntos)
 
     eval_turno = lambda x,y: (x % 2) == y
 
@@ -91,12 +133,6 @@ def jugar():
     window = sg.Window('Ventana de juego').Layout(layout)
 
     #bucle
-    corriendo = False
-    fin = False
-    turno = 0
-    puntos_jugador = 0
-    puntos_ia = 0
-    turno_jugador = random.randrange(0, 2)
     while not fin:
         event, _values = window.Read(timeout=500)
 
@@ -140,6 +176,21 @@ def jugar():
             else:
                 sg.Popup('Partida guardada, podrá retomarla\n'
                          'la próxima vez que acceda a ScrabbleAr')
+                dic = {}
+                dic['tablero'] = tablero
+                dic['atril_jugador'] = atril_jugador
+                dic['atril_IA'] = atril_IA
+                dic['palabra'] = palabra
+                dic['bolsa'] = bolsa
+                dic['corriendo'] = corriendo
+                dic['fin'] = fin
+                dic['turno'] = turno
+                dic['puntos_jugador'] = puntos_jugador
+                dic['puntos_ia'] = puntos_ia
+                dic['turno_jugador'] = turno_jugador
+                dic['tiempo'] = tiempo
+                with open('continuar_partida.pickle','wb') as f:
+                    pickle.dump(dic, f)
                 #$% Debería generarse una ventana NO POPUP que permita
                 #$% volver al menú principal o cerrar el juego
                 #$% ("Exit to desktop")
@@ -250,15 +301,17 @@ def jugar():
 
     #$% yo creo que la funcion actualizar puntajes va dentro de logica en vez de la IA 
     if fin:
+        if Continuar:
+                remove("continuar_partida.pickle") #Como terminó la partida borramos la partida guardada
         if puntos_jugador > puntos_ia: #evalua quien gana
-            if ia.actualizar_puntajes([nombre, puntos_jugador], difucultad): #evalua si entra en el top10 (si entra se agrega)
+            if ia.actualizar_puntajes([nombre, puntos_jugador], dificultad): #evalua si entra en el top10 (si entra se agrega)
                 sg.Popup('¡Ganaste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
                 lg.top10()
             else:
                 sg.Popup('¡Ganaste! \n Tu puntiacion es: ' + str(puntos_jugador))
             #ganaste
         elif puntos_jugador == puntos_ia:
-            if ia.actualizar_puntajes([nombre, puntos_jugador], dificultadd):
+            if ia.actualizar_puntajes([nombre, puntos_jugador], dificultad):
                 sg.Popup('¡Empataste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
                 lg.top10()
             else:

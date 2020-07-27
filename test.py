@@ -45,20 +45,25 @@ def comentado():
     window.Close()
 
 ######
-import json
+# import json
 
-with open('valores_puntajes.json','r') as f:
-    valores_puntajes = json.load(f)
-    top_diez= valores_puntajes['top10']
-    print(top_diez)
-    top10 = {}
-    top10['Facil'] = top_diez
-    top10['Medio'] = top_diez
-    top10['Dificil'] = top_diez
-    valores_puntajes.pop('top10')
-    valores_puntajes['top10'] = top10
-    print('\n')
-    print(valores_puntajes)
+# with open('valores_puntajes.json','r') as f:
+#     valores_puntajes = json.load(f)
+#     top_diez= valores_puntajes['top10']
+#     print(top_diez)
+#     top10 = {}
+#     top10['Facil'] = top_diez
+#     top10['Medio'] = top_diez
+#     top10['Dificil'] = top_diez
+#     valores_puntajes.pop('top10')
+#     valores_puntajes['top10'] = top10
+#     print('\n')
+#     print(valores_puntajes)
 
-with open('valores_puntajes.json','w') as f:
-    json.dump(valores_puntajes, f, indent=4)
+# with open('valores_puntajes.json','w') as f:
+#     json.dump(valores_puntajes, f, indent=4)
+
+import pickle
+
+with open('continuar_partida.pickle','w') as f:
+    pass

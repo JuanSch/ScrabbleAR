@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import json
 from tableros import jugar
 from logica import top10
+from os import remove
 
 def config_nuevo_juego():
     """
@@ -63,6 +64,27 @@ def config_nuevo_juego():
         return True
     else:
         return False
+
+def preguntar_partida_nueva():
+    layout=[
+        [sg.T("Tiene una partida guardada, si continua, se borrará", justification = "center",
+              font=("Georgia", 14))],
+        [sg.Button('Continuar'), sg.Button('Regresar')]
+    ]
+    window_preguntar = sg.Window("ScrabbleAR - Partida Guardada").Layout(layout)
+    while True:
+        event, _ = window_preguntar.Read()
+        if event == None:
+            condicion = False
+        elif event in 'Continuar':
+            condicion = True
+            break
+        elif event in 'Regresar':
+            condicion = False
+            break
+
+    window_preguntar.Close()
+    return condicion
 
 def configurar():
     """
@@ -133,7 +155,11 @@ def pantalla_inicial():
         Configurar la dificultad Personalizada
         Mostrar los diez mejores puntajes
     """
-
+    try:
+        with open('continuar_partida.pickle') as _:
+            condicion = False
+    except FileNotFoundError:
+        condicion = True
     layout = [
         [sg.T("Scrabble AR", size=(17, 1), justification="center",
               font=("Georgia", 17))],
@@ -143,7 +169,7 @@ def pantalla_inicial():
          #$% Este botón sólo debería estar habilitado si es que hay
          #$%una partida guardada lista para continuar
          sg.Button('Continuar partida', size=(25, 2),
-                   key="-continuar-", disabled=True)],
+                   key="-continuar-", disabled= condicion)],
         [sg.T(' '),
          sg.Button('Configuración', size=(25, 2), key="-configuracion-")],
         [sg.T(' '),
@@ -160,11 +186,16 @@ def pantalla_inicial():
             break
 
         elif event in "-nueva-":
-            if config_nuevo_juego():
-                jugar()
-
+            if condicion:
+                if config_nuevo_juego():
+                    jugar()
+            else:
+                if preguntar_partida_nueva():
+                    remove('continuar_partida.pickle')
+                    jugar()
+                    
         elif event in "-continuar-":
-            pass
+            jugar(True)
 
         elif event in "-configuracion-":
             configurar()
