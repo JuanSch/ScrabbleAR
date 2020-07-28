@@ -117,10 +117,10 @@ class Casilla:
              }
 
     def __init__(self, pos, tipo=''):
-        self.pos=pos
-        self.tipo=tipo
-        self.ocupado=False
-        self.ficha=None
+        self.pos = pos
+        self.tipo = tipo
+        self.ocupado = False
+        self.ficha = None
 
     def getpos(self):
         return self.pos
@@ -151,10 +151,10 @@ class Casilla:
         siempre multiplica por 1)"""
         try:
             valor = Casilla.valores[self.tipo](self.ficha.getvalor())
-            return (valor, 1)
+            return valor, 1
         except:
             valor = self.ficha.getvalor()
-            return (valor, Casilla.valores[self.tipo])
+            return valor, Casilla.valores[self.tipo]
 
 
 #####################################################################
@@ -197,14 +197,14 @@ class Palabra:
 
         self.fichas[pos]=(ficha, origen)
         longitud=len(self.fichas)
-        if longitud==1:
-            self.min=self.max=pos
+        if longitud == 1:
+            self.min = self.max = pos
         else:
             posiciones=self.getposiciones()
             # con sólo 2 posiciones ya se puede definir el eje, y no es
             # necesario reevaluarlo por cada nuevo elemento
-            if longitud==2:
-                x=pos[0]
+            if longitud == 2:
+                x = pos[0]
                 # Si el valor de x en el elemento preexistente es igual
                 # al del elemento insertado, significa que los desplazamientos
                 # suceden a lo largo del eje y, el valor en la posición [1]
@@ -216,7 +216,7 @@ class Palabra:
                     self.eje = 0
             # para facilitar operaciones, el diccionario siempre se ordena
             self.fichas = dict(sorted(self.fichas.items(),
-                                    key=lambda kv: kv[0][self.eje]))
+                                      key=lambda kv: kv[0][self.eje]))
             evaluar = pos[self.eje]
             # se debe evaluar si hubo un cambio en la posición de min o max,
             # las precondiciones evitan que puedan suceder ambos a la vez
@@ -298,6 +298,7 @@ class Tablero:
     def __init__(self, columnas, filas, casillas):
         self.xy = (columnas, filas)
         matriz = []
+        posibles = []
         for x in range(columnas):
             linea = []
             for y in range(filas):
@@ -310,11 +311,11 @@ class Tablero:
                         break
                 if not ok:
                     casilla = Casilla(tuple(pos))
+                posibles.append(tuple(pos))
                 linea.append(casilla)
             matriz.append(linea)
         self.matriz = matriz
-        self.inicio = [(7,7)]
-        self.posibles = list(self.inicio)
+        self.posibles = posibles
 
     def getmatriz(self):
         return self.matriz
@@ -322,11 +323,8 @@ class Tablero:
     def getxy(self):
         return self.xy
 
-    def getposibles(self, palabra, turno):
-        if turno == 0 and palabra.min == None:
-            return self.inicio
-        else:
-            return self.posibles
+    def getposibles(self):
+        return self.posibles
 
     def getcasilla(self, pos):
         x = pos[0]
@@ -339,10 +337,10 @@ class Tablero:
         for linea in self.matriz:
             for casilla in linea:
                 if not casilla.ocupado:
-                    validos.append(casilla)
+                    validos.append(casilla.pos)
         return validos
 
-    def jugada(self, palabra, pos, turno, origen=None, ficha=None):
+    def jugada(self, palabra, pos, origen=None, ficha=None):
         """Método principal de lógica interna del tablero, debe recibir
         un objeto tipo palabra, y manejará las actualizaciones
         correspondientes a los estados de las casillas"""
@@ -371,10 +369,7 @@ class Tablero:
         anteriores = list(self.posibles)
         if devolver is not None and palabra.min is None:
             borrar = anteriores
-            if turno == 0:
-                self.posibles = self.inicio
-            else:
-                self.posibles = []
+            self.posibles = self.getvalidos()
         else:
             posibles = []
             eje = palabra.eje
@@ -494,10 +489,10 @@ class Atril:
                 ficha.cambiarselect()
 
 
-    def pedirfichas(self):
+    def pedir(self):
         return len(self.vacias)
 
-    def recibirfichas(self, lista):
+    def recibir(self, lista):
         """Lista debe ser una lista de tuplas (letra,valor) -el formato
         de salida de la clase 'bolsa'-, las convierte en fichas
         y las almacena en los casilleros libres. La función asume
@@ -509,10 +504,10 @@ class Atril:
             letra = lista[i][0]
             valor = lista[i][1]
             ficha = Ficha(letra, valor)
-            self.fichas[self.vacias[i]]=ficha
+            self.fichas[self.vacias[i]] = ficha
         self.vacias = []
 
-    def entregarfichas(self):
+    def entregar(self):
         """Devuelve una lista con las fichas que el usuario desea cambiar"""
 
         entregar = []
@@ -558,7 +553,7 @@ class Bolsa:
         self.fichas = list(chain.from_iterable(fichas))
         self.valores = valores
 
-    def entregar_fichas(self, cant):
+    def entregar(self, cant):
         """
         Recibe una cantidad (int) de fichas a entregar.
         Genera [(letra, valor)*cantidad] seleccionando letras al azar
@@ -578,7 +573,7 @@ class Bolsa:
                 entregar.append(ficha)
         return entregar
 
-    def intercambiar_fichas(self, fichas):
+    def intercambiar(self, fichas):
         """
         Recibe una lista de fichas [(letra, valor)*cant].
         Reincorpora las letras a la bolsa, y entrega nuevamente
@@ -592,7 +587,7 @@ class Bolsa:
         lista = list(map(lambda x: x[0], fichas))
         for letra in lista:
             insort(self.fichas, letra)
-        return self.entregar_fichas(len(lista))
+        return self.entregar(len(lista))
 
 
 #####################################################################

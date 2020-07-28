@@ -1,34 +1,8 @@
 from pattern.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
-from logica import Ficha, Casilla, Palabra, Tablero, Atril, top10
 import concurrent.futures
 import json
 
-def actualizar_puntajes(tupla, dificultad):
-    """recibe una tupla[0]= nombre de usuario y tupla[1] el puntaje
-    si el puntaje entra en el top diez, se lo inserta donde corresponde en orden descendiente de puntajes
-    y se elemina el ultimo ya que la lista con el nuevo puntaje insertado tiene 11 elementos"""
-    try:
-        with open("valores_puntajes.json",'r') as f: #Cargo el diccionario de puntajes
-            dic = json.load(f)
-    except FileNotFoundError: #si no existe el archivo, lo creo
-        #$% crearvalores()
-        with open("valores_puntajes.json",'r') as f:
-            dic = json.load(f)
-    top = dic['top10'][dificultad]
-    ok = False
-    if (tupla[1] >= top[-1][1]): #si el puntaje es mayor o igual al puntaje minimo en el top
-        for i in range (len(top)):
-            if top(i)[1] > tupla[1]: #busco la posicion a insertar
-                top.insert(i,tupla) #inserto (ahora la lista tiene 11 elementos, desde 0 a 10)
-                if len(top) == 11:
-                    top.pop(10) #remuevo el elemento en la posicion 10, es decir el decimo-primer elemento
-                ok= True
-    if ok:
-        dic['top10'][dificultad] = top
-    with open("valores_puntajes.json",'w') as f:
-        json.dump(top, f, indent= 4)
-    return ok
 
 def validar_palabra(palabra):
     """
@@ -140,7 +114,7 @@ def elegir_palabra(Fichas, dificultad,long_maxima = 7):
                         max = puntaje_palabra_actual
                         palabra_elegida = palabra
                         
-                return(palabra_elegida)
+                return palabra_elegida
 
 
             def medio(palabras):
@@ -149,8 +123,8 @@ def elegir_palabra(Fichas, dificultad,long_maxima = 7):
                     puntaje_palabra_actual = calcular_puntaje_IA(palabra,puntaje_letra)
                     palabras_posibles.append(palabra, puntaje_palabra_actual)
                 
-                palabra_elegida =  palabras_posibles[len(palabras_posibles)//2]
-                return(palabra_elegida)
+                palabra_elegida = palabras_posibles[len(palabras_posibles)//2]
+                return palabra_elegida
 
 
             def facil(palabras):
@@ -161,15 +135,15 @@ def elegir_palabra(Fichas, dificultad,long_maxima = 7):
                     if puntaje_palabra_actual < min:
                         min = puntaje_palabra_actual
                         palabra_elegida = palabra
-                return(palabra_elegida)
+                return palabra_elegida
 
 
             if dificultad == 'Facil':
-                return(facil(palabras_utilies))
+                return facil(palabras_utilies)
             elif dificultad == "Dificil":
-                return(dificil(palabras_utilies))
+                return dificil(palabras_utilies)
             else:
-                return(medio(palabras_utilies))
+                return medio(palabras_utilies)
         
         def calcular_puntaje_IA(palabra, puntos):
             puntaje = 0
