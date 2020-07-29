@@ -59,10 +59,10 @@ def ruta():
     ejecutando el programa emplea como separador de jerarquía en
     las rutas de archivos"""
 
-    if platform.system()!="Windows":
-        char='/'
+    if platform.system() != "Windows":
+        char = '/'
     else:
-        char='\\'
+        char = '\\'
     return char
 
 
@@ -511,7 +511,7 @@ class Atril:
         """Devuelve una lista con las fichas que el usuario desea cambiar"""
 
         entregar = []
-        for k,v in self.fichas.items():
+        for k, v in self.fichas.items():
             if v.select:
                 entregar.append(v)
                 self.fichas[k] = None
@@ -521,6 +521,7 @@ class Atril:
     def eliminar(self, palabra):
         for _k, v in palabra.fichas.items():
             self.fichas[v[1]] = None
+
 
 class AtrilIA(Atril):
     def __init__(self):
