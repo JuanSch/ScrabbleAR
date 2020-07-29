@@ -385,10 +385,16 @@ def partida(window, datos_partida):
             else:
                 letras = [v.letra for _k, v in atril_ia.fichas.items()]
                 print(letras)
-                palabra_ia = ia.elegir_palabra(atril_ia.fichas, dificultad_ia)
-                if palabra_ia is not None:
+                palabras_ia = ia.elegir_palabra(atril_ia.fichas, dificultad_ia)
+                if palabras_ia is not None:
                     sg.Popup('La IA todavía no aprendió a usar el tablero\n'
-                             f'pero quiso jugar la palabra: "{palabra_ia}"')
+                             f'pero puede armar las palabras:\n'
+                             f'{palabras_ia}')
+                    tupla = ia.elegir_espacio(tablero, palabras_ia, dificultad_ia)
+                    if tupla is not None:
+                        sg.Popup('La IA todavía no aprendió a usar el tablero\n'
+                                 f'pero quiere colocar la palabra: "{tupla[1]}"\n'
+                                 f'en las casillas {tupla[0]}')
                 else:
                     sg.Popup('La IA no puede formar ninguna palabra, pasa de turno')
                 # Cambio de turnos

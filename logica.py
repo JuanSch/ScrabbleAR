@@ -7,6 +7,7 @@ from functools import reduce
 from itertools import chain
 from bisect import insort
 
+
 def top10(dificultad = None):
     with open('valores_puntajes.json','r', encoding='UTF-8') as f:
         dic = json.load(f)
@@ -53,6 +54,7 @@ def top10(dificultad = None):
             if event in 'Dificil':
                 window['-OUTPUT-'].update(texto_dificil)                
         window.close()
+
 
 def ruta():
     """Retorna el caracter que el sistema operativo en el que se está
@@ -291,9 +293,7 @@ class Palabra:
 
 class Tablero:
     """Es una matriz de casillas, y la interfaz entre la GUI y la lógica
-    subyacente a los eventos que sucedan en el tablero. La distribución de
-    tipos de casilla aún no está implementada, pero debería estar
-    definida por el tipo de tablero"""
+    subyacente a los eventos que sucedan en el tablero."""
 
     def __init__(self, columnas, filas, casillas):
         self.xy = (columnas, filas)
@@ -340,30 +340,51 @@ class Tablero:
                     validos.append(casilla.pos)
         return validos
 
+    def limite(self, pos, posibles, eje, borde, direccion, lim=7, ciclo=0):
+        """Método auxiliar del tablero, dado un punto de inicio, eje, direccion y longitud,
+        devuelve una lista de casillas contiguas disponibles.
+
+        recibe:
+        - pos: tupla (int, int) indicando una posición válida en la matriz
+               de casillas del tablero
+        - posibles: debe recibir una lista de posiciones (ver pos), la casilla inicial
+                    se preasume desocupada y la función no la incorpora a la lista
+        - eje: 0 (int)= recorrido horizontal
+               1 (int)= recorrido vertical
+        - dirección: '-' (str)= búsqueda hacia la izquierda o hacia arriba
+                                de la posición inicial
+                     '+' (str)= búsqueda hacia la derecha o hacia abajo
+                                de la posición inicial
+        - lim: la cantidad máxima de espacios a evaluar (incluyendo la posición inicial)
+               predeterminado = 7
+
+        retorna:
+        - posibles: un append a posibles (ver recibe) de las casillas que no estaban ocupadas
+        """
+
+        direcciones = {'+': operator.add, '-': operator.sub}
+        direc = direcciones[direccion]
+        if ciclo == lim-1:
+            return posibles
+        else:
+            nueva = list(pos)
+            coord = direc(pos[eje], 1)
+            nueva[eje] = coord
+            if nueva[eje] == borde or self.getcasilla(nueva).ocupado is True:
+                return posibles
+            else:
+                posibles.append(tuple(nueva))
+                return self.limite(nueva, posibles, eje, borde, direccion, lim, ciclo + 1)
+
     def jugada(self, palabra, pos, origen=None, ficha=None):
         """Método principal de lógica interna del tablero, debe recibir
         un objeto tipo palabra, y manejará las actualizaciones
         correspondientes a los estados de las casillas"""
 
-        def limite(pos, posibles, eje, borde, dir, ciclo=0):
-            if ciclo == 6:
-                return posibles
-            else:
-                nueva = list(pos)
-                coord = dir(pos[eje], 1)
-                nueva[eje] = coord
-                if nueva[eje] == borde or self.getcasilla(nueva).ocupado == True:
-                        return posibles
-                else:
-                    posibles.append(tuple(nueva))
-                    return limite(nueva, posibles, eje,
-                                      borde, dir, ciclo+1)
-
         def habilitados(posibles, eje, izquierda, derecha):
-            direcciones = {'+': operator.add, '-': operator.sub}
             bordes = self.getxy()
-            limite(derecha, posibles, eje, -1, direcciones['-'])
-            limite(izquierda, posibles, eje, bordes[eje], direcciones['+'])
+            self.limite(derecha, posibles, eje, -1, '-')
+            self.limite(izquierda, posibles, eje, bordes[eje], '+')
 
         devolver = palabra.modificar(pos, origen, ficha)
         anteriores = list(self.posibles)
@@ -589,8 +610,3 @@ class Bolsa:
         for letra in lista:
             insort(self.fichas, letra)
         return self.entregar(len(lista))
-
-
-#####################################################################
-#                           FIN CLASE BOLSA                         #
-#####################################################################

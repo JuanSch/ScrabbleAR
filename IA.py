@@ -1,5 +1,6 @@
 from pattern.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
+import random
 import concurrent.futures
 import json
 
@@ -10,6 +11,7 @@ def validar_palabra(palabra):
     retorna True si lo es. Caso contrario retorna False
     """
     palabra = parse(palabra).split('/')
+    existe = False
     if palabra[1] in ('AO','JJ','AQ','DI','DT','VAG','VBG','VAI','VAN','MD',
                       'VAS','VMG','VMI','VB','VMM','VMN','VMP','VBN','VMS',
                       'VSG','VSI','VSN','VSP','VSS'):  # VB:verbo, JJ:adjetivo
@@ -19,19 +21,20 @@ def validar_palabra(palabra):
             w = Wiktionary(language="es")
             article = w.search(palabra[0])
             if article is not None:
-                return True
-            else:
-                return False
+                secciones = [x.title for x in article.sections]
+                if 'Español' in secciones:
+                    existe = True
         else:
-            return True
+            existe = True
     elif palabra[1] in ('NC','NN','NCS','NCP','NNS','NP','NNP','W'):
         # sustantivo comprueba con wiktionary
         w = Wiktionary(language="es")
         article = w.search(palabra[0])
         if article is not None:
-            return True
-        else:
-            return False
+            secciones = [x.title for x in article.sections]
+            if 'Español' in secciones:
+                existe = True
+    return existe
 
 
 def calcular_puntaje(palabra):
@@ -96,22 +99,11 @@ def elegir_palabra(fichas, dificultad, long_maxima=7):
                 puntaje += puntos[char]
             return puntaje
 
-        def por_dificulad(palabras_utiles, dificultad, puntaje_letra):
-            """
-            Segun la dificultad elige una u otra palaba
-            """
-            def ordenar_puntos(palabras, puntaje_letra):
-                palabra_puntos = [(p, calcular_puntaje_IA(p, puntaje_letra))
-                                  for p in palabras]
-                palabra_puntos.sort(key=lambda x: x[1])
-                return palabra_puntos
-
-            seleccion = {'Facil': lambda x: x[0][0],
-                         'Medio': lambda x: x[len(x)//2][0],
-                         'Dificil': lambda x: x[-1][0]}
-            palabras_puntos = ordenar_puntos(palabras_utiles, puntaje_letra)
-            print(palabras_puntos)
-            return seleccion[dificultad](palabras_puntos)
+        def ordenar_puntos(palabras, puntaje_letra):
+            palabra_puntos = [(p, calcular_puntaje_IA(p, puntaje_letra))
+                              for p in palabras]
+            palabra_puntos.sort(key=lambda x: x[1])
+            return [x[0] for x in palabra_puntos]
 
         letras = [v.letra for _k, v in fichas.items()]
         puntaje_letra = {v.letra: v.valor for _k, v in fichas.items()}
@@ -144,10 +136,8 @@ def elegir_palabra(fichas, dificultad, long_maxima=7):
             if resultados[i] is True:
                 palabras_utiles.append(palabras_posibles[i])
 
-        if len(palabras_utiles) == 1:
-            return palabras_utiles
-        elif len(palabras_utiles) > 1:
-            return por_dificulad(palabras_utiles, dificultad, puntaje_letra)
+        if len(palabras_utiles) > 1:
+            return ordenar_puntos(palabras_utiles, puntaje_letra)
         else:
             return None
 
@@ -161,6 +151,52 @@ def elegir_palabra(fichas, dificultad, long_maxima=7):
             return elegir_palabra_dos(fichas, dificultad, long_maxima)
     except:
         return elegir_palabra_dos(fichas, dificultad, long_maxima)
+
+
+def elegir_espacio(tablero, palabras, dificultad):
+    """
+    Lee el tablero y busca un espacio donde poner la palabra con base en la dificultad
+    recibe:
+    - tablero: objeto de clase Tablero del módulo lógica
+    - palabras: lista (list) de palabras (string) ordenada según puntaje
+    - dificultad: (string) indicando la dificultad de la IA
+    según los criterios de ScrabbleAR
+    """
+
+    seleccion = {'Facil': lambda x: x[0],
+                 'Medio': lambda x: x[len(x) // 2],
+                 'Dificil': lambda x: x[-1]}
+    palabra = seleccion[dificultad](palabras)
+    largo = len(palabra)
+    casillas_posibles = list(tablero.getposibles())
+    borde_h = tablero.getxy()[0]
+    borde_v = tablero.getxy()[1]
+    encontre = False
+    print(f'La palabra a evaluar es: {palabra}')
+    while not encontre and len(casillas_posibles) != 0:
+        pos = random.choice(casillas_posibles)
+        posible_h = tablero.limite(pos, [pos], 0, borde_h, '+', largo)
+        posible_v = tablero.limite(pos, [pos], 0, borde_v, '+', largo)
+        posibles = [posible_h, posible_v]
+        print(f'Se evaluó la posición de inicio {pos}\n'
+              f'    Este es el resultado de evaluar en horizontal: {posible_h}\n'
+              f'    Este es el resultado de evaluar en vertical: {posible_v}\n'
+              )
+        test = [len(x) == largo for x in posibles]
+        print(f'El resultado de evaluar la longitud es {test}')
+        if all(test):
+            posicion = random.choice(posibles)
+            encontre = True
+        elif any(test):
+            i = posibles.index(True)
+            posicion = posibles[i]
+            encontre = True
+        else:
+            casillas_posibles.remove(pos)
+    if encontre:
+        return posicion, palabra
+    else:
+        return None
 
 
 if __name__ == '__main__':

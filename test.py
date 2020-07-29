@@ -39,3 +39,4 @@
 #
 # for palabra in palabras:
 #     validar(palabra)
+
