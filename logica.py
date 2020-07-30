@@ -145,7 +145,7 @@ class Casilla:
         la jugada"""
         self.ocupado = True
         self.ficha = ficha
-        self.ficha.cambiarselect()
+        self.ficha.select = False
 
     def valor(self):
         """Esta función devuelve el valor que contiene la casilla
@@ -176,9 +176,9 @@ class Palabra:
     retornar un string con la palabra que sus elementos forman"""
 
     def __init__(self):
-        self.min=None
-        self.max=None
-        self.eje=None
+        self.min = None
+        self.max = None
+        self.eje = None
         self.fichas={}
 
     def getposiciones(self):
@@ -197,7 +197,7 @@ class Palabra:
     def agregarletra(self, pos, origen, ficha):
         """Sólo permite agregar letras en posiciones nuevas"""
 
-        self.fichas[pos]=(ficha, origen)
+        self.fichas[pos] = (ficha, origen)
         longitud=len(self.fichas)
         if longitud == 1:
             self.min = self.max = pos
@@ -509,7 +509,6 @@ class Atril:
                 self.cambiar = (evento, ficha)
                 ficha.cambiarselect()
 
-
     def pedir(self):
         return len(self.vacias)
 
@@ -539,9 +538,10 @@ class Atril:
                 self.vacias.append(k)
         return entregar
 
-    def eliminar(self, palabra):
-        for _k, v in palabra.fichas.items():
-            self.fichas[v[1]] = None
+    def eliminar(self, origen):
+        for v in origen:
+            self.fichas[v] = None
+            self.vacias.append(v)
 
 
 class AtrilIA(Atril):
@@ -553,6 +553,8 @@ class AtrilIA(Atril):
             return f'imagenes{ruta()}Atril.png'
         else:
             return f'imagenes{ruta()}FichaIA.png'
+
+
 
 #####################################################################
 #                           FIN CLASE ATRIL                         #

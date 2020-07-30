@@ -1,4 +1,4 @@
-from pattern.es import lexicon, spelling, parse
+from pattern.text.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
 import random
 import concurrent.futures
@@ -49,9 +49,9 @@ def calcular_puntaje(palabra):
     return puntaje
 
 
-def elegir_palabra(fichas, dificultad, long_maxima=7):
+def elegir_palabra(fichas, long_maxima=7):
 
-    def elegir_palabra_dos(fichas, dificultad, long_maxima):
+    def elegir_palabra_dos(fichas, long_maxima):
         """
         Esta funcion elige la palabra mas adecuada para la IA
         (la que le permita ganar la mayor cantidad de puntos)
@@ -103,7 +103,7 @@ def elegir_palabra(fichas, dificultad, long_maxima=7):
             palabra_puntos = [(p, calcular_puntaje_IA(p, puntaje_letra))
                               for p in palabras]
             palabra_puntos.sort(key=lambda x: x[1])
-            return [x[0] for x in palabra_puntos]
+            return palabra_puntos
 
         letras = [v.letra for _k, v in fichas.items()]
         puntaje_letra = {v.letra: v.valor for _k, v in fichas.items()}
@@ -116,7 +116,7 @@ def elegir_palabra(fichas, dificultad, long_maxima=7):
                     palabra_deletreada = [char for char in palabra]  # la separamos por caracteres,
                     palabra_deletreada.sort()
                     # generamos una lista y la ordenamos
-                    if sirve(letras, palabra_deletreada): # Comparamos ambas listas y si me sirve
+                    if sirve(letras, palabra_deletreada):  # Comparamos ambas listas y si me sirve
                         palabras_posibles.append(palabra)  # agregamos la palabra a nuestra lista de palabras utiles
 
         if len(palabras_posibles) == 0:
@@ -146,11 +146,11 @@ def elegir_palabra(fichas, dificultad, long_maxima=7):
     # solo volvemos a ejecutar el codigo
     try: 
         try:
-            return elegir_palabra_dos(fichas, dificultad, long_maxima)
+            return elegir_palabra_dos(fichas, long_maxima)
         except:
-            return elegir_palabra_dos(fichas, dificultad, long_maxima)
+            return elegir_palabra_dos(fichas, long_maxima)
     except:
-        return elegir_palabra_dos(fichas, dificultad, long_maxima)
+        return elegir_palabra_dos(fichas, long_maxima)
 
 
 def elegir_espacio(tablero, palabras, dificultad):
@@ -166,24 +166,18 @@ def elegir_espacio(tablero, palabras, dificultad):
     seleccion = {'Facil': lambda x: x[0],
                  'Medio': lambda x: x[len(x) // 2],
                  'Dificil': lambda x: x[-1]}
-    palabra = seleccion[dificultad](palabras)
+    palabra, valor = seleccion[dificultad](palabras)
     largo = len(palabra)
     casillas_posibles = list(tablero.getposibles())
     borde_h = tablero.getxy()[0]
     borde_v = tablero.getxy()[1]
     encontre = False
-    print(f'La palabra a evaluar es: {palabra}')
     while not encontre and len(casillas_posibles) != 0:
         pos = random.choice(casillas_posibles)
         posible_h = tablero.limite(pos, [pos], 0, borde_h, '+', largo)
         posible_v = tablero.limite(pos, [pos], 0, borde_v, '+', largo)
         posibles = [posible_h, posible_v]
-        print(f'Se evaluó la posición de inicio {pos}\n'
-              f'    Este es el resultado de evaluar en horizontal: {posible_h}\n'
-              f'    Este es el resultado de evaluar en vertical: {posible_v}\n'
-              )
         test = [len(x) == largo for x in posibles]
-        print(f'El resultado de evaluar la longitud es {test}')
         if all(test):
             posicion = random.choice(posibles)
             encontre = True
@@ -194,7 +188,7 @@ def elegir_espacio(tablero, palabras, dificultad):
         else:
             casillas_posibles.remove(pos)
     if encontre:
-        return posicion, palabra
+        return posicion, palabra, valor
     else:
         return None
 

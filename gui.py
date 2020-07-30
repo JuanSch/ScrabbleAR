@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import time as t
 import logica as lg
 import IA as ia
+from os import remove
 import pickle
 import json
 import random
@@ -61,7 +62,7 @@ def inicializar(continuar):
                 with open('valores_puntajes.json', 'r', encoding='UTF-8') as f:
                     valores = json.load(f)
                     if dificultad != "Personalizada":
-                        dificultad_ia = dificultad
+                        dificultad_ia = str(dificultad)
                         cant_letras = valores[f'{dificultad}']['bolsa']
                         datos = valores[f'{dificultad}']['tablero']
                     else:
@@ -92,6 +93,7 @@ def inicializar(continuar):
                     'atril_ia': atril_ia,
                     'palabra': palabra,
                     'bolsa': bolsa,
+                    'dificultad': dificultad,
                     'dificultad_ia': dificultad_ia,
                     'puntos_jugador': puntos_jugador,
                     'puntos_ia': puntos_ia,
@@ -316,10 +318,12 @@ def partida(window, datos_partida):
         nonlocal atril_jugador
         nonlocal puntos_jugador
         nonlocal turno_jugador
+        nonlocal fin
+
         if ia.validar_palabra(str(palabra)):
             # Actualizaciones a la lógica y valores de fondo
             puntos_jugador += tablero.fijar_palabra(palabra)
-            atril_jugador.eliminar(palabra)
+            atril_jugador.eliminar([v[1] for _k, v in palabra.fichas.items()])
             # Actualizaciones de GUI
             actualizar_tablero((), borrar, window, tablero)
             # borrar siempre va a tener algún valor,
@@ -335,14 +339,86 @@ def partida(window, datos_partida):
             atril_jugador.setestado(0)
             window.FindElement('-CAMBIAR-').Update(disabled=True)
             window.FindElement('-JUGAR-').Update(disabled=True)
-            # Se vacía la palabra
-            palabra.vaciar()
-            # Cambio de turno
-            turno_jugador = not turno_jugador
+            # Se piden fichas nuevas para el atril
+            fichas_nuevas = bolsa.entregar(atril_jugador.pedir())
+            if fichas_nuevas:  # Si la lista tiene elementos
+                # Se reciben las fichas
+                atril_jugador.recibir(fichas_nuevas)
+                actualizar_atril(atril_jugador, window)
+                # Se actualiza el estado de la bolsa
+                window.FindElement('-BOLSA-').Update(f'QUEDAN {len(bolsa.fichas)} FICHAS')
+                # Se vacía la palabra
+                palabra.vaciar()
+                # Cambia el turno
+                turno_jugador = not turno_jugador
+            else:
+                fin = True
         else:
             sg.Popup(f'"{str(palabra)}" no existe\n'
                      f'en nuestro diccionario')
 
+    def turno_ia(dif_ia):
+
+        def seleccionar_fichas(palabra_ia, atril_ia):
+            espacios = []
+            atril = dict(atril_ia.fichas)
+            for char in palabra_ia:
+                for k, v in atril.items():
+                    if v.letra == char:
+                        espacios.append(k)
+                        break
+                atril.pop(k)
+            return espacios
+
+        nonlocal window
+        nonlocal atril_ia
+        nonlocal atril_jugador
+        nonlocal tablero
+        nonlocal turno_jugador
+        nonlocal puntos_ia
+        nonlocal fin
+
+        palabras_ia = ia.elegir_palabra(atril_ia.fichas)
+        if palabras_ia is not None:  # Si la IA puede generar palabras
+            tupla = ia.elegir_espacio(tablero, palabras_ia, dif_ia)
+            if tupla is not None:  # Si la IA encuentra un espacio en el tablero
+                casillas, palabra_ia, puntos = tupla
+                origen = seleccionar_fichas(palabra_ia, atril_ia)
+                for i in range(len(casillas)):
+                    ficha = atril_ia.fichas[origen[i]]
+                    pos = casillas[i]
+                    casilla = tablero.getcasilla(pos)
+                    casilla.ocupar(ficha)
+                    img = casilla.getimagen()
+                    window.FindElement(pos).Update(image_filename=img)
+                atril_ia.eliminar(origen)
+                actualizar_atril(atril_ia, window)
+                # Se actualizan los puntos
+                puntos_ia += puntos
+                window.FindElement('-PIA-').Update(f'IA: {puntos_ia}')
+                # Se piden fichas nuevas para el atril
+                fichas_nuevas = bolsa.entregar(atril_ia.pedir())
+                if fichas_nuevas:  # Si la lista tiene elementos
+                    # Se reciben las fichas
+                    atril_ia.recibir(fichas_nuevas)
+                    actualizar_atril(atril_ia, window)
+                    # Se actualiza el estado de la bolsa
+                    window.FindElement('-BOLSA-').Update(f'QUEDAN {len(bolsa.fichas)} FICHAS')
+                else:
+                    fin = True
+
+        else:
+            sg.Popup('La IA no puede formar ninguna palabra, pasa de turno')
+
+        # Se habilitan los botones del jugador
+        window.FindElement('-TURNO-').Update('JUGADOR')
+        window.FindElement('-CAMBIAR-').Update(disabled=False)
+        atril_jugador.setestado(1)
+
+        # Cambia el turno
+        turno_jugador = not turno_jugador
+
+    nombre = datos_partida['nombre']
     tablero = datos_partida['tablero']
     atril_jugador = datos_partida['atril_jugador']
     atril_ia = datos_partida['atril_ia']
@@ -383,25 +459,7 @@ def partida(window, datos_partida):
 
             # TURNO IA
             else:
-                letras = [v.letra for _k, v in atril_ia.fichas.items()]
-                print(letras)
-                palabras_ia = ia.elegir_palabra(atril_ia.fichas, dificultad_ia)
-                if palabras_ia is not None:
-                    sg.Popup('La IA todavía no aprendió a usar el tablero\n'
-                             f'pero puede armar las palabras:\n'
-                             f'{palabras_ia}')
-                    tupla = ia.elegir_espacio(tablero, palabras_ia, dificultad_ia)
-                    if tupla is not None:
-                        sg.Popup('La IA todavía no aprendió a usar el tablero\n'
-                                 f'pero quiere colocar la palabra: "{tupla[1]}"\n'
-                                 f'en las casillas {tupla[0]}')
-                else:
-                    sg.Popup('La IA no puede formar ninguna palabra, pasa de turno')
-                # Cambio de turnos
-                turno_jugador = not turno_jugador
-                window.FindElement('-TURNO-').Update('JUGADOR')
-                atril_jugador.setestado(1)
-                window.FindElement('-CAMBIAR-').Update(disabled=False)
+                turno_ia(dificultad_ia)
 
             # Control y actualización de reloj
             reloj, corriendo = temporizador(tiempo, inicio, corriendo)
@@ -413,6 +471,39 @@ def partida(window, datos_partida):
     # cierre
     window.Close()
 
+    return fin
+
+
+def fin_partida(continuar, datos_partida):
+
+    nombre = datos_partida['nombre']
+    dificultad = datos_partida['dificultad']
+    puntos_jugador = datos_partida['puntos_jugador']
+    puntos_ia = datos_partida['puntos_ia']
+
+    if continuar:
+        remove("continuar_partida.pickle")  # Como terminó la partida borramos la partida guardada
+    if puntos_jugador > puntos_ia:  # evalua quien gana
+        if actualizar_puntajes([nombre, puntos_jugador],
+                                   dificultad):  # evalua si entra en el top10 (si entra se agrega)
+            sg.Popup('¡Ganaste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+            lg.top10()
+        else:
+            sg.Popup('¡Ganaste! \n Tu puntiacion es: ' + str(puntos_jugador))
+        # ganaste
+    elif puntos_jugador == puntos_ia:
+        if actualizar_puntajes([nombre, puntos_jugador], dificultad):
+            sg.Popup('¡Empataste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+            lg.top10()
+        else:
+            sg.Popup('¡Empataste! La proxima ganarás \n Tu puntiacion es: ' + str(puntos_jugador))
+    else:
+        if actualizar_puntajes([nombre, puntos_jugador], dificultad):
+            sg.Popup('¡Perdiste pero entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+            lg.top10()
+        else:
+            sg.Popup('!Perdiste suerte la próxima! \n Tu puntiacion es: ' + str(puntos_jugador))
+
 
 def actualizar_puntajes(tupla, dificultad):
     """recibe una tupla[0]= nombre de usuario y tupla[1] el puntaje
@@ -420,11 +511,11 @@ def actualizar_puntajes(tupla, dificultad):
     en orden descendiente de puntajes y se elemina el ultimo
     ya que la lista con el nuevo puntaje insertado tiene 11 elementos"""
     try:
-        with open("valores_puntajes.json",'r') as f:    # Cargo el diccionario de puntajes
+        with open("valores_puntajes.json", 'r') as f:    # Cargo el diccionario de puntajes
             dic = json.load(f)
     except FileNotFoundError:   # si no existe el archivo, lo creo
         #$% crearvalores()
-        with open("valores_puntajes.json",'r') as f:
+        with open("valores_puntajes.json", 'r') as f:
             dic = json.load(f)
     top = dic['top10'][dificultad]
     ok = False
@@ -438,6 +529,6 @@ def actualizar_puntajes(tupla, dificultad):
                 ok = True
     if ok:
         dic['top10'][dificultad] = top
-    with open("valores_puntajes.json",'w') as f:
-        json.dump(top, f, indent= 4)
+    with open("valores_puntajes.json", 'w') as f:
+        json.dump(top, f, indent=4)
     return ok
