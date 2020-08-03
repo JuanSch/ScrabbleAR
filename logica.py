@@ -131,7 +131,6 @@ class Casilla:
         return self.ocupado
 
     def getimagen(self, resalte=False):
-
         try:
             return self.ficha.getimagen()
         except:
@@ -179,7 +178,7 @@ class Palabra:
         self.min = None
         self.max = None
         self.eje = None
-        self.fichas={}
+        self.fichas = {}
 
     def getposiciones(self):
         return list(self.fichas.keys())
@@ -248,7 +247,7 @@ class Palabra:
                 if pos == self.max:
                     self.max = claves[-1]
                 elif pos == self.min:
-                    self.min=claves[0]
+                    self.min = claves[0]
                 # si la palabra pasó a tener un sólo elemento,
                 # el valor de eje vuelve a None
                 if len(self.fichas) == 1:
@@ -266,10 +265,10 @@ class Palabra:
             return None
 
     def vaciar(self):
-        self.min=None
-        self.max=None
-        self.eje=None
-        self.fichas={}
+        self.min = None
+        self.max = None
+        self.eje = None
+        self.fichas = {}
 
     def probar(self):
         ok = False
@@ -334,10 +333,11 @@ class Tablero:
 
     def getvalidos(self):
         validos = []
-        for linea in self.matriz:
-            for casilla in linea:
-                if not casilla.ocupado:
-                    validos.append(casilla.pos)
+        for x in range(self.xy[0]):
+            for y in range(self.xy[1]):
+                pos = (x, y)
+                if not self.getcasilla(pos).ocupado:
+                    validos.append(pos)
         return validos
 
     def limite(self, pos, posibles, eje, borde, direccion, lim=7, ciclo=0):
@@ -403,7 +403,7 @@ class Tablero:
                 max = palabra.max
                 habilitados(posibles, eje, min, max)
             self.posibles = set(posibles)
-            borrar = list(set(anteriores)-(self.posibles))
+            borrar = list(set(anteriores)-self.posibles)
         marcar = list(self.posibles)
         # Con esto garantizamos que no se marquen como posibles
         # casillas en las que hay una ficha
@@ -427,7 +427,7 @@ class Tablero:
         def calcular(tupla1, tupla2):
             valor = tupla1[0] + tupla2[0]
             multi = tupla1[1] * tupla2[1]
-            return (valor, multi)
+            return valor, multi
 
         valores = []
         for k, v in palabra.fichas.items():
@@ -460,13 +460,11 @@ class Atril:
             vacias.append(nombre)
         self.vacias = vacias
         self.fichas = fichas
-        self.cambiar = None
+        self.cambiar = []
         self.estado = Atril.estados[0]
 
     def setestado(self, valor):
         self.estado = Atril.estados[valor]
-        if valor == 3:
-            self.cambiar = []
 
     def imagen(self, espacio):
         if self.fichas[espacio] is None:
@@ -482,7 +480,7 @@ class Atril:
             if not ficha.select:
                 self.cambiar.append(ficha)
             else:
-                self.cambiar.pop(ficha)
+                self.cambiar.remove(ficha)
             ficha.cambiarselect()
         elif self.estado == 'ELEGIR':
             # Se seleccionará una ficha para colocar en el tablero
@@ -530,13 +528,11 @@ class Atril:
     def entregar(self):
         """Devuelve una lista con las fichas que el usuario desea cambiar"""
 
-        entregar = []
         for k, v in self.fichas.items():
             if v.select:
-                entregar.append(v)
                 self.fichas[k] = None
                 self.vacias.append(k)
-        return entregar
+        return self.cambiar
 
     def eliminar(self, origen):
         for v in origen:
@@ -553,7 +549,6 @@ class AtrilIA(Atril):
             return f'imagenes{ruta()}Atril.png'
         else:
             return f'imagenes{ruta()}FichaIA.png'
-
 
 
 #####################################################################
@@ -608,7 +603,7 @@ class Bolsa:
         de un lista.append()
         """
 
-        lista = list(map(lambda x: x[0], fichas))
+        lista = list(map(lambda x: x.letra, fichas))
         for letra in lista:
             insort(self.fichas, letra)
         return self.entregar(len(lista))

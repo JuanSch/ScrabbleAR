@@ -154,7 +154,7 @@ def actualizar_tablero(marcar, borrar, window, tablero):
         pass
     try:
         for casilla in marcar:
-            imagen=tablero.getcasilla(casilla).getimagen(True)
+            imagen = tablero.getcasilla(casilla).getimagen(True)
             window.FindElement(casilla).Update(
                 image_filename=imagen)
     except TypeError:   # la función puede recibir marcar = None
@@ -297,7 +297,7 @@ def partida(window, datos_partida):
             window.FindElement('-JUGAR-').Update(disabled=False)
         else:
             window.FindElement('-JUGAR-').Update(disabled=True)
-        return marcar
+        return marcar if marcar else []
 
     def click_jugar(borrar):
         """
@@ -356,6 +356,39 @@ def partida(window, datos_partida):
         else:
             sg.Popup(f'"{str(palabra)}" no existe\n'
                      f'en nuestro diccionario')
+
+    def click_cambiar():
+        """Activa y concreta el canje de fichas con la bolsa"""
+
+        nonlocal atril_jugador
+        nonlocal tablero
+        nonlocal bolsa
+        nonlocal palabra
+        nonlocal window
+        nonlocal turno_jugador
+
+        if atril_jugador.estado == 'CAMBIAR':
+            if atril_jugador.cambiar:  # Si hay fichas para cambiar
+                # Efectúa el intercambio con la bolsa
+                atril_jugador.recibir(bolsa.intercambiar(atril_jugador.entregar()))
+                actualizar_atril(atril_jugador, window)
+                turno_jugador = not turno_jugador  # Cambia de turno
+            atril_jugador.setestado(1)  # Retorna al estado de juego
+        else:  # Si el atril estaba en otro estado
+            if palabra.min is not None: # Si había fichas colocadas en el tablero
+                casillas = palabra.getposiciones()
+                # Deselecciona las fichas - palabra y atril apuntan al mismo objeto
+                for pos in casillas:
+                    palabra.fichas[pos][0].select = False
+                # Actualiza la visualización del tablero
+                borrar = list(tablero.getposibles()) + casillas
+                actualizar_tablero((), borrar, window, tablero)
+                # Actualiza la visualización del atril
+                actualizar_atril(atril_jugador, window)
+                # Vacía la palabra
+                palabra.vaciar()
+            atril_jugador.setestado(3)  # Pone al atril en modo de intercambio de fichas
+        #$% Cambia la visualización del botón
 
     def turno_ia(dif_ia):
 
@@ -456,6 +489,8 @@ def partida(window, datos_partida):
                     marcar = click_tablero(event)
                 elif event == '-JUGAR-':
                     click_jugar(marcar)
+                elif event == '-CAMBIAR-':
+                    click_cambiar()
 
             # TURNO IA
             else:
@@ -520,9 +555,9 @@ def actualizar_puntajes(tupla, dificultad):
     top = dic['top10'][dificultad]
     ok = False
     if tupla[1] >= top[-1][1]:    # si el puntaje es mayor o igual al puntaje minimo en el top
-        for i in range (len(top)):
+        for i in range(len(top)):
             if top(i)[1] > tupla[1]:    # busco la posicion a insertar
-                top.insert(i,tupla)  # inserto (ahora la lista tiene 11 elementos, desde 0 a 10)
+                top.insert(i, tupla)  # inserto (ahora la lista tiene 11 elementos, desde 0 a 10)
                 if len(top) == 11:
                     top.pop(10)  # remuevo el elemento en la posicion 10,
                     # es decir el decimo-primer elemento

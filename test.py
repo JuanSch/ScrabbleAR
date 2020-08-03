@@ -39,4 +39,47 @@
 #
 # for palabra in palabras:
 #     validar(palabra)
-
+#
+#
+# TEST CASILLAS VALIDAS
+#
+# def test_ocupadas(tablero):
+#     ocupadas = {}
+#     # print('Ocupadas:\n')
+#     for x in range(15):
+#         # string = ''
+#         for y in range(15):
+#             ocupadas[(x, y)] = not tablero.getcasilla((x, y)).ocupado
+#             # string = ' '.join([string, f'({x}, {y}): {casilla.ocupado}'])
+#         # print(string)
+#     return ocupadas
+#
+#
+# def test_posibles(tablero):
+#     posibles = {}
+#     # print('Posibles:\n')
+#     for x in range(15):
+#         # string = ''
+#         for y in range(15):
+#             posibles[(x, y)] = (x, y) in tablero.getposibles()
+#             # string = ' '.join([string, f'({x}, {y}): {(x, y) in tablero.getposibles()}'])
+#         # print(string)
+#     return posibles
+#
+#
+# def print_ocupadas(tablero):
+#     print('Ocupadas:\n')
+#     for x in range(15):
+#         string = ''
+#         for y in range(15):
+#             string = ' '.join([string, f'({x}, {y}): {not tablero.getcasilla((x, y)).ocupado}'])
+#         print(string)
+#
+#
+# def print_posibles(tablero):
+#     print('Posibles:\n')
+#     for x in range(15):
+#         string = ''
+#         for y in range(15):
+#             string = ' '.join([string, f'({x}, {y}): {(x, y) in tablero.getposibles()}'])
+#         print(string)
