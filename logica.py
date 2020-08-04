@@ -449,7 +449,7 @@ class Tablero:
 #####################################################################
 
 class Atril:
-    estados = {0:'APAGADO', 1:'ELEGIR', 2:'PASAR', 3:'CAMBIAR'}
+    estados = {0: 'APAGADO', 1: 'ELEGIR', 2: 'PASAR', 3: 'CAMBIAR'}
 
     def __init__(self, inicio='F'):
         fichas = {}
@@ -465,6 +465,8 @@ class Atril:
 
     def setestado(self, valor):
         self.estado = Atril.estados[valor]
+        if valor in (1, 3):
+            self.cambiar = []
 
     def imagen(self, espacio):
         if self.fichas[espacio] is None:
@@ -498,10 +500,10 @@ class Atril:
             if evento == self.cambiar[0]:
                 # Se hizo click en la ficha que ya estaba seleccionada
                 # para colocar en el tablero
-                self.cambiar = None
+                self.cambiar = []
                 ficha.cambiarselect()
                 self.setestado(1)
-            elif not ficha.select: #$%Cuando haces click en una ficha usada se rompe
+            elif not ficha.select:
                 # Se decidió cambiar qué ficha se iba a colocar en el tablero
                 self.cambiar[1].cambiarselect()
                 self.cambiar = (evento, ficha)

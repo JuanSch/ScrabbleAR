@@ -246,7 +246,7 @@ def partida(window, datos_partida):
         atril_jugador.click(evento)
         actualizar_atril(atril_jugador, window)
         if (atril_jugador.estado == 'ELEGIR'
-                and atril_jugador.cambiar is not None):
+                and atril_jugador.cambiar != []):
             # si esto sucede significa que el click
             # fue una deselección
             pos = palabra.posficha(atril_jugador.cambiar[0])
@@ -358,7 +358,7 @@ def partida(window, datos_partida):
                      f'en nuestro diccionario')
 
     def click_cambiar():
-        """Activa y concreta el canje de fichas con la bolsa"""
+        """Activa/desactiva y concreta el canje de fichas con la bolsa"""
 
         nonlocal atril_jugador
         nonlocal tablero
@@ -375,7 +375,7 @@ def partida(window, datos_partida):
                 turno_jugador = not turno_jugador  # Cambia de turno
             atril_jugador.setestado(1)  # Retorna al estado de juego
         else:  # Si el atril estaba en otro estado
-            if palabra.min is not None: # Si había fichas colocadas en el tablero
+            if palabra.min is not None:  # Si había fichas colocadas en el tablero
                 casillas = palabra.getposiciones()
                 # Deselecciona las fichas - palabra y atril apuntan al mismo objeto
                 for pos in casillas:
@@ -387,6 +387,8 @@ def partida(window, datos_partida):
                 actualizar_atril(atril_jugador, window)
                 # Vacía la palabra
                 palabra.vaciar()
+                # Inhabilita el botón jugar (podía o no estar habilitado)
+                window.FindElement('-JUGAR-').Update(disabled=True)
             atril_jugador.setestado(3)  # Pone al atril en modo de intercambio de fichas
         #$% Cambia la visualización del botón
 
@@ -484,6 +486,7 @@ def partida(window, datos_partida):
             if turno_jugador:
                 if event in atril_jugador.fichas.keys():  # click en el atril
                     click_atril(event)
+                    print(atril_jugador.cambiar)
                 # Chequea si el click sucede en una posición válida del tablero
                 elif event in tablero.getposibles():
                     marcar = click_tablero(event)
