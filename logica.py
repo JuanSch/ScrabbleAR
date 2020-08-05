@@ -7,31 +7,32 @@ from functools import reduce
 from itertools import chain
 from bisect import insort
 
-def top10(dificultad = None):
-    with open('valores_puntajes.json','r', encoding='UTF-8') as f:
+
+def top10(dificultad=None):
+    with open('valores_puntajes.json', 'r', encoding='UTF-8') as f:
         dic = json.load(f)
-        if dificultad == None:
+        if dificultad is None:
             top = dic['top10']
         else: 
             top = dic['top10'][dificultad]
-    if dificultad == None:
+    if dificultad is None:
         texto_facil = ""
         texto_medio = ""
         texto_dificil = ""
         i = 1
-        for elemento in top['Facil']: #Forma el string por la dificultad
+        for elemento in top['Facil']:  # Forma el string por la dificultad
             if elemento[0] != "None":
                 texto_facil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
 
         i = 1
-        for elemento in top['Medio']: #Forma el string por la dificultad
+        for elemento in top['Medio']:  # Forma el string por la dificultad
             if elemento[0] != "None":
                 texto_medio += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
 
         i = 1
-        for elemento in top['Dificil']: #Forma el string por la dificultad
+        for elemento in top['Dificil']:  # Forma el string por la dificultad
             if elemento[0] != "None":
                 texto_dificil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
@@ -54,15 +55,18 @@ def top10(dificultad = None):
                 window['-OUTPUT-'].update(texto_dificil)                
         window.close()
 
-def ruta():
-    """Retorna el caracter que el sistema operativo en el que se está
-    ejecutando el programa emplea como separador de jerarquía en
-    las rutas de archivos"""
 
-    if platform.system()!="Windows":
-        char='/'
+def ruta():
+    """
+    Evalúa en qué sistema operativo se está ejecutando el programa
+    y retorna el caracter que este emplea como separador de jerarquía
+    en las rutas de archivos.
+    """
+
+    if platform.system() != "Windows":
+        char = '/'
     else:
-        char='\\'
+        char = '\\'
     return char
 
 
@@ -71,27 +75,55 @@ def ruta():
 #####################################################################
 
 class Ficha:
-    """El parámetro valor está definido por la dificultad seleccionada.
-    La clase incluye un indicador de selección (si/no),
-    y los métodos necesarios para acceder a o modificar estos argumentos,
-    así como devolver presentar la ruta de imagen que corresponda"""
+    """
+    Representa una ficha del juego.
+
+    Atributos:
+        letra: (char) la letra que representa la ficha
+        valor: (int) el puntaje que corresponde a la letra
+        select: (bool) si la ficha está seleccionada o no
+    La correspondencia de letras y valores debe estar definida
+    por fuera de la clase
+
+    Metodos:
+        __init__: constructor
+        getvalor: getter para el atributo valor
+        getimagen: retorna la ruta de imagen de la ficha
+        cambiarselect: modifica el estado de selección de la ficha
+    """
 
     def __init__(self, letra, valor):
+        """
+        Constructor de la ficha.
+
+        Recibe:
+            letra: (char) la letra que representará la ficha
+            valor: (int) el puntaje que corresponde a la letra,
+            predefinido de forma externa a esta clase
+
+        El atributo select siempre se inicializará en False
+        """
         self.letra = letra
         self.valor = valor
         self.select = False
 
+    def getvalor(self):
+        """Getter para el atributo valor."""
+        return self.valor
+
     def getimagen(self):
+        """
+        Evalúa el estado de selección de la ficha
+        y retorna la ruta de imagen que corresponda al mismo.
+        """
         if self.select:
             return f'imagenes{ruta()}{self.letra.upper()}click.png'
         else:
             return f'imagenes{ruta()}{self.letra.upper()}.png'
 
     def cambiarselect(self):
+        """Cambia el estado del atributo select."""
         self.select = not self.select
-
-    def getvalor(self):
-        return self.valor
 
 #####################################################################
 #                          FIN CLASE FICHA                          #
@@ -103,24 +135,63 @@ class Ficha:
 #####################################################################
 
 class Casilla:
-    """Clase correspondiente a una casilla de tablero, puede contener
-    o no a una ficha de juego, devolver el valor y la imagen que contiene
-    (en función de la existencia o no de una ficha y el modificador
-    de la casilla)."""
+    """
+    Representa una casilla del tablero.
 
-    valores={'': lambda x: x,
-             '2L': lambda x: x*2,
-             '3L': lambda x: x*3,
-             '-3': lambda x: x-3,
-             '3P': 3,
-             '2P': 2
-             }
+    Atributo global:
+        valores: (dict) diccionario con las actitudes correspondientes
+        a cada tipo de casilla al momento de evaluar el valor
+        de la ficha que contienen (ver metodo valor)
+
+    Atributos:
+        pos: (tuple) coordenadas del tablero en las que se encuentra
+        tipo: (str) indicador del tipo de ficha
+        ocupado: (bool) indicador de presencia de una ficha,
+        una casilla se da por ocupada luego de confirmada la palabra
+        ficha: (class Ficha) ficha asignada a la casilla,
+        las fichas sólo se asignan una vez que se confirmó la palabra
+        (ver class Palabra)
+
+    Metodos:
+        __init__: constructor
+        getpos: getter para el atributo pos
+        getestado: getter para el atributo estado
+        getimagen: retorna la imagen que corresponda a la posición
+        que ocupa la casilla en el tablero
+        ocupar: confirma la ocupación de la casilla por una ficha
+        valor: calcula el valor de la ficha según el tipo de casilla
+    """
+
+    valores = {'': lambda x: x,
+               '2L': lambda x: x*2,
+               '3L': lambda x: x*3,
+               '-3': lambda x: x-3,
+               '3P': 3,
+               '2P': 2
+               }
 
     def __init__(self, pos, tipo=''):
-        self.pos=pos
-        self.tipo=tipo
-        self.ocupado=False
-        self.ficha=None
+        """
+        Constructor de la casilla.
+
+        Recibe:
+            pos: (tuple) un par ordenado de enteros que representa
+            las coordenadas del tablero en las que se ubica la casilla
+            tipo: (str) indicador del tipo de ficha:
+                '': común, no modifica el puntaje de ninguna forma
+                '2L', '3L': duplica y triplica el puntaje
+                de la letra respectivamente
+                '-3': resta 3 puntos al valor de la letra
+                '2P', '3P': duplica y triplica el puntaje
+                de la palabra respectivamente
+
+        El atributo select siempre se inicializará en False,
+        y ficha siempre comenzará vacío
+        """
+        self.pos = pos
+        self.tipo = tipo
+        self.ocupado = False
+        self.ficha = None
 
     def getpos(self):
         return self.pos
@@ -129,10 +200,9 @@ class Casilla:
         return self.ocupado
 
     def getimagen(self, resalte=False):
-
-        try:
+        if self.ficha is not None:
             return self.ficha.getimagen()
-        except:
+        else:
             if resalte:
                 return f'imagenes{ruta()}casilla{self.tipo}P.png'
             else:
@@ -143,7 +213,7 @@ class Casilla:
         la jugada"""
         self.ocupado = True
         self.ficha = ficha
-        self.ficha.cambiarselect()
+        self.ficha.select = False
 
     def valor(self):
         """Esta función devuelve el valor que contiene la casilla
@@ -151,10 +221,10 @@ class Casilla:
         siempre multiplica por 1)"""
         try:
             valor = Casilla.valores[self.tipo](self.ficha.getvalor())
-            return (valor, 1)
+            return valor, 1
         except:
             valor = self.ficha.getvalor()
-            return (valor, Casilla.valores[self.tipo])
+            return valor, Casilla.valores[self.tipo]
 
 
 #####################################################################
@@ -174,10 +244,10 @@ class Palabra:
     retornar un string con la palabra que sus elementos forman"""
 
     def __init__(self):
-        self.min=None
-        self.max=None
-        self.eje=None
-        self.fichas={}
+        self.min = None
+        self.max = None
+        self.eje = None
+        self.fichas = {}
 
     def getposiciones(self):
         return list(self.fichas.keys())
@@ -195,16 +265,16 @@ class Palabra:
     def agregarletra(self, pos, origen, ficha):
         """Sólo permite agregar letras en posiciones nuevas"""
 
-        self.fichas[pos]=(ficha, origen)
+        self.fichas[pos] = (ficha, origen)
         longitud=len(self.fichas)
-        if longitud==1:
-            self.min=self.max=pos
+        if longitud == 1:
+            self.min = self.max = pos
         else:
             posiciones=self.getposiciones()
             # con sólo 2 posiciones ya se puede definir el eje, y no es
             # necesario reevaluarlo por cada nuevo elemento
-            if longitud==2:
-                x=pos[0]
+            if longitud == 2:
+                x = pos[0]
                 # Si el valor de x en el elemento preexistente es igual
                 # al del elemento insertado, significa que los desplazamientos
                 # suceden a lo largo del eje y, el valor en la posición [1]
@@ -216,7 +286,7 @@ class Palabra:
                     self.eje = 0
             # para facilitar operaciones, el diccionario siempre se ordena
             self.fichas = dict(sorted(self.fichas.items(),
-                                    key=lambda kv: kv[0][self.eje]))
+                                      key=lambda kv: kv[0][self.eje]))
             evaluar = pos[self.eje]
             # se debe evaluar si hubo un cambio en la posición de min o max,
             # las precondiciones evitan que puedan suceder ambos a la vez
@@ -246,7 +316,7 @@ class Palabra:
                 if pos == self.max:
                     self.max = claves[-1]
                 elif pos == self.min:
-                    self.min=claves[0]
+                    self.min = claves[0]
                 # si la palabra pasó a tener un sólo elemento,
                 # el valor de eje vuelve a None
                 if len(self.fichas) == 1:
@@ -264,10 +334,10 @@ class Palabra:
             return None
 
     def vaciar(self):
-        self.min=None
-        self.max=None
-        self.eje=None
-        self.fichas={}
+        self.min = None
+        self.max = None
+        self.eje = None
+        self.fichas = {}
 
     def probar(self):
         ok = False
@@ -291,13 +361,12 @@ class Palabra:
 
 class Tablero:
     """Es una matriz de casillas, y la interfaz entre la GUI y la lógica
-    subyacente a los eventos que sucedan en el tablero. La distribución de
-    tipos de casilla aún no está implementada, pero debería estar
-    definida por el tipo de tablero"""
+    subyacente a los eventos que sucedan en el tablero."""
 
     def __init__(self, columnas, filas, casillas):
         self.xy = (columnas, filas)
         matriz = []
+        posibles = []
         for x in range(columnas):
             linea = []
             for y in range(filas):
@@ -310,11 +379,11 @@ class Tablero:
                         break
                 if not ok:
                     casilla = Casilla(tuple(pos))
+                posibles.append(tuple(pos))
                 linea.append(casilla)
             matriz.append(linea)
         self.matriz = matriz
-        self.inicio = [(7,7)]
-        self.posibles = list(self.inicio)
+        self.posibles = posibles
 
     def getmatriz(self):
         return self.matriz
@@ -322,11 +391,8 @@ class Tablero:
     def getxy(self):
         return self.xy
 
-    def getposibles(self, palabra, turno):
-        if turno == 0 and palabra.min == None:
-            return self.inicio
-        else:
-            return self.posibles
+    def getposibles(self):
+        return self.posibles
 
     def getcasilla(self, pos):
         x = pos[0]
@@ -336,45 +402,64 @@ class Tablero:
 
     def getvalidos(self):
         validos = []
-        for linea in self.matriz:
-            for casilla in linea:
-                if not casilla.ocupado:
-                    validos.append(casilla)
+        for x in range(self.xy[0]):
+            for y in range(self.xy[1]):
+                pos = (x, y)
+                if not self.getcasilla(pos).ocupado:
+                    validos.append(pos)
         return validos
 
-    def jugada(self, palabra, pos, turno, origen=None, ficha=None):
+    def limite(self, pos, posibles, eje, borde, direccion, lim=7, ciclo=0):
+        """Método auxiliar del tablero, dado un punto de inicio, eje, direccion y longitud,
+        devuelve una lista de casillas contiguas disponibles.
+
+        recibe:
+        - pos: tupla (int, int) indicando una posición válida en la matriz
+               de casillas del tablero
+        - posibles: debe recibir una lista de posiciones (ver pos), la casilla inicial
+                    se preasume desocupada y la función no la incorpora a la lista
+        - eje: 0 (int)= recorrido horizontal
+               1 (int)= recorrido vertical
+        - dirección: '-' (str)= búsqueda hacia la izquierda o hacia arriba
+                                de la posición inicial
+                     '+' (str)= búsqueda hacia la derecha o hacia abajo
+                                de la posición inicial
+        - lim: la cantidad máxima de espacios a evaluar (incluyendo la posición inicial)
+               predeterminado = 7
+
+        retorna:
+        - posibles: un append a posibles (ver recibe) de las casillas que no estaban ocupadas
+        """
+
+        direcciones = {'+': operator.add, '-': operator.sub}
+        direc = direcciones[direccion]
+        if ciclo == lim-1:
+            return posibles
+        else:
+            nueva = list(pos)
+            coord = direc(pos[eje], 1)
+            nueva[eje] = coord
+            if nueva[eje] == borde or self.getcasilla(nueva).ocupado is True:
+                return posibles
+            else:
+                posibles.append(tuple(nueva))
+                return self.limite(nueva, posibles, eje, borde, direccion, lim, ciclo + 1)
+
+    def jugada(self, palabra, pos, origen=None, ficha=None):
         """Método principal de lógica interna del tablero, debe recibir
         un objeto tipo palabra, y manejará las actualizaciones
         correspondientes a los estados de las casillas"""
 
-        def limite(pos, posibles, eje, borde, dir, ciclo=0):
-            if ciclo == 6:
-                return posibles
-            else:
-                nueva = list(pos)
-                coord = dir(pos[eje], 1)
-                nueva[eje] = coord
-                if nueva[eje] == borde or self.getcasilla(nueva).ocupado == True:
-                        return posibles
-                else:
-                    posibles.append(tuple(nueva))
-                    return limite(nueva, posibles, eje,
-                                      borde, dir, ciclo+1)
-
         def habilitados(posibles, eje, izquierda, derecha):
-            direcciones = {'+': operator.add, '-': operator.sub}
             bordes = self.getxy()
-            limite(derecha, posibles, eje, -1, direcciones['-'])
-            limite(izquierda, posibles, eje, bordes[eje], direcciones['+'])
+            self.limite(derecha, posibles, eje, -1, '-')
+            self.limite(izquierda, posibles, eje, bordes[eje], '+')
 
         devolver = palabra.modificar(pos, origen, ficha)
         anteriores = list(self.posibles)
         if devolver is not None and palabra.min is None:
             borrar = anteriores
-            if turno == 0:
-                self.posibles = self.inicio
-            else:
-                self.posibles = []
+            self.posibles = self.getvalidos()
         else:
             posibles = []
             eje = palabra.eje
@@ -387,7 +472,7 @@ class Tablero:
                 max = palabra.max
                 habilitados(posibles, eje, min, max)
             self.posibles = set(posibles)
-            borrar = list(set(anteriores)-(self.posibles))
+            borrar = list(set(anteriores)-self.posibles)
         marcar = list(self.posibles)
         # Con esto garantizamos que no se marquen como posibles
         # casillas en las que hay una ficha
@@ -411,7 +496,7 @@ class Tablero:
         def calcular(tupla1, tupla2):
             valor = tupla1[0] + tupla2[0]
             multi = tupla1[1] * tupla2[1]
-            return (valor, multi)
+            return valor, multi
 
         valores = []
         for k, v in palabra.fichas.items():
@@ -433,7 +518,7 @@ class Tablero:
 #####################################################################
 
 class Atril:
-    estados = {0:'APAGADO', 1:'ELEGIR', 2:'PASAR', 3:'CAMBIAR'}
+    estados = {0: 'APAGADO', 1: 'ELEGIR', 2: 'PASAR', 3: 'CAMBIAR'}
 
     def __init__(self, inicio='F'):
         fichas = {}
@@ -444,12 +529,12 @@ class Atril:
             vacias.append(nombre)
         self.vacias = vacias
         self.fichas = fichas
-        self.cambiar = None
+        self.cambiar = []
         self.estado = Atril.estados[0]
 
     def setestado(self, valor):
         self.estado = Atril.estados[valor]
-        if valor == 3:
+        if valor in (1, 3):
             self.cambiar = []
 
     def imagen(self, espacio):
@@ -466,7 +551,7 @@ class Atril:
             if not ficha.select:
                 self.cambiar.append(ficha)
             else:
-                self.cambiar.pop(ficha)
+                self.cambiar.remove(ficha)
             ficha.cambiarselect()
         elif self.estado == 'ELEGIR':
             # Se seleccionará una ficha para colocar en el tablero
@@ -484,20 +569,19 @@ class Atril:
             if evento == self.cambiar[0]:
                 # Se hizo click en la ficha que ya estaba seleccionada
                 # para colocar en el tablero
-                self.cambiar = None
+                self.cambiar = []
                 ficha.cambiarselect()
                 self.setestado(1)
-            elif not ficha.select: #$%Cuando haces click en una ficha usada se rompe
+            elif not ficha.select:
                 # Se decidió cambiar qué ficha se iba a colocar en el tablero
                 self.cambiar[1].cambiarselect()
                 self.cambiar = (evento, ficha)
                 ficha.cambiarselect()
 
-
-    def pedirfichas(self):
+    def pedir(self):
         return len(self.vacias)
 
-    def recibirfichas(self, lista):
+    def recibir(self, lista):
         """Lista debe ser una lista de tuplas (letra,valor) -el formato
         de salida de la clase 'bolsa'-, las convierte en fichas
         y las almacena en los casilleros libres. La función asume
@@ -509,23 +593,23 @@ class Atril:
             letra = lista[i][0]
             valor = lista[i][1]
             ficha = Ficha(letra, valor)
-            self.fichas[self.vacias[i]]=ficha
+            self.fichas[self.vacias[i]] = ficha
         self.vacias = []
 
-    def entregarfichas(self):
+    def entregar(self):
         """Devuelve una lista con las fichas que el usuario desea cambiar"""
 
-        entregar = []
-        for k,v in self.fichas.items():
+        for k, v in self.fichas.items():
             if v.select:
-                entregar.append(v)
                 self.fichas[k] = None
                 self.vacias.append(k)
-        return entregar
+        return self.cambiar
 
-    def eliminar(self, palabra):
-        for _k, v in palabra.fichas.items():
-            self.fichas[v[1]] = None
+    def eliminar(self, origen):
+        for v in origen:
+            self.fichas[v] = None
+            self.vacias.append(v)
+
 
 class AtrilIA(Atril):
     def __init__(self):
@@ -536,6 +620,7 @@ class AtrilIA(Atril):
             return f'imagenes{ruta()}Atril.png'
         else:
             return f'imagenes{ruta()}FichaIA.png'
+
 
 #####################################################################
 #                           FIN CLASE ATRIL                         #
@@ -558,7 +643,7 @@ class Bolsa:
         self.fichas = list(chain.from_iterable(fichas))
         self.valores = valores
 
-    def entregar_fichas(self, cant):
+    def entregar(self, cant):
         """
         Recibe una cantidad (int) de fichas a entregar.
         Genera [(letra, valor)*cantidad] seleccionando letras al azar
@@ -578,7 +663,7 @@ class Bolsa:
                 entregar.append(ficha)
         return entregar
 
-    def intercambiar_fichas(self, fichas):
+    def intercambiar(self, fichas):
         """
         Recibe una lista de fichas [(letra, valor)*cant].
         Reincorpora las letras a la bolsa, y entrega nuevamente
@@ -589,12 +674,7 @@ class Bolsa:
         de un lista.append()
         """
 
-        lista = list(map(lambda x: x[0], fichas))
+        lista = list(map(lambda x: x.letra, fichas))
         for letra in lista:
             insort(self.fichas, letra)
-        return self.entregar_fichas(len(lista))
-
-
-#####################################################################
-#                           FIN CLASE BOLSA                         #
-#####################################################################
+        return self.entregar(len(lista))
