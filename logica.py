@@ -194,35 +194,61 @@ class Casilla:
         self.ficha = None
 
     def getpos(self):
+        """Getter para el atributo pos."""
         return self.pos
 
     def getestado(self):
+        """Getter para el atributo estado."""
         return self.ocupado
 
     def getimagen(self, resalte=False):
+        """
+        Retorna la imagen que corresponda a la posición que ocupa
+        la casilla en el tablero.
+
+        Recibe:
+            resalte (keyword arg): (bool) default False
+            indica si la casilla debe presentar su porde resaltado o no
+
+        Retorna:
+            (str) una ruta de archivo
+        """
         if self.ficha is not None:
             return self.ficha.getimagen()
         else:
-            if resalte:
-                return f'imagenes{ruta()}casilla{self.tipo}P.png'
-            else:
-                return f'imagenes{ruta()}casilla{self.tipo}.png'
+            return f'imagenes{ruta()}casilla{self.tipo}' \
+                   f'{"P" if resalte else ""}.png'
 
     def ocupar(self, ficha):
-        """Una casilla no se da por ocupada hasta que no se concreta
-        la jugada"""
+        """
+        Concreta la ocupación de la casilla.
+
+        Recibe:
+            ficha: (class Ficha) un objeto ficha
+
+        Guarda la ficha que recibe, se da por ocupada la casilla
+        y se deselecciona la ficha (si lo estaba)
+        """
         self.ocupado = True
         self.ficha = ficha
         self.ficha.select = False
 
     def valor(self):
-        """Esta función devuelve el valor que contiene la casilla
-        y el modificador de palabra (si no multiplica por 2 o 3,
-        siempre multiplica por 1)"""
+        """
+        Evalúa el tipo de casilla y el valor de la ficha,
+        retornando el valor final y un modificador de palabra.
+
+        Retorna:
+            valor: (int) el puntaje que resulta de operar el valor
+            de la ficha que contiene la casilla con el modificador
+            de esta última (*1, *2, *3, -3)
+            (int): un valor por el que se debe multiplicar la palabra
+            una vez sumados todos los valores de las letras.
+        """
         try:
             valor = Casilla.valores[self.tipo](self.ficha.getvalor())
             return valor, 1
-        except:
+        except TypeError:
             valor = self.ficha.getvalor()
             return valor, Casilla.valores[self.tipo]
 
@@ -237,25 +263,81 @@ class Casilla:
 #####################################################################
 
 class Palabra:
-    """Clase de transferencia de datos para el desarrollo del juego,
-    contiene la posición de los extremos de la palabra que el jugador está
-    escribiendo y las fichas que la componen con sus respectivas posiciones
-    y botones de origen. Conoce su orientación y tiene la capacidad de
-    retornar un string con la palabra que sus elementos forman"""
+    """
+    Representa la palabra que está armando el jugador.
+
+    Es una clase de transferencia de datos entre el atril
+    y el tablero. Debe reiniciarse cada vez que se cambia de turno
+
+    Atributos:
+        min: (tuple) posición del tablero en la que se encuentra
+        la primera letra de la palabra
+        max: (tuple) posición del tablero en la que se encuentra
+        la ultima letra de la palabra
+        eje: (int) indica la orientación de la palabra
+            0 = horizontal
+            1 = vertical
+            se corresponden con la posición del eje de desplazamiento
+            en las tuplas de coordenadas (x, y)
+            que emplea este código
+        fichas: (dict) diccionario de pos: ficha, origen
+        para todas las fichas que componen la palabra
+
+    Metodos:
+        __init__: constructor
+        __str__: genera la cadena que componen las fichas
+        getposiciones: lista las claves del atributo fichas
+        posficha: evalúa si un valor de posición de atril
+        concuerda con los guardados en fichas
+        agregarletra: agrega una ficha a fichas
+        cambiarletra: intercambia una ficha nueva
+        por otra preexistente
+        modificar: administra el ingreso y egreso de fichas
+        a la palabra
+        vaciar: retorna la palabra al estado inicial
+        probar: evalúa si la palabra es susceptible
+        de ser evaluada
+    """
 
     def __init__(self):
+        """
+        Constructor de la clase, todos los argumentos
+        se inicializan vacíos
+        """
         self.min = None
         self.max = None
         self.eje = None
         self.fichas = {}
 
+    def __str__(self):
+        """
+        Retorna la cadena (str) que componen las letras
+        de las fichas en orden de lectura (occidental)
+        """
+        return ''.join(val[1][0].letra for val in self.fichas.items())
+
     def getposiciones(self):
+        """
+        Retorna:
+            (list): la lista de posiciones que ocupan las fichas
+            que componen la palabra
+        """
         return list(self.fichas.keys())
 
     def posficha(self, atril):
-        """Busca si el valor de atril que recibe está entre los que conforman
-        la palabra en curso. Si lo está devuelve la posición de la ficha
-        en el tablero, en caso contrario devuelve None"""
+        """
+        Busca si el valor de atril que recibe está
+        entre los que conforman la palabra en curso.
+
+        Recibe:
+            atril: (str) el nombre de una posición en el atril
+            (ver class Atril)
+
+        Retorna:
+            pos: (tuple) o (None) Si el valor que recibe existe
+            lo está devuelve la posición de la ficha en el tablero,
+            en caso contrario devuelve None
+        """
         pos = None
         for k, v in self.fichas.items():
             if v[1] == atril:
@@ -263,21 +345,38 @@ class Palabra:
         return pos
 
     def agregarletra(self, pos, origen, ficha):
-        """Sólo permite agregar letras en posiciones nuevas"""
+        """
+        Agrega una ficha en una posición no ocupada.
 
+        Recibe:
+            pos: (tuple) posición en el tablero
+            donde se colocara la ficha
+            origen: (str) el nombre de una posición en el atril
+            (ver class Atril)
+            ficha: (class Ficha) la ficha que se desea colocar
+
+        Cada vez que pase de 1 a 2 fichas evaluará el eje
+        en el que se extiende la palabra (ver class Palabra)
+        Siempre que haya más de un elemento ordenará self.fichas
+        según el orden de lectura (occidental)
+        """
+        # agrega la ficha al diccionario
         self.fichas[pos] = (ficha, origen)
-        longitud=len(self.fichas)
+        longitud = len(self.fichas)
         if longitud == 1:
+            # es el primer eelemento agregado a la palabra
+            # se inicializan todos los atributos posicionales
+            # con el mismo valor
             self.min = self.max = pos
         else:
-            posiciones=self.getposiciones()
+            posiciones = self.getposiciones()
             # con sólo 2 posiciones ya se puede definir el eje, y no es
             # necesario reevaluarlo por cada nuevo elemento
             if longitud == 2:
                 x = pos[0]
                 # Si el valor de x en el elemento preexistente es igual
                 # al del elemento insertado, significa que los desplazamientos
-                # suceden a lo largo del eje y, el valor en la posición [1]
+                # suceden a lo largo del eje y, el valor en el índice [1]
                 # de la tupla de coordenadas, en caso contrario
                 # puede asegurarse lo opuesto
                 if posiciones[0][0] == x:
@@ -296,12 +395,31 @@ class Palabra:
                 self.max = pos
 
     def cambiarletra(self, pos, origen, ficha):
-        """Permite hacer tanto hacer un intercambio de fichas como simplemente
-        cambiar una ficha por un espacio vacío, siempre devuelve la casilla
-        de origen de esa ficha"""
+        """
+        Permite hacer tanto hacer un intercambio de fichas
+        como sólo eliminar una ficha preexistente.
 
+        Evalúa si recibe efectivamente una ficha
+        con la que reemplazar la eliminada, y retorna
+        siempre el lugar del atril del que salió
+        esta última (igual origen) (ver class Atril)
+
+        Recibe:
+            pos: (tuple) posición en el tablero
+            donde se colocara la ficha
+            origen: (str) el nombre de una posición en el atril
+            (ver class Atril) o (None) si no se agrega una ficha nueva
+            ficha: (class Ficha) la ficha que se desea colocar
+            o (None) si solo se desea eliminar una ficha
+            de la palabra
+
+        Retorna:
+            (str) el nombre de la posición en el atril
+            de la que se originó la ficha eliminada
+            (ver class Atril)
+        """
         devolver = self.fichas[pos][1]
-        if ficha == None:  # en este caso se elimina el elemento
+        if ficha is None:  # en este caso se elimina el elemento
             del self.fichas[pos]
             # debe evaluarse si la palabra quedó vacía, si es así vuelve
             # los valores posicionales a None
@@ -342,13 +460,9 @@ class Palabra:
     def probar(self):
         ok = False
         cant = len(self.fichas)
-        if cant > 1 and self.max[self.eje] + 1 - self.min[self.eje] == cant:
+        if self.max[self.eje] + 1 - self.min[self.eje] == cant > 1:
             ok = True
         return ok
-
-    def __str__(self):
-        return ''.join(val[1][0].letra for val in self.fichas.items())
-
 
 #####################################################################
 #                          FIN CLASE PALABRA                        #
@@ -651,7 +765,6 @@ class Bolsa:
         Si hay menos letras en la bolsa que cant, devolverá una lista
         vacía.
         """
-
         entregar = []
         if len(self.fichas) >= cant:
             for _i in range(cant):
