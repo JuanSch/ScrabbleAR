@@ -8,31 +8,31 @@ from itertools import chain
 from bisect import insort
 
 
-def top10(dificultad = None):
-    with open('valores_puntajes.json','r', encoding='UTF-8') as f:
+def top10(dificultad=None):
+    with open('valores_puntajes.json', 'r', encoding='UTF-8') as f:
         dic = json.load(f)
-        if dificultad == None:
+        if dificultad is None:
             top = dic['top10']
         else: 
             top = dic['top10'][dificultad]
-    if dificultad == None:
+    if dificultad is None:
         texto_facil = ""
         texto_medio = ""
         texto_dificil = ""
         i = 1
-        for elemento in top['Facil']: #Forma el string por la dificultad
+        for elemento in top['Facil']:  # Forma el string por la dificultad
             if elemento[0] != "None":
                 texto_facil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
 
         i = 1
-        for elemento in top['Medio']: #Forma el string por la dificultad
+        for elemento in top['Medio']:  # Forma el string por la dificultad
             if elemento[0] != "None":
                 texto_medio += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
 
         i = 1
-        for elemento in top['Dificil']: #Forma el string por la dificultad
+        for elemento in top['Dificil']:  # Forma el string por la dificultad
             if elemento[0] != "None":
                 texto_dificil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
@@ -57,9 +57,11 @@ def top10(dificultad = None):
 
 
 def ruta():
-    """Retorna el caracter que el sistema operativo en el que se está
-    ejecutando el programa emplea como separador de jerarquía en
-    las rutas de archivos"""
+    """
+    Evalúa en qué sistema operativo se está ejecutando el programa
+    y retorna el caracter que este emplea como separador de jerarquía
+    en las rutas de archivos.
+    """
 
     if platform.system() != "Windows":
         char = '/'
@@ -73,27 +75,55 @@ def ruta():
 #####################################################################
 
 class Ficha:
-    """El parámetro valor está definido por la dificultad seleccionada.
-    La clase incluye un indicador de selección (si/no),
-    y los métodos necesarios para acceder a o modificar estos argumentos,
-    así como devolver presentar la ruta de imagen que corresponda"""
+    """
+    Representa una ficha del juego.
+
+    Atributos:
+        letra: (char) la letra que representa la ficha
+        valor: (int) el puntaje que corresponde a la letra
+        select: (bool) si la ficha está seleccionada o no
+    La correspondencia de letras y valores debe estar definida
+    por fuera de la clase
+
+    Metodos:
+        __init__: constructor
+        getvalor: getter para el atributo valor
+        getimagen: retorna la ruta de imagen de la ficha
+        cambiarselect: modifica el estado de selección de la ficha
+    """
 
     def __init__(self, letra, valor):
+        """
+        Constructor de la ficha.
+
+        Recibe:
+            letra: (char) la letra que representará la ficha
+            valor: (int) el puntaje que corresponde a la letra,
+            predefinido de forma externa a esta clase
+
+        El atributo select siempre se inicializará en False
+        """
         self.letra = letra
         self.valor = valor
         self.select = False
 
+    def getvalor(self):
+        """Getter para el atributo valor."""
+        return self.valor
+
     def getimagen(self):
+        """
+        Evalúa el estado de selección de la ficha
+        y retorna la ruta de imagen que corresponda al mismo.
+        """
         if self.select:
             return f'imagenes{ruta()}{self.letra.upper()}click.png'
         else:
             return f'imagenes{ruta()}{self.letra.upper()}.png'
 
     def cambiarselect(self):
+        """Cambia el estado del atributo select."""
         self.select = not self.select
-
-    def getvalor(self):
-        return self.valor
 
 #####################################################################
 #                          FIN CLASE FICHA                          #
@@ -105,20 +135,59 @@ class Ficha:
 #####################################################################
 
 class Casilla:
-    """Clase correspondiente a una casilla de tablero, puede contener
-    o no a una ficha de juego, devolver el valor y la imagen que contiene
-    (en función de la existencia o no de una ficha y el modificador
-    de la casilla)."""
+    """
+    Representa una casilla del tablero.
 
-    valores={'': lambda x: x,
-             '2L': lambda x: x*2,
-             '3L': lambda x: x*3,
-             '-3': lambda x: x-3,
-             '3P': 3,
-             '2P': 2
-             }
+    Atributo global:
+        valores: (dict) diccionario con las actitudes correspondientes
+        a cada tipo de casilla al momento de evaluar el valor
+        de la ficha que contienen (ver metodo valor)
+
+    Atributos:
+        pos: (tuple) coordenadas del tablero en las que se encuentra
+        tipo: (str) indicador del tipo de ficha
+        ocupado: (bool) indicador de presencia de una ficha,
+        una casilla se da por ocupada luego de confirmada la palabra
+        ficha: (class Ficha) ficha asignada a la casilla,
+        las fichas sólo se asignan una vez que se confirmó la palabra
+        (ver class Palabra)
+
+    Metodos:
+        __init__: constructor
+        getpos: getter para el atributo pos
+        getestado: getter para el atributo estado
+        getimagen: retorna la imagen que corresponda a la posición
+        que ocupa la casilla en el tablero
+        ocupar: confirma la ocupación de la casilla por una ficha
+        valor: calcula el valor de la ficha según el tipo de casilla
+    """
+
+    valores = {'': lambda x: x,
+               '2L': lambda x: x*2,
+               '3L': lambda x: x*3,
+               '-3': lambda x: x-3,
+               '3P': 3,
+               '2P': 2
+               }
 
     def __init__(self, pos, tipo=''):
+        """
+        Constructor de la casilla.
+
+        Recibe:
+            pos: (tuple) un par ordenado de enteros que representa
+            las coordenadas del tablero en las que se ubica la casilla
+            tipo: (str) indicador del tipo de ficha:
+                '': común, no modifica el puntaje de ninguna forma
+                '2L', '3L': duplica y triplica el puntaje
+                de la letra respectivamente
+                '-3': resta 3 puntos al valor de la letra
+                '2P', '3P': duplica y triplica el puntaje
+                de la palabra respectivamente
+
+        El atributo select siempre se inicializará en False,
+        y ficha siempre comenzará vacío
+        """
         self.pos = pos
         self.tipo = tipo
         self.ocupado = False
@@ -131,9 +200,9 @@ class Casilla:
         return self.ocupado
 
     def getimagen(self, resalte=False):
-        try:
+        if self.ficha is not None:
             return self.ficha.getimagen()
-        except:
+        else:
             if resalte:
                 return f'imagenes{ruta()}casilla{self.tipo}P.png'
             else:

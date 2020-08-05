@@ -112,7 +112,7 @@ def inicializar(continuar):
 
 
 def columna1_gui(elementos):
-    dim_boton = 40,40
+    dim_boton = 40, 40
     linea_superior = armar_atril(elementos['atril_ia'], dim_boton)
     botones_tablero = armar_tablero(elementos['tablero'], dim_boton)
     linea_inferior = armar_atril(elementos['atril_jugador'], dim_boton)
@@ -486,7 +486,6 @@ def partida(window, datos_partida):
             if turno_jugador:
                 if event in atril_jugador.fichas.keys():  # click en el atril
                     click_atril(event)
-                    print(atril_jugador.cambiar)
                 # Chequea si el click sucede en una posición válida del tablero
                 elif event in tablero.getposibles():
                     marcar = click_tablero(event)
