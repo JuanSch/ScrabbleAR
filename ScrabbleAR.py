@@ -4,6 +4,7 @@ from tableros import jugar
 from logica import top10
 from os import remove
 
+
 def config_nuevo_juego():
     """
     Muestra una ventana de PySimpleGUI en la que podemos elegir

@@ -18,7 +18,7 @@ def jugar(continuar=False):
                     [sg.T(datos['reloj'], key='-RELOJ-',
                           font=('Arial', '18'))],
                     [sg.T('')],
-                    [sg.T('JUEGA:', font=('Arial', '11'))],
+                    [sg.T('TURNO', font=('Arial', '11'))],
                     [sg.T('-', size=(10, 1), key='-TURNO-',
                           font=('Arial', '14'))],
                     [sg.T('')],

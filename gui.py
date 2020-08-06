@@ -39,7 +39,7 @@ def armar_tablero(tablero, dim_boton):
             boton = sg.Button(key=casilla.getpos(), image_size=dim_boton,
                               image_filename=casilla.getimagen(), pad=(0, 0),
                               button_color=('#DDDDDD', '#DDDDDD'),
-                              border_width=0)
+                              border_width=0,)
             linea.append(boton)
         botones.append(linea)
     return botones
@@ -94,6 +94,7 @@ def inicializar(continuar):
                 puntos_jugador = 0
                 puntos_ia = 0
                 turno_jugador = random.randrange(0, 2) == 0
+                cambios = 0
                 reloj = f'{divmod(tiempo, 60)[0]:02}:{divmod(tiempo, 60)[1]:02}'
                 datos_partida = {
                     'nombre': nombre,
@@ -107,6 +108,7 @@ def inicializar(continuar):
                     'puntos_jugador': puntos_jugador,
                     'puntos_ia': puntos_ia,
                     'turno_jugador': turno_jugador,
+                    'cambios': cambios,
                     'tiempo': tiempo,
                     'reloj': reloj
                 }
@@ -125,12 +127,16 @@ def columna1_gui(elementos):
     linea_superior = armar_atril(elementos['atril_ia'], dim_boton)
     botones_tablero = armar_tablero(elementos['tablero'], dim_boton)
     linea_inferior = armar_atril(elementos['atril_jugador'], dim_boton)
-    botones_jugador = [sg.T('      '),
-                       sg.Button('JUGAR', key='-JUGAR-', size=(12, 2),
+    botones_jugador = [sg.T(' '),
+                       sg.Button('JUGAR', key='-JUGAR-', size=(9, 2),
                                  disabled=True),
-                       sg.T(''),
-                       sg.Button('CAMBIAR', key='-CAMBIAR-', size=(12, 2),
-                                 disabled=True)]
+                       sg.Button('PASAR\nTURNO', key='-PASAR-', size=(9, 2),
+                                 disabled=True),
+                       sg.Button('CAMBIAR\nFICHAS', key='-CAMBIAR-', size=(9, 2),
+                                 disabled=True),
+                       sg.Button('CANCELAR', key='-CANCELAR-', size=(9, 2),
+                                 visible=False)
+                       ]
     for item in botones_jugador:
         linea_inferior.append(item)
 
@@ -139,7 +145,8 @@ def columna1_gui(elementos):
                 [sg.T('')],
                 *botones_tablero,
                 [sg.T('')],
-                [sg.T('FICHAS JUGADOR:')],
+                [sg.T('FICHAS JUGADOR:'), sg.T(f'{"".join([" "]*83)}'),
+                 sg.T('CAMBIOS SIN COSTO:'), sg.T('5', key='-CAMBIOS-')],
                 linea_inferior]
     return columna1
 
@@ -212,6 +219,7 @@ def partida(window, datos_partida):
             window.FindElement('-TURNO-').Update(f'{nombre.upper()}')
             atril_jugador.setestado(1)
             window.FindElement('-CAMBIAR-').Update(disabled=False)
+            window.FindElement('-PASAR-').Update(disabled=False)
         else:
             window.FindElement('-TURNO-').Update('IA')
 
@@ -268,7 +276,7 @@ def partida(window, datos_partida):
                 # Se deshabilita el boton de jugar
                 # si la palabra ya no es testeable
                 if not palabra.probar():
-                    window.FindElement('-JUGAR-').Update(disabled=True)
+                    window.FindElement('-JUGAR-').Update('JUGAR', disabled=True)
 
     def click_tablero(evento):
         """
@@ -288,7 +296,6 @@ def partida(window, datos_partida):
         nonlocal window
         # si estado == PASAR hay una ficha seleccionada
         # para colocar en el tablero
-        print(atril_jugador.estado)
         marcar = []
         if atril_jugador.estado == 'PASAR':
             marcar, borrar, devolver = tablero.jugada(
@@ -313,9 +320,10 @@ def partida(window, datos_partida):
         # si hay más de dos letras en la palabra y son todas contiguas
         # habilita el botón 'JUGAR', lo deshabilita en caso contrario
         if palabra.probar():
-            window.FindElement('-JUGAR-').Update(disabled=False)
+            window.FindElement('-JUGAR-').Update(f'JUGAR\n"{str(palabra)}"',
+                                                 disabled=False)
         else:
-            window.FindElement('-JUGAR-').Update(disabled=True)
+            window.FindElement('-JUGAR-').Update('JUGAR', disabled=True)
         return marcar
 
     def click_jugar(borrar):
@@ -358,7 +366,8 @@ def partida(window, datos_partida):
             window.FindElement('-TURNO-').Update('IA')
             atril_jugador.setestado(0)
             window.FindElement('-CAMBIAR-').Update(disabled=True)
-            window.FindElement('-JUGAR-').Update(disabled=True)
+            window.FindElement('-PASAR-').Update(disabled=True)
+            window.FindElement('-JUGAR-').Update('JUGAR', disabled=True)
             # Se vacía la palabra
             palabra.vaciar()
             # Se piden fichas nuevas para el atril
@@ -386,7 +395,9 @@ def partida(window, datos_partida):
         nonlocal bolsa
         nonlocal palabra
         nonlocal window
+        nonlocal puntos_jugador
         nonlocal turno_jugador
+        nonlocal cambios
 
         if atril_jugador.estado == 'CAMBIAR':
             if atril_jugador.cambiar:  # Si hay fichas para cambiar
@@ -395,7 +406,25 @@ def partida(window, datos_partida):
                     atril_jugador.entregar()))
                 actualizar_atril(atril_jugador, window)
                 turno_jugador = not turno_jugador  # Cambia de turno
-            atril_jugador.setestado(1)  # Retorna al estado de juego
+                # Deshabilita los controles del jugador
+                window.FindElement('-CANCELAR-').Update(visible=False)
+                window.FindElement('-TURNO-').Update('IA')
+                atril_jugador.setestado(0)
+                window.FindElement('-CAMBIAR-').Update(disabled=True)
+                window.FindElement('-PASAR-').Update(disabled=True)
+                window.FindElement('-JUGAR-').Update('JUGAR', disabled=True)
+                if cambios > 4:
+                    if puntos_jugador > 2:
+                        puntos_jugador -= 2
+                    else:
+                        puntos_jugador = 0
+                    window.FindElement('-PJUGADOR-').Update(
+                        f'{nombre.upper()}: {puntos_jugador}')
+                else:
+                    cambios += 1
+                    window.FindElement('-CAMBIOS-').Update(f'{5 - cambios}')
+            else:
+                sg.Popup('No seleccionaste ninguna ficha para cambiar')
         else:  # Si el atril estaba en otro estado
             if palabra.min is not None:  # Si había fichas colocadas en el tablero
                 casillas = palabra.getposiciones()
@@ -410,10 +439,32 @@ def partida(window, datos_partida):
                 # Vacía la palabra
                 palabra.vaciar()
                 # Inhabilita el botón jugar (podía o no estar habilitado)
-                window.FindElement('-JUGAR-').Update(disabled=True)
+                window.FindElement('-JUGAR-').Update('JUGAR', disabled=True)
+            if atril_jugador.cambiar:  # Si había una ficha seleccionada
+                atril_jugador.click(atril_jugador.cambiar[0])
+                actualizar_atril(atril_jugador, window)
+            if cambios == 0:
+                sg.Popup('Seleccioná las fichas que quieras cambiar y'
+                         ' hacé click en "CAMBIAR" para intercambiarlas'
+                         ' con la bolsa.\nA partir del sexto cambio se te'
+                         ' descuentan 2 puntos por vez, y si cambiás fichas'
+                         ' perdés el turno.\n¡Así que usalo con cuidado!')
             # Pone al atril en modo de intercambio de fichas
             atril_jugador.setestado(3)
-        #$% Cambia la visualización del botón
+            # Visualiza el botón cancelar
+            window.FindElement('-CANCELAR-').Update(visible=True)
+
+    def click_cancelar():
+
+        nonlocal atril_jugador
+
+        if atril_jugador.cambiar:  # Si hay fichas para cambiar
+            # Deselecciona esas fichas
+            atril_jugador.deseleccion()
+            actualizar_atril(atril_jugador, window)
+        # Retorna al estado de juego
+        atril_jugador.setestado(1)
+        window.FindElement('-CANCELAR-').Update(visible=False)
 
     def turno_ia(dif_ia):
 
@@ -472,13 +523,21 @@ def partida(window, datos_partida):
                         f'QUEDAN {len(bolsa.fichas)} FICHAS')
                 else:
                     fin = True
-
         else:
-            sg.Popup('La IA no puede formar ninguna palabra, pasa de turno')
+            cambiar = random.sample(atril_ia.fichas.keys(), k=2)
+            print(f'{[(k, v.letra) for k, v in atril_ia.fichas.items()]}')
+            for lugar in cambiar:
+                atril_ia.click(lugar)
+            atril_ia.recibir(bolsa.intercambiar(atril_ia.entregar()))
+            print(f'{[(k, v.letra) for k, v in atril_ia.fichas.items()]}')
+            actualizar_atril(atril_ia, window)
+            sg.Popup('La IA no puede formar ninguna palabra\n'
+                     'así que cambia 2 fichas')
 
         # Se habilitan los botones del jugador
         window.FindElement('-TURNO-').Update(f'{nombre.upper()}')
         window.FindElement('-CAMBIAR-').Update(disabled=False)
+        window.FindElement('-PASAR-').Update(disabled=False)
         atril_jugador.setestado(1)
 
         # Cambia el turno
@@ -494,6 +553,7 @@ def partida(window, datos_partida):
     puntos_jugador = datos_partida['puntos_jugador']
     puntos_ia = datos_partida['puntos_ia']
     turno_jugador = datos_partida['turno_jugador']
+    cambios = datos_partida['cambios']
     tiempo = datos_partida['tiempo']
     corriendo = False
     fin = False
@@ -526,6 +586,8 @@ def partida(window, datos_partida):
                     click_jugar(marcar)
                 elif event == '-CAMBIAR-':
                     click_cambiar()
+                elif event == '-CANCELAR-':
+                    click_cancelar()
 
             # TURNO IA
             else:

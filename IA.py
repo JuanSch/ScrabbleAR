@@ -2,13 +2,12 @@ from pattern.text.es import lexicon, spelling, parse
 from pattern.web import Wiktionary
 import random
 import concurrent.futures
-import json
 
 
 def validar_palabra(palabra):
     """
     Comprueba que el string que se pasa como palabra sea una palabra valida
-    retorna True si lo es. Caso contrario retorna False
+    retorna True si lo es, en caso contrario retorna False.
     """
     palabra = parse(palabra).split('/')
     existe = False
@@ -82,14 +81,22 @@ def elegir_palabra(fichas, long_maxima=7):
             return False
 
         def calcular_puntaje_ia(palabra, puntos):
+            """
+            Calcula el puntaje de una palabra
+            basandose exclusicamente en los puntos de cada letra
+            """
             puntaje = 0
             for char in palabra:
                 puntaje += puntos[char]
             return puntaje
 
         def ordenar_puntos(palabras, puntaje_letra):
+            """
+            Ordena las palabras de menor a mayor
+            en función de su puntaje
+            """
             palabras_puntos = [(p, calcular_puntaje_ia(p, puntaje_letra))
-                              for p in palabras]
+                               for p in palabras]
             palabras_puntos.sort(key=lambda x: x[1])
             palabras = [p[0] for p in palabras_puntos]
             return palabras
@@ -144,7 +151,8 @@ def elegir_palabra(fichas, long_maxima=7):
 
 def elegir_espacio(tablero, palabras, dificultad):
     """
-    Lee el tablero y busca un espacio donde poner la palabra con base en la dificultad
+    Lee el tablero y busca un espacio donde poner la palabra
+    con base en la dificultad
 
     recibe:
         tablero: objeto de clase Tablero del módulo lógica
@@ -172,7 +180,7 @@ def elegir_espacio(tablero, palabras, dificultad):
             posicion = random.choice(posibles)
             encontre = True
         elif any(test):
-            i = posibles.index(True)
+            i = test.index(True)
             posicion = posibles[i]
             encontre = True
         else:
@@ -180,7 +188,14 @@ def elegir_espacio(tablero, palabras, dificultad):
     if encontre:
         return posicion, palabra
     else:
-        return None
+        for p in palabras:
+            if len(p) >= largo:
+                palabras.remove(p)
+        if not palabras:
+            return None
+        else:
+            return elegir_espacio(tablero, palabras, dificultad)
+
 
 if __name__ == '__main__':
     # dificultad = 'dificil'
@@ -190,5 +205,4 @@ if __name__ == '__main__':
     # palabras = ['humanidad','humano','persona','gente','hombre','mujer','niño','niña','adolescente','adulto','adulta','anciano','ancaina','zapo','pho','albol']
     # for palabra in palabras:
     #     print(validar_palabra(palabra))
-    #$%Comprobar espacio en tablero para la palabra
     pass

@@ -559,8 +559,6 @@ class Tablero:
         en una determinada línea y orientación, con un máximo de 6
         jugada: efectúa las modificaciones de atributos
         y de la palabra que surjan de una acción en el tablero
-        valor_palabra: calcula el puntaje de una palabra
-        según su posición en el tablero
         fijar_palabra: confirma la colocación de una palabra
         en el tablero
     """
@@ -583,9 +581,9 @@ class Tablero:
         self.xy = (columnas, filas)
         matriz = []
         posibles = []
-        for x in range(columnas):
+        for y in range(filas):
             linea = []
-            for y in range(filas):
+            for x in range(columnas):
                 pos = (x, y)
                 ok = False
                 for key in casillas.keys():
@@ -733,15 +731,6 @@ class Tablero:
                 marcar.remove(k)
         return marcar, borrar, devolver
 
-    # def valor_palabra(self, palabra):
-    #     puntos_base = 0
-    #     multiplicador = 1
-    #     for key in palabra.keys():
-    #         casilla = self.getcasilla(key)
-    #         puntos_base += casilla.valor()[0]
-    #         multiplicador *= casilla.valor()[1]
-    #     return puntos_base*multiplicador
-
     def fijar_palabra(self, palabra):
 
         def calcular(ficha1, ficha2):
@@ -833,6 +822,12 @@ class Atril:
                 ficha.cambiarselect()
                 self.setestado(1)
 
+    def deseleccion(self):
+        for _k, v in self.fichas.items():
+            if v.select:
+                v.cambiarselect()
+        self.cambiar = []
+
     def pedir(self):
         return len(self.vacias)
 
@@ -870,6 +865,7 @@ class Atril:
 class AtrilIA(Atril):
     def __init__(self):
         Atril.__init__(self, inicio='IA')
+        self.estado: Atril.estados[3]
 
     def imagen(self, espacio):
         if self.fichas[espacio] is None:
