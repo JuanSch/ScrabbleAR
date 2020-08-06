@@ -242,7 +242,6 @@ def partida(window, datos_partida):
         salir = sg.PopupOKCancel('Se guardará la partida y volverá al menú principal\n'
                                  '¿Desea continuar?')
         if salir == 'OK':
-            print(datos)
             try:
                 with open('continuar_partida.pickle', 'wb') as f:
                     pickle.dump(datos, f)
@@ -558,11 +557,9 @@ def partida(window, datos_partida):
                     fin = True
         else:
             cambiar = random.sample(atril_ia.fichas.keys(), k=2)
-            print(f'{[(k, v.letra) for k, v in atril_ia.fichas.items()]}')
             for lugar in cambiar:
                 atril_ia.click(lugar)
             atril_ia.recibir(bolsa.intercambiar(atril_ia.entregar()))
-            print(f'{[(k, v.letra) for k, v in atril_ia.fichas.items()]}')
             actualizar_atril(atril_ia, window)
             sg.Popup('La IA no puede formar ninguna palabra\n'
                      'así que cambia 2 fichas')
@@ -710,23 +707,22 @@ def actualizar_puntajes(tupla, dificultad):
     en orden descendiente de puntajes y se elemina el ultimo
     ya que la lista con el nuevo puntaje insertado tiene 11 elementos
     """
-    try:
-        with open("valores_puntajes.json", 'r') as f:    # Cargo el diccionario de puntajes
-            dic = json.load(f)
-    except FileNotFoundError:   # si no existe el archivo, lo creo
-        #$% crearvalores()
-        with open("valores_puntajes.json", 'r') as f:
-            dic = json.load(f)
+    with open("valores_puntajes.json", 'r') as f:    # Cargo el diccionario de puntajes
+        dic = json.load(f) 
+        #No se manejan excepciones, debido a que si el programa llegó a este punto
+        #Es precondicion que el archivo exista debido a que antes se lo utiliza 
+        #Y si antes no estaba se lo crea 
     top = dic['top10'][dificultad]
     ok = False
-    if tupla[1] >= top[-1][1]:    # si el puntaje es mayor o igual al puntaje minimo en el top
+    if tupla[1] > top[-1][1]:    # si el puntaje es mayor o igual al puntaje minimo en el top
         for i in range(len(top)):
-            if top[i][1] > tupla[1]:    # busco la posicion a insertar
+            if tupla[1] > top[i][1]:    # busco la posicion a insertar
                 top.insert(i, tupla)  # inserto (ahora la lista tiene 11 elementos, desde 0 a 10)
-                if len(top) == 11:
-                    top.pop(10)  # remuevo el elemento en la posicion 10,
-                    # es decir el decimo-primer elemento
                 ok = True
+                break
+        if len(top) == 11:
+            top.pop(-1)  # remuevo el elemento en la posicion 10,
+                    # es decir el decimo-primer elemento
     if ok:
         dic['top10'][dificultad] = top
     with open("valores_puntajes.json", 'w') as f:
