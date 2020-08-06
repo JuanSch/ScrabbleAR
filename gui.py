@@ -601,23 +601,24 @@ def partida(window, datos_partida):
             if reloj == 'FIN':
                 corriendo = False
                 fin = True
+                
+        datos_partida['nombre'] = nombre
+        datos_partida['tablero'] = tablero 
+        datos_partida['atril_jugador'] = atril_jugador 
+        datos_partida['atril_ia'] = atril_ia 
+        datos_partida['palabra'] = palabra 
+        datos_partida['bolsa'] = bolsa
+        datos_partida['dificultad_ia'] = dificultad_ia
+        datos_partida['puntos_jugador'] =  puntos_jugador
+        datos_partida['puntos_ia'] = puntos_ia
+        datos_partida['turno_jugador'] = turno_jugador
+        datos_partida['cambios'] = cambios
+        datos_partida['tiempo'] = tiempo
 
     # cierre
     window.Close()
 
-    datos_partida['nombre'] = nombre
-    datos_partida['tablero'] = tablero 
-    datos_partida['atril_jugador'] = atril_jugador 
-    datos_partida['atril_ia'] = atril_ia 
-    datos_partida['palabra'] = palabra 
-    datos_partida['bolsa'] = bolsa
-    datos_partida['dificultad_ia'] = dificultad_ia
-    datos_partida['puntos_jugador'] =  puntos_jugador
-    datos_partida['puntos_ia'] = puntos_ia
-    datos_partida['turno_jugador'] = turno_jugador
-    datos_partida['cambios'] = cambios
-    datos_partida['tiempo'] = tiempo
-
+    
     return fin, datos_partida
 
 
