@@ -1,9 +1,14 @@
 # ScrabbleAR
 
-(python 3.6, pattern, PySimpleGui)
+programado en python 3.6, pattern 3.6, PySimpleGui 4.26
 
 Requisitos: 
-  Pantalla con una resolucion mayor a 1366*768 de lo contrario la GUI no entra y conexion a internet.
-  
+  Pantalla con una resolucion mayor a 1366*768
+  Conexion a internet.
+
 Para jugar ejecutar ScrabbleAR.py
+
+No se utilizaron imagenes o codigo con licencias 
+Todo el contenido de Scrabble AR es de libre uso
+
   
