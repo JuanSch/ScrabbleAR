@@ -620,7 +620,6 @@ def partida(window, datos_partida):
     # cierre
     window.Close()
 
-    
     return fin, datos_partida
 
 

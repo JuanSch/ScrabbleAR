@@ -13,7 +13,7 @@ def config_nuevo_juego():
     haciendo click en "Jugar"
     """
     s = []
-    for i in range(1,61):
+    for i in range(1, 61):
         s.append(str(i))
     try:
         with open('configuraciones.json','r', encoding='UTF-8') as f:
@@ -224,6 +224,7 @@ def pantalla_inicial():
             window.find_element("-continuar-").Update(disabled = condicion)
         
     window.Close()
+
 
 if __name__ == "__main__":
     pantalla_inicial()
