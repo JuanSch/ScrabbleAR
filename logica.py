@@ -707,6 +707,7 @@ class Tablero:
 
         devolver = palabra.modificar(pos, ficha, origen)
         anteriores = list(self.posibles)
+        marcar = []
         if devolver is not None and palabra.min is None:
             borrar = anteriores
             self.posibles = self.getvalidos()
@@ -723,7 +724,7 @@ class Tablero:
                 habilitados(posibles, eje, min, max)
             self.posibles = set(posibles)
             borrar = list(set(anteriores)-self.posibles)
-        marcar = list(self.posibles)
+            marcar = list(self.posibles)
         # Con esto garantizamos que no se marquen como posibles
         # casillas en las que hay una ficha
         # de la palabra en construcción
@@ -743,9 +744,9 @@ class Tablero:
 
     def fijar_palabra(self, palabra):
 
-        def calcular(tupla1, tupla2):
-            puntos = tupla1[0] + tupla2[0]
-            multi = tupla1[1] * tupla2[1]
+        def calcular(ficha1, ficha2):
+            puntos = ficha1[0] + ficha2[0]
+            multi = ficha1[1] * ficha2[1]
             return puntos, multi
 
         valores = []
@@ -814,8 +815,8 @@ class Atril:
             ficha.cambiarselect()
             self.cambiar = (evento, ficha)
         elif self.estado == 'PASAR':
-            # Se deseleccionará la ficha en curso, o se seleccionará otra
-            # en este estado no se pueden sacar fichas del tablero
+            # Se deseleccionará la ficha en curso, se seleccionará otra
+            # o se reemplazará una fichas del tablero
             if evento == self.cambiar[0]:
                 # Se hizo click en la ficha que ya estaba seleccionada
                 # para colocar en el tablero
@@ -827,6 +828,10 @@ class Atril:
                 self.cambiar[1].cambiarselect()
                 self.cambiar = (evento, ficha)
                 ficha.cambiarselect()
+            else:
+                # Se cambió una ficha ya colocada en el tablero por otra
+                ficha.cambiarselect()
+                self.setestado(1)
 
     def pedir(self):
         return len(self.vacias)

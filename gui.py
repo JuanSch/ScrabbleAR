@@ -188,6 +188,7 @@ def partida(window, datos_partida):
         nonlocal atril_ia
         nonlocal atril_jugador
         nonlocal turno_jugador
+        nonlocal nombre
 
         window.FindElement(event).Update('POSPONER')
 
@@ -200,13 +201,15 @@ def partida(window, datos_partida):
         actualizar_atril(atril_jugador, window)
         atril_ia.recibir(bolsa.entregar(atril_ia.pedir()))
         actualizar_atril(atril_ia, window)
-        window.FindElement('-BOLSA-').Update(f'QUEDAN {len(bolsa.fichas)} FICHAS')
-        window.FindElement('-PJUGADOR-').Update(f'JUGADOR: {puntos_jugador}')
+        window.FindElement('-BOLSA-').Update(
+            f'QUEDAN {len(bolsa.fichas)} FICHAS')
+        window.FindElement('-PJUGADOR-').Update(
+            f'{nombre.upper()}: {puntos_jugador}')
         window.FindElement('-PIA-').Update(f'IA: {puntos_ia}')
 
         # Inicia control de turnos
         if turno_jugador:
-            window.FindElement('-TURNO-').Update('JUGADOR')
+            window.FindElement('-TURNO-').Update(f'{nombre.upper()}')
             atril_jugador.setestado(1)
             window.FindElement('-CAMBIAR-').Update(disabled=False)
         else:
@@ -232,7 +235,7 @@ def partida(window, datos_partida):
                     pickle.dump(datos, f)
             except IOError:
                 sg.PopupAutoClose('Hubo un error al tratar de guardar la partida\n'
-                                  'no podrás retomarla más tarde :(',
+                                  'no podrás retomarla más tarde',
                                   auto_close_duration=5)
             else:
                 sg.PopupAutoClose('Partida guardada, podrá retomarla\n'
@@ -285,28 +288,35 @@ def partida(window, datos_partida):
         nonlocal window
         # si estado == PASAR hay una ficha seleccionada
         # para colocar en el tablero
+        print(atril_jugador.estado)
+        marcar = []
         if atril_jugador.estado == 'PASAR':
-            marcar, borrar, _devolver = tablero.jugada(
+            marcar, borrar, devolver = tablero.jugada(
                 palabra, evento, atril_jugador.cambiar[0],
                 atril_jugador.cambiar[1])
             actualizar_tablero(marcar, borrar, window, tablero)
             img = palabra.fichas[evento][0].getimagen()
             window.FindElement(evento).Update(image_filename=img)
-            atril_jugador.setestado(1)
+            if devolver is not None:
+                atril_jugador.click(devolver)
+                actualizar_atril(atril_jugador, window)
+            else:
+                atril_jugador.setestado(1)
         # si estado != PASAR puede haberse deseleccionado una ficha
         # ya colocada en el tablero
         elif evento in palabra.getposiciones():
             marcar, borrar, devolver = tablero.jugada(palabra, evento)
             actualizar_tablero(marcar, borrar, window, tablero)
-            atril_jugador.click(devolver)
-            actualizar_atril(atril_jugador, window)
+            if devolver is not None:
+                atril_jugador.click(devolver)
+                actualizar_atril(atril_jugador, window)
         # si hay más de dos letras en la palabra y son todas contiguas
         # habilita el botón 'JUGAR', lo deshabilita en caso contrario
         if palabra.probar():
             window.FindElement('-JUGAR-').Update(disabled=False)
         else:
             window.FindElement('-JUGAR-').Update(disabled=True)
-        return marcar if marcar else []
+        return marcar
 
     def click_jugar(borrar):
         """
@@ -319,7 +329,7 @@ def partida(window, datos_partida):
         recibe:
         - borrar: (list) de (tuple) o None. la lista de los elementos
         marcados como 'posibles' la última vez que se agregó
-        una ficha al tablero (ver: click_tablero()).
+        una ficha al tablero (ver click_tablero()).
         """
         nonlocal window
         nonlocal tablero
@@ -328,6 +338,7 @@ def partida(window, datos_partida):
         nonlocal puntos_jugador
         nonlocal turno_jugador
         nonlocal fin
+        nonlocal nombre
 
         if ia.validar_palabra(str(palabra)):
             # Actualizaciones a la lógica y valores de fondo
@@ -342,7 +353,7 @@ def partida(window, datos_partida):
                 img = tablero.getcasilla(key).getimagen()
                 window.FindElement(key).Update(image_filename=img)
             window.FindElement('-PJUGADOR-').Update(
-                f'JUGADOR: {puntos_jugador}')
+                f'{nombre.upper()}: {puntos_jugador}')
             actualizar_atril(atril_jugador, window)
             window.FindElement('-TURNO-').Update('IA')
             atril_jugador.setestado(0)
@@ -357,7 +368,8 @@ def partida(window, datos_partida):
                 atril_jugador.recibir(fichas_nuevas)
                 actualizar_atril(atril_jugador, window)
                 # Se actualiza el estado de la bolsa
-                window.FindElement('-BOLSA-').Update(f'QUEDAN {len(bolsa.fichas)} FICHAS')
+                window.FindElement('-BOLSA-').Update(
+                    f'QUEDAN {len(bolsa.fichas)} FICHAS')
                 # Cambia el turno
                 turno_jugador = not turno_jugador
             else:
@@ -379,14 +391,15 @@ def partida(window, datos_partida):
         if atril_jugador.estado == 'CAMBIAR':
             if atril_jugador.cambiar:  # Si hay fichas para cambiar
                 # Efectúa el intercambio con la bolsa
-                atril_jugador.recibir(bolsa.intercambiar(atril_jugador.entregar()))
+                atril_jugador.recibir(bolsa.intercambiar(
+                    atril_jugador.entregar()))
                 actualizar_atril(atril_jugador, window)
                 turno_jugador = not turno_jugador  # Cambia de turno
             atril_jugador.setestado(1)  # Retorna al estado de juego
         else:  # Si el atril estaba en otro estado
             if palabra.min is not None:  # Si había fichas colocadas en el tablero
                 casillas = palabra.getposiciones()
-                # Deselecciona las fichas - palabra y atril apuntan al mismo objeto
+                # Deselecciona las fichas
                 for pos in casillas:
                     palabra.fichas[pos][0].select = False
                 # Actualiza la visualización del tablero
@@ -398,7 +411,8 @@ def partida(window, datos_partida):
                 palabra.vaciar()
                 # Inhabilita el botón jugar (podía o no estar habilitado)
                 window.FindElement('-JUGAR-').Update(disabled=True)
-            atril_jugador.setestado(3)  # Pone al atril en modo de intercambio de fichas
+            # Pone al atril en modo de intercambio de fichas
+            atril_jugador.setestado(3)
         #$% Cambia la visualización del botón
 
     def turno_ia(dif_ia):
@@ -422,6 +436,7 @@ def partida(window, datos_partida):
         nonlocal puntos_ia
         nonlocal palabra
         nonlocal fin
+        nonlocal nombre
 
         palabras_ia = ia.elegir_palabra(atril_ia.fichas)
         if palabras_ia is not None:  # Si la IA puede generar palabras
@@ -453,7 +468,8 @@ def partida(window, datos_partida):
                     atril_ia.recibir(fichas_nuevas)
                     actualizar_atril(atril_ia, window)
                     # Se actualiza el estado de la bolsa
-                    window.FindElement('-BOLSA-').Update(f'QUEDAN {len(bolsa.fichas)} FICHAS')
+                    window.FindElement('-BOLSA-').Update(
+                        f'QUEDAN {len(bolsa.fichas)} FICHAS')
                 else:
                     fin = True
 
@@ -461,7 +477,7 @@ def partida(window, datos_partida):
             sg.Popup('La IA no puede formar ninguna palabra, pasa de turno')
 
         # Se habilitan los botones del jugador
-        window.FindElement('-TURNO-').Update('JUGADOR')
+        window.FindElement('-TURNO-').Update(f'{nombre.upper()}')
         window.FindElement('-CAMBIAR-').Update(disabled=False)
         atril_jugador.setestado(1)
 
@@ -499,9 +515,11 @@ def partida(window, datos_partida):
         if corriendo:
             # TURNO JUGADOR
             if turno_jugador:
-                if event in atril_jugador.fichas.keys():  # click en el atril
+                # Chequea si el click sucede en el atril
+                if event in atril_jugador.fichas.keys():
                     click_atril(event)
-                # Chequea si el click sucede en una posición válida del tablero
+                # Chequea si el click sucede
+                # en una posición válida del tablero
                 elif event in tablero.getposibles():
                     marcar = click_tablero(event)
                 elif event == '-JUGAR-':
@@ -523,7 +541,7 @@ def partida(window, datos_partida):
     # cierre
     window.Close()
 
-    return fin
+    return fin, datos_partida
 
 
 def fin_partida(continuar, datos_partida):
@@ -534,34 +552,43 @@ def fin_partida(continuar, datos_partida):
     puntos_ia = datos_partida['puntos_ia']
 
     if continuar:
-        remove("continuar_partida.pickle")  # Como terminó la partida borramos la partida guardada
+        remove("continuar_partida.pickle")  # Como terminó la partida
+        #  se borra la partida guardada
     if puntos_jugador > puntos_ia:  # evalua quien gana
-        if actualizar_puntajes([nombre, puntos_jugador],
-                                   dificultad):  # evalua si entra en el top10 (si entra se agrega)
-            sg.Popup('¡Ganaste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+        # evalua si entra en el top10 (si entra se agrega)
+        if actualizar_puntajes([nombre, puntos_jugador], dificultad):
+            sg.Popup('¡Ganaste y entraste en el top 10!\n'
+                     'Tu puntiacion es: ' + str(puntos_jugador))
             lg.top10()
         else:
-            sg.Popup('¡Ganaste! \n Tu puntiacion es: ' + str(puntos_jugador))
+            sg.Popup('¡Ganaste!\n'
+                     'Tu puntiacion es: ' + str(puntos_jugador))
         # ganaste
     elif puntos_jugador == puntos_ia:
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
-            sg.Popup('¡Empataste y entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+            sg.Popup('¡Empataste y entraste en el top 10!\n'
+                     'Tu puntiacion es: ' + str(puntos_jugador))
             lg.top10()
         else:
-            sg.Popup('¡Empataste! La proxima ganarás \n Tu puntiacion es: ' + str(puntos_jugador))
+            sg.Popup('¡Empataste! La proxima ganarás'
+                     '\n Tu puntiacion es: ' + str(puntos_jugador))
     else:
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
-            sg.Popup('¡Perdiste pero entraste en el top 10! \n Tu puntiacion es: ' + str(puntos_jugador))
+            sg.Popup('¡Perdiste pero entraste en el top 10!'
+                     '\n Tu puntiacion es: ' + str(puntos_jugador))
             lg.top10()
         else:
-            sg.Popup('!Perdiste suerte la próxima! \n Tu puntiacion es: ' + str(puntos_jugador))
+            sg.Popup('¡Perdiste, suerte la próxima!\n'
+                     'Tu puntiacion es: ' + str(puntos_jugador))
 
 
 def actualizar_puntajes(tupla, dificultad):
-    """recibe una tupla[0]= nombre de usuario y tupla[1] el puntaje
+    """
+    Recibe una tupla[0]= nombre de usuario y tupla[1] el puntaje
     si el puntaje entra en el top diez, se lo inserta donde corresponde
     en orden descendiente de puntajes y se elemina el ultimo
-    ya que la lista con el nuevo puntaje insertado tiene 11 elementos"""
+    ya que la lista con el nuevo puntaje insertado tiene 11 elementos
+    """
     try:
         with open("valores_puntajes.json", 'r') as f:    # Cargo el diccionario de puntajes
             dic = json.load(f)
@@ -582,5 +609,5 @@ def actualizar_puntajes(tupla, dificultad):
     if ok:
         dic['top10'][dificultad] = top
     with open("valores_puntajes.json", 'w') as f:
-        json.dump(top, f, indent=4)
+        json.dump(dic, f, indent=4)
     return ok

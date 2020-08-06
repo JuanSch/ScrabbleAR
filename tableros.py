@@ -15,15 +15,18 @@ def jugar(continuar=False):
         columna2 = [[sg.Button('COMENZAR', key='-INI/PAUSA-', size=(12, 2))],
                     [sg.T('')],
                     [sg.T('TIEMPO', font=('Arial', '11'))],
-                    [sg.T(datos['reloj'], key='-RELOJ-', font=('Arial', '18'))],
+                    [sg.T(datos['reloj'], key='-RELOJ-',
+                          font=('Arial', '18'))],
                     [sg.T('')],
                     [sg.T('JUEGA:', font=('Arial', '11'))],
-                    [sg.T('-', size=(10, 1), key='-TURNO-', font=('Arial', '14'))],
+                    [sg.T('-', size=(10, 1), key='-TURNO-',
+                          font=('Arial', '14'))],
                     [sg.T('')],
                     [sg.T('PUNTAJES', font=('Arial', '11'))],
-                    [sg.T('JUGADOR:', size=(15, 1), key='-PJUGADOR-',
+                    [sg.T(f'{datos["nombre"].upper()}:', size=(15, 1),
+                          key='-PJUGADOR-', font=('Arial', '14'))],
+                    [sg.T('IA:', size=(15, 1), key='-PIA-',
                           font=('Arial', '14'))],
-                    [sg.T('IA:', size=(15, 1), key='-PIA-', font=('Arial', '14'))],
                     [sg.T('')],
                     [sg.T('BOLSA', font=('Arial', '11'))],
                     [sg.T(f'QUEDAN {len(datos["bolsa"].fichas)} FICHAS',
@@ -36,7 +39,7 @@ def jugar(continuar=False):
         window = sg.Window('Ventana de juego').Layout(layout)
 
         # bucle
-        fin = gui.partida(window, datos)
+        fin, datos = gui.partida(window, datos)
 
         # control de fin de partida
         if fin:
