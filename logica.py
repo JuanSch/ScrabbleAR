@@ -547,25 +547,39 @@ class Tablero:
         de todas las casillas que no se encuentran ocupadas
         (ver clase Casilla)
 
-        Metodos:
-            __init__: constructor
-            getmatriz: getter para el atributo matriz
-            getxy: getter para el atributo xy
-            getposibles: getter para el atributo posibles
-            getcasilla: retorna la casilla que se encuentra
-            en una posición determinada de la matriz
-            getvalidos: evalúa qué casillas se encuentran desocupadas
-            limite: evalúa cuantas casillas contiguas están desocupadas
-            en una determinada línea y orientación, con un máximo de 6
-            jugada: efectúa las modificaciones de atributos
-            y de la palabra que surjan de una acción en el tablero
-            valor_palabra: calcula el puntaje de una palabra
-            según su posición en el tablero
-            fijar_palabra: confirma la colocación de una palabra
-            en el tablero
+    Metodos:
+        __init__: constructor
+        getmatriz: getter para el atributo matriz
+        getxy: getter para el atributo xy
+        getposibles: getter para el atributo posibles
+        getcasilla: retorna la casilla que se encuentra
+        en una posición determinada de la matriz
+        getvalidos: evalúa qué casillas se encuentran desocupadas
+        limite: evalúa cuantas casillas contiguas están desocupadas
+        en una determinada línea y orientación, con un máximo de 6
+        jugada: efectúa las modificaciones de atributos
+        y de la palabra que surjan de una acción en el tablero
+        valor_palabra: calcula el puntaje de una palabra
+        según su posición en el tablero
+        fijar_palabra: confirma la colocación de una palabra
+        en el tablero
     """
 
     def __init__(self, columnas, filas, casillas):
+        """
+        Constructor de la clase.
+
+        Genera la matriz de casillas inicializándolas según su tipo,
+        y genera el estado inicial de los demás argumentos.
+        El atributo posibles se inicializa con la lista completa
+        de posiciones que coforman el tablero
+
+        Recibe:
+            columnas: (int) cantidad de columnas de la matriz
+            filas: (int) cantidad de filas de la matriz
+            casillas: (dict) diccionario de coordenadas del tablero
+            con tipos de casilla como clave
+        """
         self.xy = (columnas, filas)
         matriz = []
         posibles = []
@@ -588,20 +602,43 @@ class Tablero:
         self.posibles = posibles
 
     def getmatriz(self):
+        """Getter para el atributo matriz"""
         return self.matriz
 
     def getxy(self):
+        """Getter para el atributo xy"""
         return self.xy
 
     def getposibles(self):
+        """Getter para el atributo posibles"""
         return self.posibles
 
     def getcasilla(self, pos):
+        """
+        Retorna el objeto casilla que se encuentra en la posición
+        que recibe como parámetro
+
+        Recibe:
+            pos: (tuple(int, int)) par ordenado de coordenadas
+            que representan una posición en el tablero
+
+        Retorna:
+            casilla: (class Casilla) un objeto de tipo casilla
+            en el estado que se encuentre
+        """
         x, y = pos
         casilla = self.matriz[y][x]
         return casilla
 
     def getvalidos(self):
+        """
+        Evalúa qué posiciones de la matriz
+        contienen casillas desocupadas
+
+        Retorna:
+            validos: (list(tuple(int,int))) las posiciones de la matriz
+            que contienen casillas desocupadas
+        """
         validos = []
         for x in range(self.xy[0]):
             for y in range(self.xy[1]):
@@ -707,9 +744,9 @@ class Tablero:
     def fijar_palabra(self, palabra):
 
         def calcular(tupla1, tupla2):
-            valor = tupla1[0] + tupla2[0]
+            puntos = tupla1[0] + tupla2[0]
             multi = tupla1[1] * tupla2[1]
-            return valor, multi
+            return puntos, multi
 
         valores = []
         for k, v in palabra.fichas.items():
@@ -800,7 +837,8 @@ class Atril:
         y las almacena en los casilleros libres. La función asume
         que siempre se recibirá la cantidad requerida de fichas para
         llenar el atril. Esto implica que la condición de fin 'no hay
-        fichas suficientes' debe resolverse antes de esta instancia"""
+        fichas suficientes' debe resolverse antes de esta instancia
+        """
 
         for i in range(len(lista)):
             letra = lista[i][0]
@@ -810,7 +848,7 @@ class Atril:
         self.vacias = []
 
     def entregar(self):
-        """Devuelve una lista con las fichas que el usuario desea cambiar"""
+        """Retorna las fichas que el usuario desea cambiar"""
 
         for k, v in self.fichas.items():
             if v.select:

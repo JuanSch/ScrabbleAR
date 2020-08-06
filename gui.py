@@ -403,7 +403,7 @@ def partida(window, datos_partida):
 
     def turno_ia(dif_ia):
 
-        def seleccionar_fichas(palabra_ia, atril_ia):
+        def seleccionar_fichas(palabra_ia, palabra, atril_ia):
             espacios = []
             atril = dict(atril_ia.fichas)
             for char in palabra_ia:
@@ -420,14 +420,15 @@ def partida(window, datos_partida):
         nonlocal tablero
         nonlocal turno_jugador
         nonlocal puntos_ia
+        nonlocal palabra
         nonlocal fin
 
         palabras_ia = ia.elegir_palabra(atril_ia.fichas)
         if palabras_ia is not None:  # Si la IA puede generar palabras
-            tupla = ia.elegir_espacio(tablero, palabras_ia, dif_ia)
-            if tupla is not None:  # Si la IA encuentra un espacio en el tablero
-                casillas, palabra_ia, puntos = tupla
-                origen = seleccionar_fichas(palabra_ia, atril_ia)
+            jugada = ia.elegir_espacio(tablero, palabras_ia, dif_ia)
+            if jugada is not None:  # Si la IA encuentra un espacio en el tablero
+                casillas, palabra_ia = jugada
+                origen = seleccionar_fichas(palabra_ia, palabra, atril_ia)
                 for i in range(len(casillas)):
                     ficha = atril_ia.fichas[origen[i]]
                     pos = casillas[i]
