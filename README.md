@@ -11,4 +11,8 @@ Para jugar ejecutar ScrabbleAR.py
 No se utilizaron imagenes o codigo con licencias 
 Todo el contenido de Scrabble AR es de libre uso
 
+Creadores
+  Vallejo Martin.
+  Schachner Juan Carlos.
+
   
