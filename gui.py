@@ -216,6 +216,7 @@ def partida(window, datos_partida):
         window.FindElement('-PJUGADOR-').Update(
             f'{nombre.upper()}: {puntos_jugador}')
         window.FindElement('-PIA-').Update(f'IA: {puntos_ia}')
+        window.FindElement('-FIN-').Update(visible=True)
 
         # Inicia control de turnos
         if turno_jugador:
@@ -391,6 +392,34 @@ def partida(window, datos_partida):
             sg.Popup(f'"{str(palabra)}" no existe\n'
                      f'en nuestro diccionario')
 
+    def click_pasar(borrar):
+        """
+        Pasa el turno del jugador, desahciendo cualquier modificación
+        que haya ocurrido en el tablero.
+        """
+
+        nonlocal window
+        nonlocal atril_jugador
+        nonlocal palabra
+        nonlocal turno_jugador
+        nonlocal tablero
+
+        if palabra.min is not None:
+            for key in palabra.getposiciones():
+                palabra.fichas[key][0].cambiarselect()
+                img = tablero.getcasilla(key).getimagen()
+                window.FindElement(key).Update(image_filename=img)
+            actualizar_atril(atril_jugador, window)
+            # Se vacía la palabra
+            palabra.vaciar()
+            actualizar_tablero((), borrar, window, tablero)
+        window.FindElement('-TURNO-').Update('IA')
+        atril_jugador.setestado(0)
+        window.FindElement('-CAMBIAR-').Update(disabled=True)
+        window.FindElement('-PASAR-').Update(disabled=True)
+        window.FindElement('-JUGAR-').Update('JUGAR', disabled=True)
+        turno_jugador = not turno_jugador
+
     def click_cambiar():
         """Activa/desactiva y concreta el canje de fichas con la bolsa"""
 
@@ -561,6 +590,7 @@ def partida(window, datos_partida):
     tiempo = datos_partida['tiempo']
     corriendo = False
     fin = False
+    marcar = []
 
     while not fin:
         event, _values = window.Read(timeout=500)
@@ -570,11 +600,17 @@ def partida(window, datos_partida):
 
         elif event == '-INI/PAUSA-':
             if corriendo:
-                if posponer(datos_partida):
+                if posponer(datos_partida) == 'OK':
                     break
             else:
                 inicio = iniciar()
                 corriendo = True
+
+        elif event == '-FIN-':
+            salir = sg.PopupOKCancel('Se cerrará la partida y volverá al menú principal\n'
+                                     '¿Desea continuar?')
+            if salir == 'OK':
+                fin = True
 
         if corriendo:
             # TURNO JUGADOR
@@ -592,6 +628,8 @@ def partida(window, datos_partida):
                     click_cambiar()
                 elif event == '-CANCELAR-':
                     click_cancelar()
+                elif event == '-PASAR-':
+                    click_pasar(marcar)
 
             # TURNO IA
             else:
@@ -624,6 +662,10 @@ def partida(window, datos_partida):
 
 
 def fin_partida(continuar, datos_partida):
+    """
+    Realiza las actualziaciones de puntaje y top 10 al finalizar una partida.
+    Si había una partida guardada la elimina.
+    """
 
     nombre = datos_partida['nombre']
     dificultad = datos_partida['dificultad']
@@ -679,7 +721,7 @@ def actualizar_puntajes(tupla, dificultad):
     ok = False
     if tupla[1] >= top[-1][1]:    # si el puntaje es mayor o igual al puntaje minimo en el top
         for i in range(len(top)):
-            if top(i)[1] > tupla[1]:    # busco la posicion a insertar
+            if top[i][1] > tupla[1]:    # busco la posicion a insertar
                 top.insert(i, tupla)  # inserto (ahora la lista tiene 11 elementos, desde 0 a 10)
                 if len(top) == 11:
                     top.pop(10)  # remuevo el elemento en la posicion 10,

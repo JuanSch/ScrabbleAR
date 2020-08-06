@@ -10,9 +10,12 @@ def jugar(continuar=False):
     try:
         columna1 = gui.columna1_gui(datos)
     except TypeError:
-        sg.Popup(datos)
+        sg.Popup('Lo sentimos, hubo un error al tratar\n'
+                 'de cargar el tablero de juego')
     else:
-        columna2 = [[sg.Button('COMENZAR', key='-INI/PAUSA-', size=(12, 2))],
+        columna2 = [[sg.Button('COMENZAR', key='-INI/PAUSA-', size=(12, 2)),
+                     sg.Button('TERMINAR', key='-FIN-', size=(12, 2),
+                               visible=False)],
                     [sg.T('')],
                     [sg.T('TIEMPO', font=('Arial', '11'))],
                     [sg.T(datos['reloj'], key='-RELOJ-',
