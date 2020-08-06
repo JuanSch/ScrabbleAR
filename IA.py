@@ -36,18 +36,20 @@ def validar_palabra(palabra):
                 existe = True
     return existe
 
-
-def calcular_puntaje(palabra):
+def calcular_puntaje(palabra, personalizada = False):
     """
     Funcion que calcula el puntaje de la palabra ingresada 
     """
     puntaje = 0
     with open('valores_puntajes.json') as f: # Abro el archivo
         puntajes = json.load(f)
-    for char in palabra:
-        puntaje += puntajes['puntos_letra'][char] # por cada caracter evaluo cuanto vale y lo sumo al total
+    if not personalizada:
+        for char in palabra:
+            puntaje += puntajes['puntos_letra'][char] # por cada caracter evaluo cuanto vale y lo sumo al total
+    else:
+        for char in palabra:
+            puntaje += puntajes['Personalizada']['puntos_letra'][char] # por cada caracter evaluo cuanto vale y lo sumo al total
     return puntaje
-
 
 def elegir_palabra(fichas, long_maxima=7):
 
@@ -152,7 +154,6 @@ def elegir_palabra(fichas, long_maxima=7):
     except:
         return elegir_palabra_dos(fichas, long_maxima)
 
-
 def elegir_espacio(tablero, palabras, dificultad):
     """
     Lee el tablero y busca un espacio donde poner la palabra con base en la dificultad
@@ -191,7 +192,6 @@ def elegir_espacio(tablero, palabras, dificultad):
         return posicion, palabra, valor
     else:
         return None
-
 
 if __name__ == '__main__':
     # dificultad = 'dificil'
