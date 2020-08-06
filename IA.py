@@ -36,20 +36,6 @@ def validar_palabra(palabra):
                 existe = True
     return existe
 
-def calcular_puntaje(palabra, personalizada = False):
-    """
-    Funcion que calcula el puntaje de la palabra ingresada 
-    """
-    puntaje = 0
-    with open('valores_puntajes.json') as f: # Abro el archivo
-        puntajes = json.load(f)
-    if not personalizada:
-        for char in palabra:
-            puntaje += puntajes['puntos_letra'][char] # por cada caracter evaluo cuanto vale y lo sumo al total
-    else:
-        for char in palabra:
-            puntaje += puntajes['Personalizada']['puntos_letra'][char] # por cada caracter evaluo cuanto vale y lo sumo al total
-    return puntaje
 
 def elegir_palabra(fichas, long_maxima=7):
 
@@ -95,17 +81,18 @@ def elegir_palabra(fichas, long_maxima=7):
                     return True
             return False
 
-        def calcular_puntaje_IA(palabra, puntos):
+        def calcular_puntaje_ia(palabra, puntos):
             puntaje = 0
             for char in palabra:
                 puntaje += puntos[char]
             return puntaje
 
         def ordenar_puntos(palabras, puntaje_letra):
-            palabra_puntos = [(p, calcular_puntaje_IA(p, puntaje_letra))
+            palabras_puntos = [(p, calcular_puntaje_ia(p, puntaje_letra))
                               for p in palabras]
-            palabra_puntos.sort(key=lambda x: x[1])
-            return palabra_puntos
+            palabras_puntos.sort(key=lambda x: x[1])
+            palabras = [p[0] for p in palabras_puntos]
+            return palabras
 
         letras = [v.letra for _k, v in fichas.items()]
         puntaje_letra = {v.letra: v.valor for _k, v in fichas.items()}
@@ -154,20 +141,22 @@ def elegir_palabra(fichas, long_maxima=7):
     except:
         return elegir_palabra_dos(fichas, long_maxima)
 
+
 def elegir_espacio(tablero, palabras, dificultad):
     """
     Lee el tablero y busca un espacio donde poner la palabra con base en la dificultad
+
     recibe:
-    - tablero: objeto de clase Tablero del módulo lógica
-    - palabras: lista (list) de palabras (string) ordenada según puntaje
-    - dificultad: (string) indicando la dificultad de la IA
-    según los criterios de ScrabbleAR
+        tablero: objeto de clase Tablero del módulo lógica
+        palabras: lista (list) de palabras (string) ordenada según puntaje
+        dificultad: (string) indicando la dificultad de la IA
+        según los criterios de ScrabbleAR
     """
 
     seleccion = {'Facil': lambda x: x[0],
                  'Medio': lambda x: x[len(x) // 2],
                  'Dificil': lambda x: x[-1]}
-    palabra, valor = seleccion[dificultad](palabras)
+    palabra = seleccion[dificultad](palabras)
     largo = len(palabra)
     casillas_posibles = list(tablero.getposibles())
     borde_h = tablero.getxy()[0]
@@ -189,7 +178,7 @@ def elegir_espacio(tablero, palabras, dificultad):
         else:
             casillas_posibles.remove(pos)
     if encontre:
-        return posicion, palabra, valor
+        return posicion, palabra
     else:
         return None
 

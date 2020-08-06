@@ -348,6 +348,8 @@ def partida(window, datos_partida):
             atril_jugador.setestado(0)
             window.FindElement('-CAMBIAR-').Update(disabled=True)
             window.FindElement('-JUGAR-').Update(disabled=True)
+            # Se vacía la palabra
+            palabra.vaciar()
             # Se piden fichas nuevas para el atril
             fichas_nuevas = bolsa.entregar(atril_jugador.pedir())
             if fichas_nuevas:  # Si la lista tiene elementos
@@ -356,8 +358,6 @@ def partida(window, datos_partida):
                 actualizar_atril(atril_jugador, window)
                 # Se actualiza el estado de la bolsa
                 window.FindElement('-BOLSA-').Update(f'QUEDAN {len(bolsa.fichas)} FICHAS')
-                # Se vacía la palabra
-                palabra.vaciar()
                 # Cambia el turno
                 turno_jugador = not turno_jugador
             else:
@@ -403,13 +403,13 @@ def partida(window, datos_partida):
 
     def turno_ia(dif_ia):
 
-        def seleccionar_fichas(palabra_ia, palabra, atril_ia):
+        def seleccionar_fichas(palabra_ia, atril_ia):
             espacios = []
             atril = dict(atril_ia.fichas)
             for char in palabra_ia:
                 for k, v in atril.items():
                     if v.letra == char:
-                        espacios.append(k)
+                        espacios.append((v, k))
                         break
                 atril.pop(k)
             return espacios
@@ -428,19 +428,24 @@ def partida(window, datos_partida):
             jugada = ia.elegir_espacio(tablero, palabras_ia, dif_ia)
             if jugada is not None:  # Si la IA encuentra un espacio en el tablero
                 casillas, palabra_ia = jugada
-                origen = seleccionar_fichas(palabra_ia, palabra, atril_ia)
-                for i in range(len(casillas)):
-                    ficha = atril_ia.fichas[origen[i]]
-                    pos = casillas[i]
+                fichas_origen = seleccionar_fichas(palabra_ia, atril_ia)
+                # se cargan los datos en la palabra
+                for pos in casillas:
+                    i = casillas.index(pos)
+                    ficha, origen = fichas_origen[i]
+                    palabra.modificar(pos, ficha, origen)
+                # se fija la palabra y se calcula el puntaje
+                puntos_ia += tablero.fijar_palabra(palabra)
+                # Se vacía la palabra
+                palabra.vaciar()
+                # se actualiza la GUI
+                for pos in casillas:
                     casilla = tablero.getcasilla(pos)
-                    casilla.ocupar(ficha)
                     img = casilla.getimagen()
                     window.FindElement(pos).Update(image_filename=img)
-                atril_ia.eliminar(origen)
-                actualizar_atril(atril_ia, window)
-                # Se actualizan los puntos
-                puntos_ia += puntos
                 window.FindElement('-PIA-').Update(f'IA: {puntos_ia}')
+                atril_ia.eliminar([v[1] for v in fichas_origen])
+                actualizar_atril(atril_ia, window)
                 # Se piden fichas nuevas para el atril
                 fichas_nuevas = bolsa.entregar(atril_ia.pedir())
                 if fichas_nuevas:  # Si la lista tiene elementos

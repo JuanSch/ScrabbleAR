@@ -377,7 +377,7 @@ class Palabra:
                 pos = k
         return pos
 
-    def agregarletra(self, pos, origen, ficha):
+    def agregarletra(self, pos, ficha, origen):
         """
         Agrega una ficha en una posición no ocupada.
 
@@ -427,7 +427,7 @@ class Palabra:
             elif evaluar > self.max[self.eje]:
                 self.max = pos
 
-    def cambiarletra(self, pos, origen, ficha):
+    def cambiarletra(self, pos, ficha, origen):
         """
         Permite hacer tanto hacer un intercambio de fichas
         como sólo eliminar una ficha preexistente.
@@ -476,7 +476,7 @@ class Palabra:
             self.fichas[pos] = (ficha, origen)
         return devolver
 
-    def modificar(self, pos, origen=None, ficha=None):
+    def modificar(self, pos, ficha=None, origen=None):
         """
         Llama a los módulos agregarletra o cambiarletra
         según resulte necesario para los valores recibidos.
@@ -496,10 +496,10 @@ class Palabra:
             o (None) si no hay ficha para devolver
         """
         if pos in self.fichas:
-            devolver = self.cambiarletra(pos, origen, ficha)
+            devolver = self.cambiarletra(pos, ficha, origen)
             return devolver
         else:
-            self.agregarletra(pos, origen, ficha)
+            self.agregarletra(pos, ficha, origen)
             return None
 
     def vaciar(self):
@@ -705,7 +705,7 @@ class Tablero:
             self.limite(derecha, posibles, eje, -1, '-')
             self.limite(izquierda, posibles, eje, bordes[eje], '+')
 
-        devolver = palabra.modificar(pos, origen, ficha)
+        devolver = palabra.modificar(pos, ficha, origen)
         anteriores = list(self.posibles)
         if devolver is not None and palabra.min is None:
             borrar = anteriores
@@ -732,14 +732,14 @@ class Tablero:
                 marcar.remove(k)
         return marcar, borrar, devolver
 
-    def valor_palabra(self, palabra):
-        puntos_base = 0
-        multiplicador = 1
-        for key in palabra.keys():
-            casilla = self.getcasilla(key)
-            puntos_base += casilla.valor()[0]
-            multiplicador *= casilla.valor()[1]
-        return puntos_base*multiplicador
+    # def valor_palabra(self, palabra):
+    #     puntos_base = 0
+    #     multiplicador = 1
+    #     for key in palabra.keys():
+    #         casilla = self.getcasilla(key)
+    #         puntos_base += casilla.valor()[0]
+    #         multiplicador *= casilla.valor()[1]
+    #     return puntos_base*multiplicador
 
     def fijar_palabra(self, palabra):
 
