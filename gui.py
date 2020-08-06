@@ -119,6 +119,7 @@ def inicializar(continuar):
             except FileNotFoundError:
                 return 'Error al intentar abrir valores_puntajes.json \n' \
                        'el archivo parece no exisitir'
+
     return datos_partida
 
 
@@ -239,7 +240,8 @@ def partida(window, datos_partida):
         """
         salir = sg.PopupOKCancel('Se guardará la partida y volverá al menú principal\n'
                                  '¿Desea continuar?')
-        if salir:
+        if salir == 'OK':
+            print(datos)
             try:
                 with open('continuar_partida.pickle', 'wb') as f:
                     pickle.dump(datos, f)
@@ -273,7 +275,7 @@ def partida(window, datos_partida):
             # fue una deselección
             pos = palabra.posficha(atril_jugador.cambiar[0])
             if pos is not None:
-                marcar, borrar, devolver = tablero.jugada(palabra, pos)
+                marcar, borrar, _devolver = tablero.jugada(palabra, pos)
                 actualizar_tablero(marcar, borrar, window, tablero)
                 # Se deshabilita el boton de jugar
                 # si la palabra ya no es testeable
@@ -604,6 +606,19 @@ def partida(window, datos_partida):
 
     # cierre
     window.Close()
+
+    datos_partida['nombre'] = nombre
+    datos_partida['tablero'] = tablero 
+    datos_partida['atril_jugador'] = atril_jugador 
+    datos_partida['atril_ia'] = atril_ia 
+    datos_partida['palabra'] = palabra 
+    datos_partida['bolsa'] = bolsa
+    datos_partida['dificultad_ia'] = dificultad_ia
+    datos_partida['puntos_jugador'] =  puntos_jugador
+    datos_partida['puntos_ia'] = puntos_ia
+    datos_partida['turno_jugador'] = turno_jugador
+    datos_partida['cambios'] = cambios
+    datos_partida['tiempo'] = tiempo
 
     return fin, datos_partida
 
