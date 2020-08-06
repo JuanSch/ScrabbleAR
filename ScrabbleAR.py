@@ -192,7 +192,7 @@ def pantalla_inicial():
     window = sg.Window("Menu Principal").Layout(layout)
     
     while True:
-        event, _values = window.Read()
+        event, _values = window.Read(timeout= 500)
 
         if event == None:
             break
@@ -204,7 +204,8 @@ def pantalla_inicial():
             else:
                 if preguntar_partida_nueva():
                     remove('continuar_partida.pickle')
-                    jugar()
+                    if config_nuevo_juego():
+                        jugar()
                     
         elif event in "-continuar-":
             jugar(True)
@@ -214,6 +215,13 @@ def pantalla_inicial():
 
         elif event in "-puntajes-":
             top10()
+        try:
+            with open('continuar_partida.pickle') as _:
+                condicion = False
+                window.find_element("-continuar-").Update(disabled = condicion)
+        except FileNotFoundError:
+            condicion = True
+            window.find_element("-continuar-").Update(disabled = condicion)
         
     window.Close()
 

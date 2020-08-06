@@ -237,7 +237,8 @@ def partida(window, datos_partida):
         """
         salir = sg.PopupOKCancel('Se guardará la partida y volverá al menú principal\n'
                                  '¿Desea continuar?')
-        if salir:
+        if salir == 'OK':
+            print(datos)
             try:
                 with open('continuar_partida.pickle', 'wb') as f:
                     pickle.dump(datos, f)
@@ -271,7 +272,7 @@ def partida(window, datos_partida):
             # fue una deselección
             pos = palabra.posficha(atril_jugador.cambiar[0])
             if pos is not None:
-                marcar, borrar, devolver = tablero.jugada(palabra, pos)
+                marcar, borrar, _devolver = tablero.jugada(palabra, pos)
                 actualizar_tablero(marcar, borrar, window, tablero)
                 # Se deshabilita el boton de jugar
                 # si la palabra ya no es testeable
