@@ -196,6 +196,8 @@ def partida(window, datos_partida):
         nonlocal atril_ia
         nonlocal atril_jugador
         nonlocal turno_jugador
+        nonlocal puntos_jugador
+        nonlocal puntos_ia
         nonlocal nombre
 
         window.FindElement(event).Update('POSPONER')
