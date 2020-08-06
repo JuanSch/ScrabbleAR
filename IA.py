@@ -198,11 +198,4 @@ def elegir_espacio(tablero, palabras, dificultad):
 
 
 if __name__ == '__main__':
-    # dificultad = 'dificil'
-    # ejemplo = ['a','p','q','d','t','z','n','a','o','o','a']
-    # res= elegir_palabra(ejemplo, dificultad)   
-    # print(res, calcular_puntaje(res))
-    # palabras = ['humanidad','humano','persona','gente','hombre','mujer','niño','niña','adolescente','adulto','adulta','anciano','ancaina','zapo','pho','albol']
-    # for palabra in palabras:
-    #     print(validar_palabra(palabra))
     pass
