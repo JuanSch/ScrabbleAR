@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import json
 from tableros import jugar
-from logica import top10, reglas
+from logica import top10, reglas, crear_valores_puntajes
 from os import remove
 
 
@@ -20,10 +20,12 @@ def config_nuevo_juego():
             configuracion = json.load(f)
             nombre = configuracion['nombre']
     except FileNotFoundError:
-        #$% crearconfiguracion()
-        with open('configuraciones.json','r', encoding='UTF-8') as f:
-            configuracion = json.load(f)
-            nombre = configuracion['nombre']
+        configuracion = {
+            "dificultad": "Medio",
+            "tiempo": "10",
+            "nombre": ""
+                }
+        nombre = configuracion['nombre']
 
     layout = [
         [sg.T("Nuevo juego", size=(17,1), justification = "center",
@@ -55,7 +57,7 @@ def config_nuevo_juego():
             configurar()
         else:
             break
-
+    #No necesita manejo de excepciones porque está en modo escritura
     with open('configuraciones.json','w', encoding='UTF-8') as f:
         json.dump(configuracion, f, indent= 4)
 
@@ -96,8 +98,13 @@ def configurar():
     de apariciones de cada letra en caso de modificar un valor,
     debemos hacer click en guardar por cada letra modificada
     """
-    with open('valores_puntajes.json', encoding='UTF-8') as f:
-                dic = json.load(f)
+    try:
+        with open('valores_puntajes.json', encoding='UTF-8') as f:
+            dic = json.load(f)
+    except FileNotFoundError:
+        dic = crear_valores_puntajes()
+        with open('valores_puntajes.json','w', encoding='UTF-8') as f:
+                json.dump(dic, f, indent=4)
 
     letras = dic['Personalizada']['bolsa']
     lista_letras= []
@@ -178,8 +185,6 @@ def pantalla_inicial():
         [sg.T(' '),
          sg.Button('Nueva partida', size=(25, 2), key="-nueva-")],
         [sg.T(' '),
-         #$% Este botón sólo debería estar habilitado si es que hay
-         #$%una partida guardada lista para continuar
          sg.Button('Continuar partida', size=(25, 2),
                    key="-continuar-", disabled= condicion)],
         [sg.T(' '),
