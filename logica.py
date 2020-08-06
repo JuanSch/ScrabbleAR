@@ -266,8 +266,9 @@ class Palabra:
     """
     Representa la palabra que está armando el jugador.
 
-    Es una clase de transferencia de datos entre el atril
-    y el tablero. Debe reiniciarse cada vez que se cambia de turno
+    Es una clase de transferencia de datos entre el atril y el tablero
+    El control de que las fichas se vayan colocando en línea
+    sucede por fuera de la palabra (ver clase Tablero)
 
     Atributos:
         min: (tuple) posición del tablero en la que se encuentra
@@ -406,7 +407,7 @@ class Palabra:
 
         Recibe:
             pos: (tuple) posición en el tablero
-            donde se colocara la ficha
+            donde se realizará el intercambio
             origen: (str) el nombre de una posición en el atril
             (ver class Atril) o (None) si no se agrega una ficha nueva
             ficha: (class Ficha) la ficha que se desea colocar
@@ -444,6 +445,24 @@ class Palabra:
         return devolver
 
     def modificar(self, pos, origen=None, ficha=None):
+        """
+        Llama a los módulos agregarletra o cambiarletra
+        según resulte necesario para los valores recibidos.
+
+        Recibe:
+            pos: (tuple) (tuple) posición en el tablero
+            donde se realizará la modificación
+            Keyword args:
+            origen: (str) el nombre de una posición en el atril
+            (ver class Atril) - default None = eliminar ficha
+            ficha: (class Ficha) la ficha que se desea colocar
+            default default None = eliminar ficha
+
+        Retorna:
+            devolver: (str) el nombre de la posición en el atril
+            de la que se origina la ficha a devolver (ver class Atril)
+            o (None) si no hay ficha para devolver
+        """
         if pos in self.fichas:
             devolver = self.cambiarletra(pos, origen, ficha)
             return devolver
@@ -452,16 +471,22 @@ class Palabra:
             return None
 
     def vaciar(self):
+        """Retorna la palabra a su estado inicial."""
         self.min = None
         self.max = None
         self.eje = None
         self.fichas = {}
 
     def probar(self):
+        """
+        Evalúa si la palabra tiene más de dos fichas
+        y todas ellas son contiguas.
+        """
         ok = False
-        cant = len(self.fichas)
-        if self.max[self.eje] + 1 - self.min[self.eje] == cant > 1:
-            ok = True
+        if self.eje is not None:
+            if (self.max[self.eje] + 1 - self.min[self.eje]
+                    == len(self.fichas)):
+                ok = True
         return ok
 
 #####################################################################
@@ -474,8 +499,39 @@ class Palabra:
 #####################################################################
 
 class Tablero:
-    """Es una matriz de casillas, y la interfaz entre la GUI y la lógica
-    subyacente a los eventos que sucedan en el tablero."""
+    """
+    Representa el tablero de juego.
+
+    Es la interfaz entre la GUI y la lógica subyacente a los eventos
+    que sucedan en el tablero.
+
+    Atributos:
+        xy: (tuple(int, int)) la cantidad de columnas y filas
+        que componen el tablero
+        matriz: (list(list(class Casilla))) matriz de casillas
+        cuyos índices [x] [y] se corresponden con sus posiciones
+        en el tablero, siendo (x=0,y=0) la casilla superior izquierda
+        posibles: (list(tuple(int, int))) contiene las posiciones
+        de todas las casillas que no se encuentran ocupadas
+        (ver clase Casilla)
+
+        Metodos:
+            __init__: constructor
+            getmatriz: getter para el atributo matriz
+            getxy: getter para el atributo xy
+            getposibles: getter para el atributo posibles
+            getcasilla: retorna la casilla que se encuentra
+            en una posición determinada de la matriz
+            getvalidos: evalúa qué casillas se encuentran desocupadas
+            limite: evalúa cuantas casillas contiguas están desocupadas
+            en una determinada línea y orientación, con un máximo de 6
+            jugada: efectúa las modificaciones de atributos
+            y de la palabra que surjan de una acción en el tablero
+            valor_palabra: calcula el puntaje de una palabra
+            según su posición en el tablero
+            fijar_palabra: confirma la colocación de una palabra
+            en el tablero
+    """
 
     def __init__(self, columnas, filas, casillas):
         self.xy = (columnas, filas)
@@ -484,16 +540,16 @@ class Tablero:
         for x in range(columnas):
             linea = []
             for y in range(filas):
-                pos = [x, y]
+                pos = (x, y)
                 ok = False
-                for key in list(Casilla.valores.keys())[1:]:
-                    if pos in casillas[key]:
-                        casilla = Casilla(tuple(pos), key)
+                for key in casillas.keys():
+                    if list(pos) in casillas[key]:
+                        casilla = Casilla(pos, key)
                         ok = True
                         break
                 if not ok:
-                    casilla = Casilla(tuple(pos))
-                posibles.append(tuple(pos))
+                    casilla = Casilla(pos)
+                posibles.append(pos)
                 linea.append(casilla)
             matriz.append(linea)
         self.matriz = matriz
@@ -509,8 +565,7 @@ class Tablero:
         return self.posibles
 
     def getcasilla(self, pos):
-        x = pos[0]
-        y = pos[1]
+        x, y = pos
         casilla = self.matriz[y][x]
         return casilla
 
@@ -519,30 +574,39 @@ class Tablero:
         for x in range(self.xy[0]):
             for y in range(self.xy[1]):
                 pos = (x, y)
-                if not self.getcasilla(pos).ocupado:
+                if not self.getcasilla(pos).getestado():
                     validos.append(pos)
         return validos
 
     def limite(self, pos, posibles, eje, borde, direccion, lim=7, ciclo=0):
-        """Método auxiliar del tablero, dado un punto de inicio, eje, direccion y longitud,
-        devuelve una lista de casillas contiguas disponibles.
+        """
+        Método recursivo:
+        Dados un punto de inicio, eje, direccion y longitud maxima,
+        devuelve una lista de casillas contiguas no ocupadas
+        dentro de los confines del tablero.
 
-        recibe:
-        - pos: tupla (int, int) indicando una posición válida en la matriz
-               de casillas del tablero
-        - posibles: debe recibir una lista de posiciones (ver pos), la casilla inicial
-                    se preasume desocupada y la función no la incorpora a la lista
-        - eje: 0 (int)= recorrido horizontal
-               1 (int)= recorrido vertical
-        - dirección: '-' (str)= búsqueda hacia la izquierda o hacia arriba
-                                de la posición inicial
-                     '+' (str)= búsqueda hacia la derecha o hacia abajo
-                                de la posición inicial
-        - lim: la cantidad máxima de espacios a evaluar (incluyendo la posición inicial)
-               predeterminado = 7
+        Recibe:
+            pos: tupla (int, int) indicando una posición válida
+            en la matriz de casillas del tablero
+            posibles: (list) lista de posiciones (ver pos), la casilla inicial
+            se preasume desocupada y ya parte de la lista, la función
+            no la incorpora
+            eje: (int) indica la dirección del recorrido
+                 0 = recorrido horizontal
+                 1 = recorrido vertical
+            dirección: '-' (str)= búsqueda hacia la izquierda o hacia arriba
+                                  de la posición inicial
+                       '+' (str)= búsqueda hacia la derecha o hacia abajo
+                                 de la posición inicial
+            Keyword args:
+            lim: (int) la cantidad máxima de espacios a evaluar
+            (incluyendo la posición inicial) default = 7
+            ciclo: (int) indicador de cuántas iteraciones se realizaron
+            default = 0
 
-        retorna:
-        - posibles: un append a posibles (ver recibe) de las casillas que no estaban ocupadas
+        Retorna:
+            posibles: un append a posibles (ver recibe) de las casillas
+            que no estaban ocupadas
         """
 
         direcciones = {'+': operator.add, '-': operator.sub}
@@ -553,16 +617,19 @@ class Tablero:
             nueva = list(pos)
             coord = direc(pos[eje], 1)
             nueva[eje] = coord
-            if nueva[eje] == borde or self.getcasilla(nueva).ocupado is True:
+            if nueva[eje] == borde or self.getcasilla(nueva).getestado():
                 return posibles
             else:
                 posibles.append(tuple(nueva))
-                return self.limite(nueva, posibles, eje, borde, direccion, lim, ciclo + 1)
+                return self.limite(nueva, posibles, eje, borde, direccion,
+                                   lim, ciclo + 1)
 
     def jugada(self, palabra, pos, origen=None, ficha=None):
-        """Método principal de lógica interna del tablero, debe recibir
+        """
+        Método principal de lógica interna del tablero, debe recibir
         un objeto tipo palabra, y manejará las actualizaciones
-        correspondientes a los estados de las casillas"""
+        correspondientes a los estados de las casillas
+        """
 
         def habilitados(posibles, eje, izquierda, derecha):
             bordes = self.getxy()
