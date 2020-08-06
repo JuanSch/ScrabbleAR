@@ -68,6 +68,7 @@ def config_nuevo_juego():
     else:
         return False
 
+
 def preguntar_partida_nueva():
     """
     Modulo que genera un menu, te pregunta si queres borrar la partida guardada o conserarla 
@@ -91,6 +92,7 @@ def preguntar_partida_nueva():
 
     window_preguntar.Close()
     return condicion
+
 
 def configurar():
     """
@@ -164,6 +166,7 @@ def configurar():
             with open('valores_puntajes.json','w', encoding='UTF-8') as f:
                 json.dump(dic, f, indent=4)
     window_configurar.Close()
+
 
 def pantalla_inicial(): 
     """
