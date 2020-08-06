@@ -9,6 +9,14 @@ import random
 
 
 def temporizador(tiempo, inicio, corriendo):
+    """
+    Modulo que recibe tres parametros 
+    tiempo = en segundos, la cantidad de tiempo restante
+    inicio = el momento t.time de inicio del contador 
+    corriendo = variable booleana que indica si el tiempo se terminó o no
+        True si el tiempo no se terminó
+        False si el tiempo se terminó
+    """
     transcurrido = int(t.time())-inicio
     actual = tiempo - transcurrido
     if actual > 0:
@@ -65,14 +73,15 @@ def inicializar(continuar):
                         dificultad_ia = str(dificultad)
                         cant_letras = valores[f'{dificultad}']['bolsa']
                         datos = valores[f'{dificultad}']['tablero']
+                        puntos = valores['puntos_letra']
                     else:
                         dificultad_ia = valores['Personalizada']['dificultad_IA']
                         dificultad_tablero = valores['Personalizada']['dificultad_Tablero']
                         cant_letras = valores['Personalizada']['bolsa']
                         datos = valores[dificultad_tablero]['tablero']
+                        puntos = valores['Personalizada']['puntos_letra']  
                     casillas = {k: v for k, v in list(datos.items())[1:]}
                     columnas, filas = datos['dimensiones']
-                    puntos = valores['puntos_letra']
             except FileNotFoundError:
                 return 'Error al intentar abrir valores_puntajes.json \n' \
                        'el archivo parece no exisitir'

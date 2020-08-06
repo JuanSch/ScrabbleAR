@@ -66,6 +66,9 @@ def config_nuevo_juego():
         return False
 
 def preguntar_partida_nueva():
+    """
+    Modulo que genera un menu, te pregunta si queres borrar la partida guardada o conserarla 
+    """
     layout=[
         [sg.T("Tiene una partida guardada, si continua, se borrará", justification = "center",
               font=("Georgia", 14))],
@@ -96,13 +99,15 @@ def configurar():
                 dic = json.load(f)
 
     letras = dic['Personalizada']['bolsa']
-    print(letras)
     lista_letras= []
     lista_valores = []
+    lista_puntos = []
     for key in letras:
         lista_letras.append(key[0])
     for y in range(13):
         lista_valores.append(y)
+    for y in range(20):
+        lista_puntos.append(y + 1) #Con y + 1 evito que se ingrese 0 como puntaje de letra
     df_vl = letras[0][1] 
     layout=[
         [sg.T("Perfil personalizado", size=(17,1), justification = "center",
@@ -111,6 +116,10 @@ def configurar():
          sg.Combo(lista_letras, size=(8,1), default_value= 'a'),
          sg.T("Cantidad:", font=("Georgia", 12),),
          sg.Combo(lista_valores, size=(8,1), default_value=df_vl)],
+         [sg.T("Letra",font=("Georgia", 12)),
+         sg.Combo(lista_letras, size=(8,1), default_value= 'a'),
+         sg.T("Valor:", font=("Georgia", 12),),
+         sg.Combo(lista_puntos, size=(8,1), default_value=df_vl)],
          [sg.T("Dificultad de la IA: "),
          sg.DropDown(('Facil','Medio','Dificil'),
                      default_value=(dic['Personalizada']['dificultad_IA']),size=(10,1))],
@@ -127,8 +136,10 @@ def configurar():
         """
         values[0] = retorna la letra elegida
         values[1] = retorna la cantidad de letras
-        values[2] = retorna la dificultad de la IA
-        values[3] = retorna la dificultad del tablero
+        values[2] = retorna la letra elegida
+        values[3] = retorna el puntaje seleccionado
+        values[4] = retorna la dificultad de la IA
+        values[5] = retorna la dificultad del tablero
         """
         if event == None:
             break
@@ -138,10 +149,10 @@ def configurar():
                     item[1] = values[1]
                     df_vl = values[1]
                     break
-                pass
             dic['Personalizada']['bolsa'] = letras
-            dic['Personalizada']['dificultad_IA'] = values[2]
-            dic['Personalizada']['dificultad_Tablero'] = values[3]
+            dic['Personalizada']['puntos_letra'][values[2]] = values[3]
+            dic['Personalizada']['dificultad_IA'] = values[4]
+            dic['Personalizada']['dificultad_Tablero'] = values[5]
             with open('valores_puntajes.json','w', encoding='UTF-8') as f:
                 json.dump(dic, f, indent=4)
     window_configurar.Close()
@@ -204,9 +215,6 @@ def pantalla_inicial():
             top10()
         
     window.Close()
-
-
-    
 
 if __name__ == "__main__":
     pantalla_inicial()

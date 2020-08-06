@@ -9,12 +9,17 @@ from bisect import insort
 
 
 def top10(dificultad=None):
+    """
+    Genera una ventana que se actualiza con el top ten de mejores puntajes 
+    la ventana tiene 3 botones facil, medio, dificil, al precionarlo actualiza el output 
+    """
     with open('valores_puntajes.json', 'r', encoding='UTF-8') as f:
         dic = json.load(f)
         if dificultad is None:
             top = dic['top10']
         else: 
             top = dic['top10'][dificultad]
+
     if dificultad is None:
         texto_facil = ""
         texto_medio = ""
@@ -24,20 +29,26 @@ def top10(dificultad=None):
             if elemento[0] != "None":
                 texto_facil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
+        if texto_facil == "":
+            texto_facil = 'No hay registro de puntajes'
 
         i = 1
         for elemento in top['Medio']:  # Forma el string por la dificultad
             if elemento[0] != "None":
                 texto_medio += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
+        if texto_medio == "":
+            texto_medio = 'No hay registro de puntajes'
 
         i = 1
         for elemento in top['Dificil']:  # Forma el string por la dificultad
             if elemento[0] != "None":
                 texto_dificil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
                 i += 1
+        if texto_dificil == "":
+            texto_dificil = 'No hay registro de puntajes'
 
-        layout = [[sg.Text('TOP 10')],
+        layout = [[sg.Text('TOP ten de puntajes')],
             [sg.Output(size=(35,10), key='-OUTPUT-')],
             [sg.Button('Facil'),sg.Button('Medio'),sg.Button('Dificil')],
             [sg.Button('Volver')]]
@@ -54,6 +65,27 @@ def top10(dificultad=None):
             if event in 'Dificil':
                 window['-OUTPUT-'].update(texto_dificil)                
         window.close()
+    else:
+        texto = ""
+        for elemento in top['Dificil']:  # Forma el string por la dificultad
+            if elemento[0] != "None":
+                texto += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
+                i += 1
+        if texto == "":
+            texto = 'No hay registro de puntajes'
+
+        layout = [[sg.Text('TOP ten de puntajes')],
+            [sg.Output(size=(35,10), key='-OUTPUT-')],
+            [sg.Button('Salir')]]
+        window = sg.Window('', layout)
+        condicion = True
+        while True:
+            event, _ = window.read(timeout=30)
+            if event in [None, 'Salir']:
+                break
+            elif condicion:
+                window['-OUTPUT-'].update(texto)
+                condicion = False
 
 
 def ruta():
