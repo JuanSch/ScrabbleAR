@@ -1,0 +1,11 @@
+##### Scrabble AR ####
+
+Para configurar tu perfil personalizado
+primero deberas entrar por medio del menu a la seccion de configuración
+
+Ahí te encontrarás con un nuevo menu, donde podras seleccionar una letra y a su derecha la cantidad de estas que quieres que haya en la bolsa de letras.
+En la siguiente fila tendras la opción, otra vez de seleccionar una letra, pero esta vez podrás cambiar el valor en puntos que valdrá la letra.
+El la siguiente fila podras decidir la dificultad de la inteligencia artificial.
+por ultimo podras decidir que tablero usar
+
+IMPORTANTE: cada vez que decidas cambiar algo debes hacer click en guardar. Solo podrás guardar un cambio a la vez de una misma sección, es decir, podes configurar la cantidad de apariciones de la letra "P" y el valor de esta letra, junto a la dificultad del tablero y de la inteligencia artificial. pero no podrás configuarar la aparicion de dos letras a la vez.

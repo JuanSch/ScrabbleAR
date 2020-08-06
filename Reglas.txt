@@ -1,0 +1,12 @@
+##### Scrabble AR ####
+
+Scrabble AR es un juego en donde deberas formar palabras con una serie de fichas de letras que se te otorgaran al inicio del juego, pero puedes cambiar estas fichas seleccionando el boton cambiar, luego marcas las fichas que deseas cambiar y finalemente pulsa en cambiar. Si seleccioanste cambiar pero ya no deseas hacerlo puedes hacer click en cancelar.
+
+Para iniciar el juego deberás hacer click en comenzar
+
+Para formar una palabra debes hacer click en una letra y luego hacer click en una posicion del tablero, repite este paso hasta formar la palabra deseada y luego seleccionar el boton jugar. podrás observar a la dedrecha del tablero tus puntos, los de la IA (inteligencia artificial) y la cantidad de letras que te quedan en tu bolsa de letras
+
+El juego terminará cuando:	
+	-El tiempo llegue a cero
+	-No queden fichas en la bolsa
+	-No quede espacio en el tablero

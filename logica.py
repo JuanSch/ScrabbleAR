@@ -7,6 +7,40 @@ from functools import reduce
 from itertools import chain
 from bisect import insort
 
+def reglas():
+    try:
+        with open('Reglas.txt', encoding='UTF-8') as f:
+            reglas = f.read()
+    except FileNotFoundError:
+        reglas = "Ocurrió un error al cargar el archivo"
+    try:
+        with open('Configurar.txt', encoding='UTF-8') as f:
+            configurar = f.read()
+    except FileNotFoundError:
+        configurar = "Ocurrió un error al cargar el archivo"
+    try:
+        with open('README.md', encoding='UTF-8') as f:
+            readme = f.read()
+    except FileNotFoundError:
+        readme = "Ocurrió un error al cargar el archivo"    
+
+    layout = [[sg.Text('Reglas de Scrabble AR')],
+            [sg.Output(size=(35,10), key='-OUTPUT-')],
+            [sg.Button('Reglas'),sg.Button('Como configurar'),sg.Button('Informacion adicional')],
+            [sg.Button('Volver')]]
+    window = sg.Window('', layout)
+
+    while True:
+        event, _ = window.read()
+        if event in [None, 'Volver']:
+            break
+        if event in 'Reglas':
+            window['-OUTPUT-'].update(reglas)
+        if event in 'Como configurar':
+            window['-OUTPUT-'].update(configurar)   
+        if event in 'Informacion adicional':
+            window['-OUTPUT-'].Update(readme)
+    window.close()
 
 def top10(dificultad=None):
     """

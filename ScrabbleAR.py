@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import json
 from tableros import jugar
-from logica import top10
+from logica import top10, reglas
 from os import remove
 
 
@@ -186,6 +186,8 @@ def pantalla_inicial():
          sg.Button('Configuración', size=(25, 2), key="-configuracion-")],
         [sg.T(' '),
          sg.Button('Mejores puntajes', size=(25, 2), key="-puntajes-")],
+        [sg.T(' '),
+         sg.Button('Reglas', size=(25, 2), key="-reglas-")],
         [sg.T(' '), sg.T("  ", size=(17, 1), justification="center")]
         ]
 
@@ -212,6 +214,9 @@ def pantalla_inicial():
 
         elif event in "-configuracion-":
             configurar()
+
+        elif event in "-reglas-":
+            reglas()
 
         elif event in "-puntajes-":
             top10()
