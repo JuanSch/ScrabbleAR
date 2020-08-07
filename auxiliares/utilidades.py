@@ -19,17 +19,17 @@ def ruta():
 
 def reglas():
     try:
-        with open(f'..{ruta()}archivos{ruta()}Reglas.txt', encoding='UTF-8') as f:
+        with open(f'archivos{ruta()}Reglas.txt', encoding='UTF-8') as f:
             reglas = f.read()
     except FileNotFoundError:
         reglas = "Ocurrió un error al cargar el archivo"
     try:
-        with open(f'..{ruta()}archivos{ruta()}Configurar.txt', encoding='UTF-8') as f:
+        with open(f'archivos{ruta()}Configurar.txt', encoding='UTF-8') as f:
             configurar = f.read()
     except FileNotFoundError:
         configurar = "Ocurrió un error al cargar el archivo"
     try:
-        with open(f'..{ruta()}README.md', encoding='UTF-8') as f:
+        with open(f'archivos{ruta()}README.md', encoding='UTF-8') as f:
             readme = f.read()
     except FileNotFoundError:
         readme = "Ocurrió un error al cargar el archivo"
@@ -59,7 +59,7 @@ def top10(dificultad=None):
     la ventana tiene 3 botones facil, medio, dificil, al precionarlo actualiza el output
     """
     try:
-        with open(f'..{ruta()}archivos{ruta()}valores_puntajes.json', 'r', encoding='UTF-8') as f:
+        with open(f'archivos{ruta()}valores_puntajes.json', 'r', encoding='UTF-8') as f:
             dic = json.load(f)
             if dificultad is None:
                 top = dic['top10']
@@ -67,7 +67,7 @@ def top10(dificultad=None):
                 top = dic['top10'][dificultad]
     except FileNotFoundError:
         dic = crear_valores_puntajes()
-        with open(f'..{ruta()}archivos{ruta()}valores_puntajes.json', 'w', encoding='UTF-8') as f:
+        with open(f'archivos{ruta()}valores_puntajes.json', 'w', encoding='UTF-8') as f:
             json.dump(dic, f, indent=4)
         if dificultad is None:
             top = dic['top10']
