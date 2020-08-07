@@ -8,5 +8,6 @@ Para formar una palabra debes hacer click en una letra y luego hacer click en un
 
 El juego terminará cuando:	
 	-El tiempo llegue a cero
-	-No queden fichas en la bolsa
+	-No haya suficientes fichas en la bolsa para llenar un atril
 	-No quede espacio en el tablero
+	-El jugador decida terminar el juego

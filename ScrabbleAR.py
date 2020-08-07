@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import json
-from tableros import jugar
-from logica import top10, reglas, crear_valores_puntajes
+from partida.jugar import jugar
+from auxiliares.utilidades import ruta, top10, reglas, crear_valores_puntajes
 from os import remove
 
 
@@ -16,7 +16,8 @@ def config_nuevo_juego():
     for i in range(1, 61):
         s.append(str(i))
     try:
-        with open('configuraciones.json','r', encoding='UTF-8') as f:
+        with open(f'archivos{ruta()}configuraciones.json',
+                  'r', encoding='UTF-8') as f:
             configuracion = json.load(f)
             nombre = configuracion['nombre']
     except FileNotFoundError:
@@ -28,7 +29,7 @@ def config_nuevo_juego():
         nombre = configuracion['nombre']
 
     layout = [
-        [sg.T("Nuevo juego", size=(17,1), justification = "center",
+        [sg.T("Nuevo juego", size=(17,1), justification="center",
               font=("Georgia", 17))],
         [sg.T("Dificultad: "),
          sg.DropDown(('Facil','Medio','Dificil','Personalizada'),
@@ -49,7 +50,8 @@ def config_nuevo_juego():
             configuracion['tiempo'] = values[1]
             configuracion['nombre'] = values[2]
             if values[0] == 'Personalizada':
-                sg.popup('¡Atencion! \n En la dificultad personalizada no se guardan los puntajes')
+                sg.popup('¡Atencion! \n En la dificultad personalizada'
+                         'no se guardan los puntajes')
             break
         elif event == "-jugar-" and values[2] == "":
             sg.popup('Ingrse un nombre')
@@ -57,9 +59,10 @@ def config_nuevo_juego():
             configurar()
         else:
             break
-    #No necesita manejo de excepciones porque está en modo escritura
-    with open('configuraciones.json','w', encoding='UTF-8') as f:
-        json.dump(configuracion, f, indent= 4)
+    # No necesita manejo de excepciones porque está en modo escritura
+    with open(f'archivos{ruta()}configuraciones.json', 'w',
+              encoding='UTF-8') as f:
+        json.dump(configuracion, f, indent=4)
 
     window_nuevo_juego.Close()
     
@@ -73,16 +76,17 @@ def preguntar_partida_nueva():
     """
     Modulo que genera un menu, te pregunta si queres borrar la partida guardada o conserarla 
     """
-    layout=[
-        [sg.T("Tiene una partida guardada, si continua, se borrará", justification = "center",
+    layout = [
+        [sg.T("Tiene una partida guardada, si continua, se borrará", justification="center",
               font=("Georgia", 14))],
         [sg.Button('Continuar'), sg.Button('Regresar')]
     ]
     window_preguntar = sg.Window("ScrabbleAR - Partida Guardada").Layout(layout)
     while True:
         event, _ = window_preguntar.Read()
-        if event == None:
+        if event is None:
             condicion = False
+            break
         elif event in 'Continuar':
             condicion = True
             break
@@ -101,12 +105,14 @@ def configurar():
     debemos hacer click en guardar por cada letra modificada
     """
     try:
-        with open('valores_puntajes.json', encoding='UTF-8') as f:
+        with open(f'archivos{ruta()}valores_puntajes.json',
+                  encoding='UTF-8') as f:
             dic = json.load(f)
     except FileNotFoundError:
         dic = crear_valores_puntajes()
-        with open('valores_puntajes.json','w', encoding='UTF-8') as f:
-                json.dump(dic, f, indent=4)
+        with open(f'archivos{ruta()}valores_puntajes.json', 'w',
+                  encoding='UTF-8') as f:
+            json.dump(dic, f, indent=4)
 
     letras = dic['Personalizada']['bolsa']
     lista_letras= []
@@ -117,7 +123,7 @@ def configurar():
     for y in range(13):
         lista_valores.append(y)
     for y in range(20):
-        lista_puntos.append(y + 1) #Con y + 1 evito que se ingrese 0 como puntaje de letra
+        lista_puntos.append(y + 1)  # Con y + 1 evito que se ingrese 0 como puntaje de letra
     df_vl = letras[0][1] 
     layout=[
         [sg.T("Perfil personalizado", size=(17,1), justification = "center",
@@ -163,7 +169,7 @@ def configurar():
             dic['Personalizada']['puntos_letra'][values[2]] = values[3]
             dic['Personalizada']['dificultad_IA'] = values[4]
             dic['Personalizada']['dificultad_Tablero'] = values[5]
-            with open('valores_puntajes.json','w', encoding='UTF-8') as f:
+            with open(f'archivos{ruta()}valores_puntajes.json', 'w', encoding='UTF-8') as f:
                 json.dump(dic, f, indent=4)
     window_configurar.Close()
 
@@ -178,7 +184,7 @@ def pantalla_inicial():
         Mostrar los diez mejores puntajes
     """
     try:
-        with open('continuar_partida.pickle') as _:
+        with open(f'archivos{ruta()}continuar_partida.pickle') as _:
             condicion = False
     except FileNotFoundError:
         condicion = True
@@ -204,7 +210,7 @@ def pantalla_inicial():
     while True:
         event, _values = window.Read(timeout= 500)
 
-        if event == None:
+        if event is None:
             break
 
         elif event in "-nueva-":
@@ -213,7 +219,7 @@ def pantalla_inicial():
                     jugar()
             else:
                 if preguntar_partida_nueva():
-                    remove('continuar_partida.pickle')
+                    remove(f'archivos{ruta()}continuar_partida.pickle')
                     if config_nuevo_juego():
                         jugar()
                     
@@ -229,7 +235,7 @@ def pantalla_inicial():
         elif event in "-puntajes-":
             top10()
         try:
-            with open('continuar_partida.pickle') as _:
+            with open(f'archivos{ruta()}continuar_partida.pickle') as _:
                 condicion = False
                 window.find_element("-continuar-").Update(disabled = condicion)
         except FileNotFoundError:

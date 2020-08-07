@@ -1,11 +1,12 @@
 import PySimpleGUI as sg
 import time as t
-import logica as lg
-import IA as ia
+from partida import clases as lg
+from partida import IA
 from os import remove
 import pickle
 import json
 import random
+from auxiliares.utilidades import ruta
 
 
 def temporizador(tiempo, inicio, corriendo):
@@ -24,38 +25,13 @@ def temporizador(tiempo, inicio, corriendo):
     else:
         corriendo = False
         reloj = 'FIN'
-    return reloj, corriendo
-
-
-def armar_tablero(tablero, dim_boton):
-    """Genera una matriz de botones con base en la matriz lógica del tablero,
-    es esencialmente el layout del tablero en términos de GUI"""
-
-    base = tablero.getmatriz()
-    botones = []
-    for fila in base:
-        linea = []
-        for casilla in fila:
-            boton = sg.Button(key=casilla.getpos(), image_size=dim_boton,
-                              image_filename=casilla.getimagen(), pad=(0, 0),
-                              button_color=('#DDDDDD', '#DDDDDD'),
-                              border_width=0,)
-            linea.append(boton)
-        botones.append(linea)
-    return botones
-
-
-def armar_atril(atril, dim_boton):
-    fichas = [sg.Button(key=k, pad=(0, 0), image_filename=atril.imagen(k),
-                        image_size=dim_boton, border_width=0,
-                        button_color=('#DDDDDD', '#DDDDDD'))
-              for k in atril.fichas.keys()]
-    return fichas
+    return reloj, corriendo, actual
 
 
 def inicializar(continuar):
     try:
-        with open('configuraciones.json', 'r', encoding='UTF-8') as f:
+        with open(f'archivos{ruta()}configuraciones.json',
+                  'r', encoding='UTF-8') as f:
             configs = json.load(f)
             nombre = configs['nombre']
             dificultad = configs['dificultad']
@@ -67,7 +43,8 @@ def inicializar(continuar):
     else:
         if not continuar:
             try:
-                with open('valores_puntajes.json', 'r', encoding='UTF-8') as f:
+                with open(f'archivos{ruta()}valores_puntajes.json',
+                          'r', encoding='UTF-8') as f:
                     valores = json.load(f)
                     if dificultad != "Personalizada":
                         dificultad_ia = str(dificultad)
@@ -76,7 +53,8 @@ def inicializar(continuar):
                         puntos = valores['puntos_letra']
                     else:
                         dificultad_ia = valores['Personalizada']['dificultad_IA']
-                        dificultad_tablero = valores['Personalizada']['dificultad_Tablero']
+                        dificultad_tablero =\
+                            valores['Personalizada']['dificultad_Tablero']
                         cant_letras = valores['Personalizada']['bolsa']
                         datos = valores[dificultad_tablero]['tablero']
                         puntos = valores['Personalizada']['puntos_letra']  
@@ -114,42 +92,14 @@ def inicializar(continuar):
                 }
         else:
             try:
-                with open('continuar_partida.pickle', 'rb') as f:
+                with open(f'archivos{ruta()}continuar_partida.pickle',
+                          'rb') as f:
                     datos_partida = pickle.load(f)
             except FileNotFoundError:
-                return 'Error al intentar abrir valores_puntajes.json \n' \
+                return 'Error al intentar abrir continuar_partida.pickle \n' \
                        'el archivo parece no exisitir'
 
     return datos_partida
-
-
-def columna1_gui(elementos):
-    dim_boton = 40, 40
-    linea_superior = armar_atril(elementos['atril_ia'], dim_boton)
-    botones_tablero = armar_tablero(elementos['tablero'], dim_boton)
-    linea_inferior = armar_atril(elementos['atril_jugador'], dim_boton)
-    botones_jugador = [sg.T(' '),
-                       sg.Button('JUGAR', key='-JUGAR-', size=(9, 2),
-                                 disabled=True),
-                       sg.Button('PASAR\nTURNO', key='-PASAR-', size=(9, 2),
-                                 disabled=True),
-                       sg.Button('CAMBIAR\nFICHAS', key='-CAMBIAR-', size=(9, 2),
-                                 disabled=True),
-                       sg.Button('CANCELAR', key='-CANCELAR-', size=(9, 2),
-                                 visible=False)
-                       ]
-    for item in botones_jugador:
-        linea_inferior.append(item)
-
-    columna1 = [[sg.T('FICHAS IA:')],
-                linea_superior,
-                [sg.T('')],
-                *botones_tablero,
-                [sg.T('')],
-                [sg.T('FICHAS JUGADOR:'), sg.T(f'{"".join([" "]*83)}'),
-                 sg.T('CAMBIOS SIN COSTO:'), sg.T('5', key='-CAMBIOS-')],
-                linea_inferior]
-    return columna1
 
 
 def actualizar_atril(atril, window):
@@ -243,7 +193,8 @@ def partida(window, datos_partida):
                                  '¿Desea continuar?')
         if salir == 'OK':
             try:
-                with open('continuar_partida.pickle', 'wb') as f:
+                with open(f'archivos{ruta()}continuar_partida.pickle',
+                          'wb') as f:
                     pickle.dump(datos, f)
             except IOError:
                 sg.PopupAutoClose('Hubo un error al tratar de guardar la partida\n'
@@ -352,7 +303,7 @@ def partida(window, datos_partida):
         nonlocal fin
         nonlocal nombre
 
-        if ia.validar_palabra(str(palabra)):
+        if IA.validar_palabra(str(palabra)):
             # Actualizaciones a la lógica y valores de fondo
             puntos_jugador += tablero.fijar_palabra(palabra)
             atril_jugador.eliminar([v[1] for _k, v in palabra.fichas.items()])
@@ -521,9 +472,9 @@ def partida(window, datos_partida):
         nonlocal fin
         nonlocal nombre
 
-        palabras_ia = ia.elegir_palabra(atril_ia.fichas)
+        palabras_ia = IA.elegir_palabra(atril_ia.fichas)
         if palabras_ia is not None:  # Si la IA puede generar palabras
-            jugada = ia.elegir_espacio(tablero, palabras_ia, dif_ia)
+            jugada = IA.elegir_espacio(tablero, palabras_ia, dif_ia)
             if jugada is not None:  # Si la IA encuentra un espacio en el tablero
                 casillas, palabra_ia = jugada
                 fichas_origen = seleccionar_fichas(palabra_ia, atril_ia)
@@ -604,7 +555,8 @@ def partida(window, datos_partida):
                 corriendo = True
 
         elif event == '-FIN-':
-            salir = sg.PopupOKCancel('Se cerrará la partida y volverá al menú principal\n'
+            salir = sg.PopupOKCancel('Se cerrará la partida y'
+                                     'volverá al menú principal\n'
                                      '¿Desea continuar?')
             if salir == 'OK':
                 fin = True
@@ -633,7 +585,9 @@ def partida(window, datos_partida):
                 turno_ia(dificultad_ia)
 
             # Control y actualización de reloj
-            reloj, corriendo = temporizador(tiempo, inicio, corriendo)
+            reloj, corriendo, datos_partida['tiempo'] =\
+                temporizador(tiempo, inicio, corriendo)
+            datos_partida['reloj'] = reloj
             window.FindElement('-RELOJ-').Update(reloj)
             if reloj == 'FIN':
                 corriendo = False
@@ -646,11 +600,10 @@ def partida(window, datos_partida):
         datos_partida['palabra'] = palabra 
         datos_partida['bolsa'] = bolsa
         datos_partida['dificultad_ia'] = dificultad_ia
-        datos_partida['puntos_jugador'] =  puntos_jugador
+        datos_partida['puntos_jugador'] = puntos_jugador
         datos_partida['puntos_ia'] = puntos_ia
         datos_partida['turno_jugador'] = turno_jugador
         datos_partida['cambios'] = cambios
-        datos_partida['tiempo'] = tiempo
 
     # cierre
     window.Close()
@@ -707,11 +660,11 @@ def actualizar_puntajes(tupla, dificultad):
     en orden descendiente de puntajes y se elemina el ultimo
     ya que la lista con el nuevo puntaje insertado tiene 11 elementos
     """
-    with open("valores_puntajes.json", 'r') as f:    # Cargo el diccionario de puntajes
+    with open(f"archivos{ruta()}valores_puntajes.json", 'r') as f:    # Cargo el diccionario de puntajes
         dic = json.load(f) 
-        #No se manejan excepciones, debido a que si el programa llegó a este punto
-        #Es precondicion que el archivo exista debido a que antes se lo utiliza 
-        #Y si antes no estaba se lo crea 
+        # No se manejan excepciones, debido a que si el programa llegó a este punto
+        # Es precondicion que el archivo exista debido a que antes se lo utiliza
+        # Y si antes no estaba se lo crea
     top = dic['top10'][dificultad]
     ok = False
     if tupla[1] > top[-1][1]:    # si el puntaje es mayor o igual al puntaje minimo en el top
@@ -722,9 +675,9 @@ def actualizar_puntajes(tupla, dificultad):
                 break
         if len(top) == 11:
             top.pop(-1)  # remuevo el elemento en la posicion 10,
-                    # es decir el decimo-primer elemento
+            # es decir el decimo-primer elemento
     if ok:
         dic['top10'][dificultad] = top
-    with open("valores_puntajes.json", 'w') as f:
+    with open(f"archivos{ruta()}valores_puntajes.json", 'w') as f:
         json.dump(dic, f, indent=4)
     return ok

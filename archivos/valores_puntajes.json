@@ -1416,7 +1416,7 @@
         "bolsa": [
             [
                 "a",
-                12
+                11
             ],
             [
                 "b",
@@ -1436,7 +1436,7 @@
             ],
             [
                 "f",
-                8
+                7
             ],
             [
                 "g",
@@ -1524,7 +1524,7 @@
             ]
         ],
         "dificultad_IA": "Medio",
-        "dificultad_Tablero": "Medio",
+        "dificultad_Tablero": "Dificil",
         "puntos_letra": {
             "a": 12,
             "b": 3,
@@ -1534,8 +1534,8 @@
             "f": 4,
             "g": 2,
             "h": 4,
-            "i": 1,
-            "j": 8,
+            "i": 17,
+            "j": 12,
             "k": 8,
             "l": 1,
             "m": 3,
