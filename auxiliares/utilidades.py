@@ -29,7 +29,7 @@ def reglas():
     except FileNotFoundError:
         configurar = "Ocurrió un error al cargar el archivo"
     try:
-        with open(f'archivos{ruta()}README.md', encoding='UTF-8') as f:
+        with open(f'README.md', encoding='UTF-8') as f:
             readme = f.read()
     except FileNotFoundError:
         readme = "Ocurrió un error al cargar el archivo"
@@ -58,6 +58,17 @@ def top10(dificultad=None):
     Genera una ventana que se actualiza con el top ten de mejores puntajes
     la ventana tiene 3 botones facil, medio, dificil, al precionarlo actualiza el output
     """
+    def generar_texto(dic):
+        i = 1
+        texto = ""
+        for elemento in dic:  # Forma el string por la dificultad
+            if elemento[0] != "":
+                texto += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
+                i += 1
+        if texto == "":
+            texto = 'No hay registro de puntajes'
+        return texto
+    
     try:
         with open(f'archivos{ruta()}valores_puntajes.json', 'r', encoding='UTF-8') as f:
             dic = json.load(f)
@@ -75,32 +86,9 @@ def top10(dificultad=None):
             top = dic['top10'][dificultad]
 
     if dificultad is None:
-        texto_facil = ""
-        texto_medio = ""
-        texto_dificil = ""
-        i = 1
-        for elemento in top['Facil']:  # Forma el string por la dificultad
-            if elemento[0] != "None":
-                texto_facil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
-                i += 1
-        if texto_facil == "":
-            texto_facil = 'No hay registro de puntajes'
-
-        i = 1
-        for elemento in top['Medio']:  # Forma el string por la dificultad
-            if elemento[0] != "None":
-                texto_medio += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
-                i += 1
-        if texto_medio == "":
-            texto_medio = 'No hay registro de puntajes'
-
-        i = 1
-        for elemento in top['Dificil']:  # Forma el string por la dificultad
-            if elemento[0] != "None":
-                texto_dificil += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
-                i += 1
-        if texto_dificil == "":
-            texto_dificil = 'No hay registro de puntajes'
+        texto_facil = generar_texto(top['Facil'])
+        texto_medio = generar_texto(top['Medio'])
+        texto_dificil = generar_texto(top['Dificil'])
 
         layout = [[sg.Text('TOP ten de puntajes')],
             [sg.Output(size=(35,10), key='-OUTPUT-')],
@@ -120,14 +108,7 @@ def top10(dificultad=None):
                 window['-OUTPUT-'].update(texto_dificil)
         window.close()
     else:
-        i = 1
-        texto = ""
-        for elemento in top['Dificil']:  # Forma el string por la dificultad
-            if elemento[0] != "None":
-                texto += str(i)+'° puesto: ' + elemento[0] + ' con ' + str(elemento[1]) + 'punto/s' + '\n'
-                i += 1
-        if texto == "":
-            texto = 'No hay registro de puntajes'
+        texto = generar_texto(top[dificultad])
 
         layout = [[sg.Text('TOP ten de puntajes')],
                   [sg.Output(size=(35,10), key='-OUTPUT-')],
