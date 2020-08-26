@@ -1,13 +1,27 @@
-##### Scrabble AR ####
+Reglas de ScrabbleAR
 
-Scrabble AR es un juego en donde deberas formar palabras con una serie de fichas de letras que se te otorgaran al inicio del juego, pero puedes cambiar estas fichas seleccionando el boton cambiar, luego marcas las fichas que deseas cambiar y finalemente pulsa en cambiar. Si seleccioanste cambiar pero ya no deseas hacerlo puedes hacer click en cancelar.
+La partida
 
-Para iniciar el juego deberás hacer click en comenzar
+Es el componente principal del juego. En cada una de ellas participan dos jugadores; un usuario humano contra la computadora. Cada uno de estos tiene a su disposición un atril con siete fichas, cada una de las cuales tiene una letra y un valor asignado. El objetivo del juego es obtener el mayor puntaje posible formando palabras en el tablero con las fichas disponibles en el atril.
 
-Para formar una palabra debes hacer click en una letra y luego hacer click en una posicion del tablero, repite este paso hasta formar la palabra deseada y luego seleccionar el boton jugar. podrás observar a la dedrecha del tablero tus puntos, los de la IA (inteligencia artificial) y la cantidad de letras que te quedan en tu bolsa de letras
+Componentes elementales
 
-El juego terminará cuando:	
-	-El tiempo llegue a cero
-	-No haya suficientes fichas en la bolsa para llenar un atril
-	-No quede espacio en el tablero
-	-El jugador decida terminar el juego
+Fichas: son la representación en el juego de una letra con el respectivo puntaje asignado según el modo de juego o la configuración del usuario.
+
+Bolsa: es un repositorio de todas las fichas aún no distribuídas a los jugadores.
+
+Tablero: una matriz rectangular de casillas en las cuales se irán colocando las fichas con las que los jugadores intentarán formar sus respectivas palabras. Cada casilla puede modificar el puntaje final de la palabra, habiendo 4 tipos de casilla de bonificación, un tipo de casilla de descuento y casillas sin modificador. Las casillas que agregan puntos pueden duplicar o triplicar el valor de la ficha que se coloque encima, o duplicar o triplicar el valor total de la palabra. Las casillas que descuentan puntos son de un sólo tipo y restan 3 puntos al valor de la ficha que se coloque encima.
+
+Instancias de juego
+
+Inicio: el tablero y los atriles comienzan vacíos, y el reloj pausado. El juego no comienza oficialmente hasta que el usuario hace clic en el botón “comenzar”; momento en el cual se repartirán 7 fichas a cada jugador, se eligirá al azar cuál de los dos comienza su turno, y se iniciará el cronómetro.
+
+Turno: si es el turno del usuario, este intenta armar una palabra en el tablero con las fichas que dispone en su atril. Las palabras se pueden escribir tanto en forma vertical como horizontal, y todas sus fichas deben ubicarse en casillas adyacentes. Si está convencido de la existencia de su palabra, presiona en el botón “jugar” y el programa evaluará si ésta realmente existe en el diccionario. Si existe, se calculará el puntaje de la palabra teniendo en cuenta el valor de cada ficha en conjunción con los posibles modificadores de cada casilla ocupada. Este puntaje se agrega al del jugador y, de ser posible, se colocarán en su atril tantas fichas de la bolsa como fueran utilizadas para conformar la palabra, dando por finalizado el turno.
+En cualquier momento de su turno, el jugador puede decidir cambiar fichas, presionando el botón “cambiar fichas”. Esto le permitirá seleccionar cuantas fichas desee y, presionando “cambiar”, entregarlas a la bolsa, para que ésta le devuelva tantas como haya recibido. Si se concreta el cambio de fichas, el turno se da por finalizado. El usuario tiene a su disposición 5 cambios sin costo, a partir del 6to, perderá 2 puntos por cada nuevo cambio de fichas, aunque nunca puede quedar por debajo de cero.
+Por último, el jugador tiene la opción de pasar su turno sin realizar ninguna acción, haciendo click en el botón “pasar turno”, esta acción no tiene límites ni costo alguno.
+
+El comportamiento de la computadora es similar al del jugador, ésta buscará armar una palabra en el tablero; si lo logra, se procederá de la misma forma que en el caso del usuario, agregando los puntos correspondientes, recibiendo fichas de reemplazo y finalizando el turno. De no poder armar una palabra, la computadora cambiará dos fichas al azar de su atril con la bolsa, finalizando así su turno. Los cambios de fichas para la IA nunca implican un costo adicional.
+
+Fin: los turnos se seguirán intercalando hasta que se acabe el tiempo, hasta que el usuario decida finalizar la partida (haciendo click en el botón “terminar”), o hasta el momento en que, una vez jugada una palabra, la bolsa no disponga de suficientes fichas como para llenar ese atril. En cualquiera de estas instancias, se proclamará un vencedor de acuerdo a los puntajes obtenidos y, si el puntaje del jugador es suficiente para entrar en el top 10 de su respectiva dificultad de juego, se le anunciará este hecho, para finalmente regresar al menú principal
+
+Posponer: en todo momento, mientras la partida esté activa, el usuario tiene la posibilidad de guardarla para continuar posteriormente. Para ello debe hacer click en el botón “posponer”, lo cual lo dirigirá nuevamente al menú principal. Para retomarla, sólo debe hacer click en el botón “continuar partida” del menú principal. Se permite el guardado de una sóla partida en todo momento, por lo que sucesivos “posponer” generarán las correspondientes sobreescrituras, y sólo se podrá acceder a la última de estas. Cabe aclarar de todas formas que si se inicia una nueva partida, la partida archivada será eliminada.
