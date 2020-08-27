@@ -116,30 +116,23 @@ def configurar():
 
     letras = dic['Personalizada']['bolsa']
     lista_letras= []
-    lista_valores = []
-    lista_puntos = []
-    for key in letras:
-        lista_letras.append(key[0])
-    for y in range(13):
-        lista_valores.append(y)
-    for y in range(20):
-        lista_puntos.append(y + 1)  # Con y + 1 evito que se ingrese 0 como puntaje de letra
-    df_vl = letras[0][1] 
+    for elemento in letras:
+        lista_letras.append(elemento[0])
+    valor_letra = letras[0][1] 
+    valor_punto = dic['Personalizada']['puntos_letra']['a']
     layout=[
         [sg.T("Perfil personalizado", size=(17,1), justification = "center",
               font=("Georgia", 17))],
         [sg.T("Letra",font=("Georgia", 12)),
-         sg.Combo(lista_letras, size=(8,1), default_value= 'a'),
+         sg.Combo(lista_letras, size=(8,1), default_value= 'a', enable_events=True),
          sg.T("Cantidad:", font=("Georgia", 12),),
-         sg.Combo(lista_valores, size=(8,1), default_value=df_vl)],
-         [sg.T("Letra",font=("Georgia", 12)),
-         sg.Combo(lista_letras, size=(8,1), default_value= 'a'),
+         sg.Slider(range=(1, 12), orientation='h', size=(13, 20), default_value=valor_letra),
          sg.T("Valor:", font=("Georgia", 12),),
-         sg.Combo(lista_puntos, size=(8,1), default_value=df_vl)],
-         [sg.T("Dificultad de la IA: "),
+         sg.Slider(range=(1, 20), orientation='h', size=(20, 20), default_value=valor_punto)],
+        [sg.T("Dificultad de la IA: "),
          sg.DropDown(('Facil','Medio','Dificil'),
-                     default_value=(dic['Personalizada']['dificultad_IA']),size=(10,1))],
-         [sg.T("Dificultad del tablero: "),
+                     default_value=(dic['Personalizada']['dificultad_IA']),size=(10,1)),
+                     sg.T("Dificultad del tablero: "),
          sg.DropDown(('Facil','Medio','Dificil'),
                      default_value=(dic['Personalizada']['dificultad_Tablero']),size=(10,1))],
         [sg.Button("Guardar", size=(12, 1), key="-guardar-")]
@@ -152,25 +145,38 @@ def configurar():
         """
         values[0] = retorna la letra elegida
         values[1] = retorna la cantidad de letras
-        values[2] = retorna la letra elegida
-        values[3] = retorna el puntaje seleccionado
-        values[4] = retorna la dificultad de la IA
-        values[5] = retorna la dificultad del tablero
+        values[2] = retorna el puntaje seleccionado
+        values[3] = retorna la dificultad de la IA
+        values[4] = retorna la dificultad del tablero
         """
+        print(values)
+        try:
+            for item in letras:
+                if item[0] == values[0]:
+                    valor_letra = int(item[1])
+                    print(item)
+            window_configurar.find_element(1).Update(valor_letra)
+            valor_punto = dic['Personalizada']['puntos_letra'][values[0]]
+            window_configurar.find_element(2).Update(valor_punto)
+        except TypeError:
+            break
         if event == None:
             break
         elif event == '-guardar-':
             for item in letras:
                 if item[0] == values[0]:
-                    item[1] = values[1]
-                    df_vl = values[1]
+                    item[1] = int(values[1])
                     break
             dic['Personalizada']['bolsa'] = letras
-            dic['Personalizada']['puntos_letra'][values[2]] = values[3]
-            dic['Personalizada']['dificultad_IA'] = values[4]
-            dic['Personalizada']['dificultad_Tablero'] = values[5]
-            with open(f'archivos{ruta()}valores_puntajes.json', 'w', encoding='UTF-8') as f:
-                json.dump(dic, f, indent=4)
+            dic['Personalizada']['puntos_letra'][values[0]] = int(values[2])
+            dic['Personalizada']['dificultad_IA'] = values[3]
+            dic['Personalizada']['dificultad_Tablero'] = values[4]
+            try:
+                with open(f'archivos{ruta()}valores_puntajes.json', 'w', encoding='UTF-8') as f:
+                    json.dump(dic, f, indent=4)
+                    sg.popup('Se guardaron los cambios', auto_close= True, auto_close_duration= 1)
+            except FileNotFoundError:
+                sg.popup('No se encuentra el archivo "valores_puntajes.json"')
     window_configurar.Close()
 
 

@@ -1,11 +1,11 @@
-##### Scrabble AR ####
+Configuración
 
-Para configurar tu perfil personalizado
-primero deberas entrar por medio del menu a la seccion de configuración
+Desde el menú principal, y en la ventana previa al inicio de cada partida, el usuario tiene acceso a la modificación de múltiples variables de juego, a fin de tener una experiencia personalizada. Existen tres modos de juego pre-configurados, cuyas características no pueden modificarse a excepción del tiempo, y un único modo ”personalizado”. Las variables susceptibles de alteración a las que tiene acceso el usuario en este último caso son:
 
-Ahí te encontrarás con un nuevo menu, donde podras seleccionar una letra y a su derecha la cantidad de estas que quieres que haya en la bolsa de letras.
-En la siguiente fila tendras la opción, otra vez de seleccionar una letra, pero esta vez podrás cambiar el valor en puntos que valdrá la letra.
-El la siguiente fila podras decidir la dificultad de la inteligencia artificial.
-por ultimo podras decidir que tablero usar
+Tiempo: el único parámetro que puede modificarse en cualquiera de los modos de juego. Determina la duración máxima de una partida antes de dar por concluído el juego.
 
-IMPORTANTE: cada vez que decidas cambiar algo debes hacer click en guardar. Solo podrás guardar un cambio a la vez de una misma sección, es decir, podes configurar la cantidad de apariciones de la letra "P" y el valor de esta letra, junto a la dificultad del tablero y de la inteligencia artificial. pero no podrás configuarar la aparicion de dos letras a la vez.
+Letras: por cada letra se puede seleccionar una cantidad entre x e y, que determinará cuántas fichas con este caracter habrá en la bolsa al comienzo de una partida. También se puede elegir un valor entre w y z que determinará el puntaje asignado a dicha letra.
+
+Tipo de tablero: hay tres variantes de tablero, cada una con sus dimensiones particulares y diversa distribución de casillas comunes, de bonificación y de descuento.
+
+Dificultad de la IA: existen tres dificultades de contrincante; una por cada dificultad predeterminada: Fácil, Medio, y Difícil, cada una de estas seleccionará, de todas las palabras que pueda construir con las fichas de su atril, la que menor puntaje dé en el caso Fácil, la que mayor puntaje dé en el caso Difícil, y una de puntaje intermedio en el caso Medio. Todas las versiones de IA seleccionan casillas al azar donde colocar la palabra, independientemente de los modificadores que éstas contengan.
