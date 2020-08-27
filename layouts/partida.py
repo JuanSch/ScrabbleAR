@@ -14,6 +14,7 @@ def armar_tablero(tablero, dim_boton):
                               image_filename=casilla.getimagen(), pad=(0, 0),
                               button_color=('#DDDDDD', '#DDDDDD'),
                               border_width=0,)
+            print(casilla.getimagen())
             linea.append(boton)
         botones.append(linea)
     return botones
