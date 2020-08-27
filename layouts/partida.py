@@ -28,7 +28,7 @@ def armar_atril(atril, dim_boton):
 
 
 def columna1_gui(elementos):
-    dim_boton = 40, 40
+    dim_boton = 28, 28
     linea_superior = armar_atril(elementos['atril_ia'], dim_boton)
     botones_tablero = armar_tablero(elementos['tablero'], dim_boton)
     linea_inferior = armar_atril(elementos['atril_jugador'], dim_boton)
@@ -81,6 +81,9 @@ def columna2_gui(datos):
                 [sg.T('')],
                 [sg.T('BOLSA', font=('Arial', '11'))],
                 [sg.T(f'QUEDAN {len(datos["bolsa"].fichas)} FICHAS',
-                      key='-BOLSA-', font=('Arial', '14'))]
+                      key='-BOLSA-', font=('Arial', '14'))],
+                [sg.T('')],
+                [sg.T('HISTORIAL')],
+                [sg.Output(size=(15, 15))]
                 ]
     return columna2
