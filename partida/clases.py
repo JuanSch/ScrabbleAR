@@ -169,6 +169,17 @@ class Casilla:
         self.ficha = ficha
         self.ficha.select = False
 
+    def cuenta(self):
+        if 'L' in self.tipo:
+            modificador = f'*{self.tipo[0]}'
+        elif '-' in self.tipo:
+            modificador = f'-3'
+        else:
+            modificador = ''
+        print(self.ficha.letra)
+        return f'{self.ficha.letra}' \
+               f'({self.ficha.getvalor()}{modificador})'
+
     def valor(self):
         """
         Evalúa el tipo de casilla y el valor de la ficha,
@@ -181,10 +192,11 @@ class Casilla:
             (int): un valor por el que se debe multiplicar la palabra
             una vez sumados todos los valores de las letras.
         """
-        try:
+
+        if 'P' not in self.tipo:
             valor = Casilla.valores[self.tipo](self.ficha.getvalor())
             return valor, 1
-        except TypeError:
+        else:
             valor = self.ficha.getvalor()
             return valor, Casilla.valores[self.tipo]
 
@@ -647,12 +659,15 @@ class Tablero:
             multi = ficha1[1] * ficha2[1]
             return puntos, multi
 
+        calculo = []
         valores = []
         for k, v in palabra.fichas.items():
             ficha = v[0]
             casilla = self.getcasilla(k)
             casilla.ocupar(ficha)
+            calculo.append(casilla.cuenta())
             valores.append(casilla.valor())
+        print(calculo)
         valor = reduce(lambda x, y: x*y, reduce(calcular, valores))
         self.posibles = self.getvalidos()
         return valor
@@ -885,5 +900,5 @@ class Bolsa:
         return self.entregar(len(lista))
 
 #####################################################################
-#                         FIN CLASE BOLSA                        #
+#                          FIN CLASE BOLSA                          #
 #####################################################################

@@ -14,7 +14,6 @@ def armar_tablero(tablero, dim_boton):
                               image_filename=casilla.getimagen(), pad=(0, 0),
                               button_color=('#DDDDDD', '#DDDDDD'),
                               border_width=0,)
-            print(casilla.getimagen())
             linea.append(boton)
         botones.append(linea)
     return botones
@@ -86,6 +85,6 @@ def columna2_gui(datos):
                       key='-BOLSA-', font=('Arial', '14'))],
                 [sg.T('', font=('Arial', '6'))],
                 [sg.T('HISTORIAL', font=('Arial', '10'))],
-                [sg.Output(size=(22, 10))]
+                #[sg.Output(size=(22, 10))]
                 ]
     return columna2

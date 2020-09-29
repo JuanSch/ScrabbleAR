@@ -1,12 +1,12 @@
 import PySimpleGUI as sg
 import time as t
-from partida import clases as lg
+from partida import clases as cl
 from partida import IA
 from os import remove
 import pickle
 import json
 import random
-from auxiliares.utilidades import ruta
+from auxiliares.utilidades import ruta, top10
 
 
 def temporizador(tiempo, inicio, corriendo):
@@ -64,11 +64,11 @@ def inicializar(continuar):
                 return 'Error al intentar abrir valores_puntajes.json \n' \
                        'el archivo parece no exisitir'
             else:
-                tablero = lg.Tablero(columnas, filas, casillas)
-                atril_jugador = lg.Atril()
-                atril_ia = lg.AtrilIA()
-                palabra = lg.Palabra()
-                bolsa = lg.Bolsa(cant_letras, puntos)
+                tablero = cl.Tablero(columnas, filas, casillas)
+                atril_jugador = cl.Atril()
+                atril_ia = cl.AtrilIA()
+                palabra = cl.Palabra()
+                bolsa = cl.Bolsa(cant_letras, puntos)
                 puntos_jugador = 0
                 puntos_ia = 0
                 turno_jugador = random.randrange(0, 2) == 0
@@ -630,7 +630,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Ganaste y entraste en el top 10!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
-            lg.top10()
+            top10()
         else:
             sg.Popup('¡Ganaste!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
@@ -639,7 +639,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Empataste y entraste en el top 10!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
-            lg.top10()
+            top10()
         else:
             sg.Popup('¡Empataste! La proxima ganarás'
                      '\n Tu puntiacion es: ' + str(puntos_jugador))
@@ -647,7 +647,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Perdiste pero entraste en el top 10!'
                      '\n Tu puntiacion es: ' + str(puntos_jugador))
-            lg.top10()
+            top10()
         else:
             sg.Popup('¡Perdiste, suerte la próxima!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
