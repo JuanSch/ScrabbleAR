@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import time as t
-from partida import clases as cl
+from partida import clases as lg
+from auxiliares import utilidades as ut
 from partida import IA
 from os import remove
 import pickle
@@ -630,7 +631,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Ganaste y entraste en el top 10!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
-            top10()
+            ut.top10()
         else:
             sg.Popup('¡Ganaste!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
@@ -639,7 +640,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Empataste y entraste en el top 10!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
-            top10()
+            ut.top10()
         else:
             sg.Popup('¡Empataste! La proxima ganarás'
                      '\n Tu puntiacion es: ' + str(puntos_jugador))
@@ -647,7 +648,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Perdiste pero entraste en el top 10!'
                      '\n Tu puntiacion es: ' + str(puntos_jugador))
-            top10()
+            ut.top10()
         else:
             sg.Popup('¡Perdiste, suerte la próxima!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
