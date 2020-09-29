@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 import time as t
-from partida import clases as lg
-from auxiliares import utilidades as ut
+from partida import clases as cl
 from partida import IA
 from os import remove
 import pickle
@@ -306,7 +305,8 @@ def partida(window, datos_partida):
 
         if IA.validar_palabra(str(palabra)):
             # Actualizaciones a la lógica y valores de fondo
-            puntos_jugador += tablero.fijar_palabra(palabra)
+            puntos_jugada, calculo = tablero.fijar_palabra(palabra)
+            puntos_jugador += puntos_jugada
             atril_jugador.eliminar([v[1] for _k, v in palabra.fichas.items()])
             # Actualizaciones de GUI
             actualizar_tablero((), borrar, window, tablero)
@@ -316,6 +316,8 @@ def partida(window, datos_partida):
             for key in palabra.getposiciones():
                 img = tablero.getcasilla(key).getimagen()
                 window.FindElement(key).Update(image_filename=img)
+            print(f'{nombre} jugó "{str(palabra)}":')
+            print(calculo+'\n')
             window.FindElement('-PJUGADOR-').Update(
                 f'{nombre.upper()}: {puntos_jugador}')
             actualizar_atril(atril_jugador, window)
@@ -485,7 +487,10 @@ def partida(window, datos_partida):
                     ficha, origen = fichas_origen[i]
                     palabra.modificar(pos, ficha, origen)
                 # se fija la palabra y se calcula el puntaje
-                puntos_ia += tablero.fijar_palabra(palabra)
+                puntos_jugada, calculo = tablero.fijar_palabra(palabra)
+                puntos_ia += puntos_jugada
+                print(f'IA jugó "{str(palabra)}":')
+                print(calculo+'\n')
                 # Se vacía la palabra
                 palabra.vaciar()
                 # se actualiza la GUI
@@ -631,7 +636,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Ganaste y entraste en el top 10!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
-            ut.top10()
+            top10()
         else:
             sg.Popup('¡Ganaste!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
@@ -640,7 +645,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Empataste y entraste en el top 10!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))
-            ut.top10()
+            top10()
         else:
             sg.Popup('¡Empataste! La proxima ganarás'
                      '\n Tu puntiacion es: ' + str(puntos_jugador))
@@ -648,7 +653,7 @@ def fin_partida(continuar, datos_partida):
         if actualizar_puntajes([nombre, puntos_jugador], dificultad):
             sg.Popup('¡Perdiste pero entraste en el top 10!'
                      '\n Tu puntiacion es: ' + str(puntos_jugador))
-            ut.top10()
+            top10()
         else:
             sg.Popup('¡Perdiste, suerte la próxima!\n'
                      'Tu puntiacion es: ' + str(puntos_jugador))

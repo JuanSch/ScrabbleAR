@@ -176,7 +176,6 @@ class Casilla:
             modificador = f'-3'
         else:
             modificador = ''
-        print(self.ficha.letra)
         return f'{self.ficha.letra}' \
                f'({self.ficha.getvalor()}{modificador})'
 
@@ -659,6 +658,12 @@ class Tablero:
             multi = ficha1[1] * ficha2[1]
             return puntos, multi
 
+        def multi_palabra(letras, multiplicadores):
+            for valor in multiplicadores:
+                if valor > 1:
+                    letras = f'({letras})*{valor}'
+            return letras
+
         calculo = []
         valores = []
         for k, v in palabra.fichas.items():
@@ -667,10 +672,11 @@ class Tablero:
             casilla.ocupar(ficha)
             calculo.append(casilla.cuenta())
             valores.append(casilla.valor())
-        print(calculo)
+        base = '+'.join(calculo)
         valor = reduce(lambda x, y: x*y, reduce(calcular, valores))
+        cuenta = f'{multi_palabra(base, [valor[1] for valor in valores])} = {valor}'
         self.posibles = self.getvalidos()
-        return valor
+        return valor, cuenta
 
 #####################################################################
 #                         FIN CLASE TABLERO                         #
@@ -753,12 +759,12 @@ class Atril:
             # Se seleccionará una ficha para colocar en el tablero
             # o se deselccionará una ya colocada
             if not ficha.select:
+                self.cambiar = (evento, ficha)
                 # Si la ficha no estaba seleccionada, siginifica que se eligió
                 # una para colocar en el tablero, se cambia el estado
                 # del atril a 'PASAR'
                 self.setestado(2)
             ficha.cambiarselect()
-            self.cambiar = (evento, ficha)
         elif self.estado == 'PASAR':
             # Se deseleccionará la ficha en curso, se seleccionará otra
             # o se reemplazará una fichas del tablero

@@ -58,8 +58,8 @@ def columna1_gui(elementos):
 
 
 def columna2_gui(datos):
-    columna2 = [[sg.Button('COMENZAR', key='-INI/PAUSA-', size=(12, 2)),
-                 sg.Button('TERMINAR', key='-FIN-', size=(12, 2),
+    columna2 = [[sg.Button('COMENZAR', key='-INI/PAUSA-', size=(11, 2)),
+                 sg.Button('TERMINAR', key='-FIN-', size=(11, 2),
                            visible=False)],
                 [sg.T('', font=('Arial', '6'))],
                 [sg.T('TIEMPO', font=('Arial', '10'))],
@@ -85,6 +85,6 @@ def columna2_gui(datos):
                       key='-BOLSA-', font=('Arial', '14'))],
                 [sg.T('', font=('Arial', '6'))],
                 [sg.T('HISTORIAL', font=('Arial', '10'))],
-                #[sg.Output(size=(22, 10))]
+                [sg.Output(size=(22, 10))]
                 ]
     return columna2
