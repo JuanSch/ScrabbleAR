@@ -85,6 +85,6 @@ def columna2_gui(datos):
                       key='-BOLSA-', font=('Arial', '14'))],
                 [sg.T('', font=('Arial', '6'))],
                 [sg.T('HISTORIAL', font=('Arial', '10'))],
-                [sg.Output(size=(22, 10))]
+                [sg.Output(size=(22, 10), key='-OUTPUT-')]
                 ]
     return columna2
