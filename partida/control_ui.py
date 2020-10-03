@@ -308,7 +308,6 @@ def partida(window, datos_partida):
             puntos_jugada, calculo = tablero.fijar_palabra(palabra)
             puntos_jugador += puntos_jugada
             atril_jugador.eliminar([v[1] for _k, v in palabra.fichas.items()])
-            window['-OUTPUT-'].Update(calculo)
             # Actualizaciones de GUI
             actualizar_tablero((), borrar, window, tablero)
             # borrar siempre va a tener algún valor,
@@ -317,6 +316,8 @@ def partida(window, datos_partida):
             for key in palabra.getposiciones():
                 img = tablero.getcasilla(key).getimagen()
                 window.FindElement(key).Update(image_filename=img)
+            print(f'{nombre} jugó "{str(palabra)}":')
+            print(calculo+'\n')
             window.FindElement('-PJUGADOR-').Update(
                 f'{nombre.upper()}: {puntos_jugador}')
             actualizar_atril(atril_jugador, window)
@@ -488,7 +489,9 @@ def partida(window, datos_partida):
                 # se fija la palabra y se calcula el puntaje
                 puntos_jugada, calculo = tablero.fijar_palabra(palabra)
                 puntos_ia += puntos_jugada
-                window['-OUTPUT-'].Update(calculo)
+                print(f'IA jugó "{str(palabra)}":')
+                print(calculo+'\n')
+                # Se vacía la palabra
                 palabra.vaciar()
                 # se actualiza la GUI
                 for pos in casillas:
