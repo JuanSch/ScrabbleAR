@@ -629,7 +629,7 @@ def fin_partida(continuar, datos_partida):
     puntos_ia = datos_partida['puntos_ia']
 
     if continuar:
-        remove("continuar_partida.pickle")  # Como terminó la partida
+        remove(f"archivos{ruta()}continuar_partida.pickle")  # Como terminó la partida
         #  se borra la partida guardada
     if puntos_jugador > puntos_ia:  # evalua quien gana
         # evalua si entra en el top10 (si entra se agrega)

@@ -149,16 +149,14 @@ def configurar():
         values[3] = retorna la dificultad de la IA
         values[4] = retorna la dificultad del tablero
         """
-        print(values)
         try:
             for item in letras:
                 if item[0] == values[0]:
                     valor_letra = int(item[1])
-                    print(item)
             window_configurar.find_element(1).Update(valor_letra)
             valor_punto = dic['Personalizada']['puntos_letra'][values[0]]
             window_configurar.find_element(2).Update(valor_punto)
-        except TypeError:
+        except KeyError:
             break
         if event == None:
             break
