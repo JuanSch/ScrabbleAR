@@ -156,7 +156,7 @@ def configurar():
             window_configurar.find_element(1).Update(valor_letra)
             valor_punto = dic['Personalizada']['puntos_letra'][values[0]]
             window_configurar.find_element(2).Update(valor_punto)
-        except KeyError:
+        except:
             break
         if event == None:
             break
